@@ -181,6 +181,8 @@ pip3 install --user -r requirements.txt -i https://mirrors.aliyun.com/pypi/simpl
 source ./gpu-simulator/setup_environment.sh
 
 # Build with make
+# 编译成功之后会生成./gpu-simulator/bin/release/accel-sim.out
+# -rwxrwxr-x 1 kuanbba kuanbba 7.7M 10月 27 17:35 accel-sim.out
 make -j -C ./gpu-simulator/ 2>&1 | tee /tmp/make_accel_sim_using_gpgpusim.log
 
 # Build with CMake
