@@ -98,10 +98,48 @@ that get run in our travis regressions:
 # Get the applications, their data files and build them:
 git clone https://github.com/accel-sim/gpu-app-collection
 source ./gpu-app-collection/src/setup_environment
-make -j -C ./gpu-app-collection/src rodinia_2.0-ft
+
+export CC=/usr/bin/gcc-11
+export CXX=/usr/bin/g++-11
+export CUDAHOSTCXX=/usr/bin/g++-11
+export NVIDIA_COMPUTE_SDK_LOCATION="$PWD/gpu-app-collection/4.2"
+
+# 运行下面的命令确认compute capability
+nvidia-smi --query-gpu=index,name,compute_cap --format=csv,noheader
+export MY_CC=61  # 你的6.1 -> 61，需要根据实践GPU的能力调整
+export NVIDIA_COMPUTE_SDK_LOCATION="$PWD/gpu-app-collection/4.2"
+export INC_DIR="$PWD/gpu-app-collection/src/cuda/rodinia/2.0-ft/backprop"
+make -j -k -C ./gpu-app-collection/src rodinia_2.0-ft \
+  SHELL=/bin/bash \
+  CUDACCFLAGS="-ccbin=${CUDAHOSTCXX}" \
+  2>&1 | tee /tmp/rodinia20ft.build.log
+# 检查是否有编译错误：
+grep -iE 'error:|错误' /tmp/rodinia20ft.build.log
+# 检查是否生成了bin/lib
+# 1) List produced binaries:
+ls -al ./gpu-app-collection/bin/12.1/release
+-rwxrwxr-x 1 kuanbba kuanbba  49144 10月 27 11:25 backprop-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  35344 10月 27 11:25 bfs-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba 333456 10月 27 11:25 heartwall-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  47992 10月 27 11:25 hotspot-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  98040 10月 27 11:25 lud-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  35352 10月 27 11:25 nn-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  99336 10月 27 11:25 nw-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  35792 10月 27 11:25 pathfinder-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  59880 10月 27 11:25 srad_v2-rodinia-2.0-ft
+-rwxrwxr-x 1 kuanbba kuanbba  65040 10月 27 11:25 streamcluster-rodinia-2.0-ft
+# 2) Verify all Rodinia 2.0-ft apps were built:
+cd ./gpu-app-collection/bin/12.1/release
+for a in backprop bfs heartwall hotspot lud nn nw pathfinder srad_v2 streamcluster; do
+  test -x "${a}-rodinia-2.0-ft" || echo "missing: ${a}"
+done
+PS: In Rodinia 2.0-ft，SRAD的可执行文件叫srad_v2-rodinia-2.0-ft，而不是 srad-rodinia-2.0-ft，所以“missing: srad”是预期现象。
+
+
 make -C ./gpu-app-collection/src data
 
 # Run the applications with the tracer (remember you need a real GPU for this):
+# 只有一块GPU的话, <gpu-device-num-to-run-on> = 0
 ./util/tracer_nvbit/run_hw_trace.py -B rodinia_2.0-ft -D <gpu-device-num-to-run-on>
 ```
 
@@ -137,10 +175,13 @@ A simulator frontend that consumes SASS traces and feeds them into a performance
 
 ```bash
 pip3 install -r requirements.txt
+# 上面这个命令的源有问题，无法获取，需要换成下面的方式来获取
+pip3 install --user -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+
 source ./gpu-simulator/setup_environment.sh
 
 # Build with make
-make -j -C ./gpu-simulator/
+make -j -C ./gpu-simulator/ 2>&1 | tee /tmp/make_accel_sim_using_gpgpusim.log
 
 # Build with CMake
 cmake -S ./gpu-simulator/ -B ./gpu-simulator/build

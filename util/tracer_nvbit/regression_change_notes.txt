@@ -1,0 +1,14 @@
+Accel-Sim NVBit tracer updates (Rodinia 2.0-ft focus)
+----------------------------------------------------
+1. Updated `util/tracer_nvbit/tracer_tool/tracer_tool.cu` to defensively skip instrumentation for opcodes that triggered `cudaErrorIllegalAddress` on GA100 while tracing Rodinia:
+    - hard skip for `NOP*`, `EXIT*`, `MOV*`, and `XMAD*` instructions;
+    - guard instructions ending in `.CC`/`.X` to avoid corrupting carry/condition codes;
+    - retain verbose logging hooks so we can enable `TOOL_VERBOSE` and confirm skip decisions if needed.
+2. Updated `util/tracer_nvbit/run_hw_trace.py`, and 
+    - Added CSV logging around the regression harness: immediately after naming the logfile the script now opens util/tracer_nvbit/<timestamp>.csv, writes the header, and keeps an overall_success flag to summarize the run.
+    - Wrapped both the optional spinlock detection and bash run.sh calls so failures no longer abort the entire sweep via sys.exit. Instead they record FAIL (or FAIL_SPINLOCK) rows in the CSV, dump run.sh contents for the failing workload, flip overall_success, and move on to the next benchmark.
+    - On success the script logs a PASS line for the workload; once the loop completes it closes the logfile and prints either an “All workloads passed” message or a failure summary pointing to the CSV before exiting with code 1 when anything failed. 
+3. No changes were required for the driver scripts, but regression guidance is now baked into the workflow:
+   - execute `python util/tracer_nvbit/run_hw_trace.py -B rodinia_2.0-ft -D 0` to exercise the entire Rodinia 2.0-ft suite on CUDA 12.1.
+4. Collected the latest regression artifacts in `/hw_run/traces/device-0/12.1`. The helper script `util/tracer_nvbit/run_pass_cases.sh` replays only the workloads that currently pass (backprop, nn, pathfinder).
+5. Outstanding work items: remaining Rodinia members still crash with `cudaErrorIllegalAddress`. The failing traces are logged in the generated CSV under `util/tracer_nvbit/`. Use those entries to reproduce and continue narrowing the problematic opcodes.
