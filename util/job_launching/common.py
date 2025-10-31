@@ -325,6 +325,25 @@ def parse_run_simulations_options():
         help="Enable passing hw_perf_bench_name for accelwattch hw and hybrid runs to config file.",
     )
 
+    # New: optional variant tag to route outputs to a subdirectory and simplify stdout/err names
+    parser.add_option(
+        "--variant_tag",
+        dest="variant_tag",
+        default="",
+        help="Optional label for a micro-architecture variant; stdout/err files will be written under this subdirectory \n"
+        + "within each run directory and named using a simplified '<bench>-<args>.o<jobid>' pattern.\n"
+        + "Example: --variant_tag gpgpu_unified_l1d_size_64",
+    )
+
+    # New: optional string to append extra parameters into gpgpusim.config for each run without changing the config name
+    parser.add_option(
+        "--extra_sim_params",
+        dest="extra_sim_params",
+        default="",
+        help="Extra lines to append to gpgpusim.config. Useful for quick A/B sweeps without cloning config files.\n"
+        + "Example: --extra_sim_params '-gpgpu_unified_l1d_size 64'",
+    )
+
     (options, args) = parser.parse_args()
     # Parser seems to leave some whitespace on the options, getting rid of it
     if options.trace_dir != "":
@@ -339,6 +358,8 @@ def parse_run_simulations_options():
     options.launch_name = options.launch_name.strip()
     if options.job_mem != None:
         options.job_mem = options.job_mem.strip()
+    options.variant_tag = options.variant_tag.strip()
+    options.extra_sim_params = options.extra_sim_params.strip()
     return (options, args)
 
 

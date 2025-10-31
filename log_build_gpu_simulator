@@ -1,0 +1,791 @@
+make: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator”
+if [ ! -d ./bin/debug ]; then mkdir -p ./bin/debug; fi;
+if [ ! -d ./build/debug ]; then mkdir -p ./build/debug; fi;
+touch ./build/debug/main.makedepend
+makedepend -f./build/debug/main.makedepend -p./build/debug/ main.cc 2> /dev/null
+make -C trace-driven depend
+make -C trace-parser depend
+make -C /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim
+echo "const char *g_accelsim_version=\"accelsim-commit-ff9a5d6_modified_9.0_25-10-31-14-31-04\";" > ./build/debug/accelsim_version.h
+make[1]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-driven”
+make[1]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-parser”
+make[1]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim”
+touch ../build/debug/trace-parser.Makefile.makedepend
+touch ../build/debug/trace-driven.Makefile.makedepend
+makedepend -f../build/debug/trace-parser.Makefile.makedepend -p../build/debug/ trace_parser.cc 2> /dev/null
+makedepend -f../build/debug/trace-driven.Makefile.makedepend -p../build/debug/ trace_driven.cc 2> /dev/null
+make[1]: “depend”已是最新。
+make[1]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-parser”
+make -C trace-parser
+make[1]: “depend”已是最新。
+make[1]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-driven”
+make[1]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-parser”
+make -C trace-driven
+make[1]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-driven”
+touch ../build/debug/trace-parser.Makefile.makedepend
+touch ../build/debug/trace-driven.Makefile.makedepend
+makedepend -f../build/debug/trace-parser.Makefile.makedepend -p../build/debug/ trace_parser.cc 2> /dev/null
+makedepend -f../build/debug/trace-driven.Makefile.makedepend -p../build/debug/ trace_driven.cc 2> /dev/null
+make[1]: 对“trace-driven”无需做任何事。
+make[1]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-driven”
+make[1]: 对“trace-parser”无需做任何事。
+make[1]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/trace-parser”
+
+	Building GPGPU-Sim version 4.2.0 (build gpgpu-sim_git-commit-2a735e97_modified_4.0) with CUDA version 12.1
+
+if [ ! -d lib/gcc-13.1.0/cuda-12010/debug ]; then mkdir -p lib/gcc-13.1.0/cuda-12010/debug; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim; fi;
+Warning: gpgpu-sim is building without opencl support. Make sure NVOPENCL_LIBDIR and NVOPENCL_INCDIR are set
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/decuda_pred_table ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/decuda_pred_table; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libopencl ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libopencl; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libopencl/bin ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libopencl/bin; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2 ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuobjdump_to_ptxplus ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuobjdump_to_ptxplus; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch; fi;
+if [ ! -d /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti ]; then mkdir -p /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti; fi;
+make -C ./src/cuda-sim/ depend
+make -C /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ depend
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim”
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+make[3]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/ Ucache.cc XML_Parse.cc arbiter.cc area.cc array.cc bank.cc basic_circuit.cc basic_components.cc cacti_interface.cc component.cc core.cc crossbar.cc decoder.cc htree2.cc interconnect.cc io.cc iocontrollers.cc logic.cc main.cc mat.cc memoryctrl.cc noc.cc nuca.cc parameter.cc processor.cc router.cc sharedcache.cc subarray.cc technology.cc uca.cc wire.cc xmlParser.cc gpgpu_sim_wrapper.cc  2> /dev/null
+make -C ./cacti/ depend
+make[4]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+make[5]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti/Makefile.makedepend
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti/ area.cc bank.cc mat.cc main.cc Ucache.cc io.cc technology.cc basic_circuit.cc parameter.cc decoder.cc component.cc uca.cc subarray.cc wire.cc htree2.cc cacti_interface.cc router.cc nuca.cc crossbar.cc arbiter.cc  2> /dev/null
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ cuda_device_printf.cc cuda_device_runtime.cc cuda-sim.cc instructions.cc memory.cc ptx_ir.cc ptx_loader.cc ptx_parser.cc ptx_sim.cc ptx-stats.cc 2> /dev/null
+make[5]: 对“depend”无需做任何事。
+make[5]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+make[4]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+make[3]: 对“depend”无需做任何事。
+make[3]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+make -C /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ dbg
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+make[3]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+make[2]: “depend”已是最新。
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim”
+make -C ./src/cuda-sim/
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/ Ucache.cc XML_Parse.cc arbiter.cc area.cc array.cc bank.cc basic_circuit.cc basic_components.cc cacti_interface.cc component.cc core.cc crossbar.cc decoder.cc htree2.cc interconnect.cc io.cc iocontrollers.cc logic.cc main.cc mat.cc memoryctrl.cc noc.cc nuca.cc parameter.cc processor.cc router.cc sharedcache.cc subarray.cc technology.cc uca.cc wire.cc xmlParser.cc gpgpu_sim_wrapper.cc  2> /dev/null
+make -C ./cacti/ depend
+make[4]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+make[5]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/cacti/ area.cc bank.cc mat.cc main.cc Ucache.cc io.cc technology.cc basic_circuit.cc parameter.cc decoder.cc component.cc uca.cc subarray.cc wire.cc htree2.cc cacti_interface.cc router.cc nuca.cc crossbar.cc arbiter.cc  2> /dev/null
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ cuda_device_printf.cc cuda_device_runtime.cc cuda-sim.cc instructions.cc memory.cc ptx_ir.cc ptx_loader.cc ptx_parser.cc ptx_sim.cc ptx-stats.cc 2> /dev/null
+make[5]: 对“depend”无需做任何事。
+make[5]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+make[4]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/cacti”
+make[3]: 对“all”无需做任何事。
+make[3]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch”
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x ptx_parser.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_parser.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x ptx_loader.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_loader.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x instructions.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/instructions.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x cuda-sim.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/cuda-sim.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x ptx_ir.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_ir.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x ptx_sim.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_sim.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x memory.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/memory.o
+g++  -c -g3 -Wall  -Wno-unused-function -Wno-sign-compare -I/usr/local/cuda-12.1/include  -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ -I. -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug -fPIC  -DTRACING_ON=1 -DCUDART_VERSION=12010 -std=c++0x ptx-stats.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx-stats.o
+In file included from cuda-math.h:354,
+                 from instructions.cc:54:
+/usr/local/cuda-12.1/include/math_functions.h:54:2: warning: #warning "math_functions.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead." [-Wcpp]
+   54 | #warning "math_functions.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead."
+      |  ^~~~~~~
+In file included from ../../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../../libcuda/gpgpu_context.h:3,
+                 from ptx-stats.cc:32:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../gpgpu-sim/shader.h:54,
+                 from cuda-sim.h:37,
+                 from cuda-sim.cc:33:
+../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../../libcuda/gpgpu_context.h:3,
+                 from ptx_loader.cc:34:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../../libcuda/gpgpu_context.h:3,
+                 from memory.cc:31:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../../libcuda/gpgpu_context.h:3,
+                 from ptx_ir.cc:45:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../../libcuda/gpgpu_context.h:3,
+                 from ptx_parser.cc:30:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../gpgpu-sim/gpu-sim.h:44,
+                 from instructions.cc:52:
+../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../../libcuda/gpgpu_context.h:3,
+                 from ptx_sim.cc:34:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+instructions.cc: In member function ‘void ptx_thread_info::print_reg_thread(char*)’:
+instructions.cc:203:19: warning: format ‘%llu’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘const ptx_reg_t’ [-Wformat=]
+  203 |       fprintf(fp, "%s %llu %s %d\n", name.c_str(), it->second, dec.c_str(),
+      |                   ^~~~~~~~~~~~~~~~~                ~~~~~~~~~~
+      |                                                        |
+      |                                                        const ptx_reg_t
+ptx_loader.cc: In member function ‘char* ptxinfo_data::gpgpu_ptx_sim_convert_ptx_and_sass_to_ptxplus(std::string, std::string, std::string)’:
+ptx_loader.cc:125:43: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 941 [-Wformat-truncation=]
+  125 |            "cuobjdump_to_ptxplus %s %s %s %s",
+      |                                           ^~
+  126 |            ptxfilename.c_str(), sassfilename.c_str(), elffilename.c_str(),
+  127 |            fname_ptxplus);
+      |            ~~~~~~~~~~~~~                   
+ptx_loader.cc:123:11: note: ‘snprintf’ output 84 or more bytes (assuming 1107) into a destination of size 1024
+  123 |   snprintf(commandline, 1024,
+      |   ~~~~~~~~^~~~~~~~~~~~~~~~~~~
+  124 |            "$GPGPUSIM_ROOT/build/$GPGPUSIM_CONFIG/cuobjdump_to_ptxplus/"
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  125 |            "cuobjdump_to_ptxplus %s %s %s %s",
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  126 |            ptxfilename.c_str(), sassfilename.c_str(), elffilename.c_str(),
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  127 |            fname_ptxplus);
+      |            ~~~~~~~~~~~~~~
+ptx_loader.cc:152:43: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 1018 [-Wformat-truncation=]
+  152 |     snprintf(rm_commandline, 1024, "rm -f %s", fname_ptxplus);
+      |                                           ^~   ~~~~~~~~~~~~~
+ptx_loader.cc:152:13: note: ‘snprintf’ output between 7 and 1030 bytes into a destination of size 1024
+  152 |     snprintf(rm_commandline, 1024, "rm -f %s", fname_ptxplus);
+      |     ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc: In member function ‘void gpgpu_context::gpgpu_ptx_info_load_from_filename(const char*, unsigned int)’:
+ptx_loader.cc:357:37: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 995 [-Wformat-truncation=]
+  357 |       "$CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  /dev/null 2> %s",
+      |                                     ^~
+  358 |       extra_flags, filename, ptxas_filename.c_str());
+      |       ~~~~~~~~~~~                    
+ptx_loader.cc:355:11: note: ‘snprintf’ output 63 or more bytes (assuming 1086) into a destination of size 1024
+  355 |   snprintf(
+      |   ~~~~~~~~^
+  356 |       buff, 1024,
+      |       ~~~~~~~~~~~
+  357 |       "$CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  /dev/null 2> %s",
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  358 |       extra_flags, filename, ptxas_filename.c_str());
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc: In function ‘void fix_duplicate_errors(char*)’:
+ptx_loader.cc:217:38: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 1020 [-Wformat-truncation=]
+  217 |   snprintf(commandline, 1024, "mv %s %s", fname2, tempfile);
+      |                                      ^~           ~~~~~~~~
+ptx_loader.cc:217:11: note: ‘snprintf’ output 5 or more bytes (assuming 1028) into a destination of size 1024
+  217 |   snprintf(commandline, 1024, "mv %s %s", fname2, tempfile);
+      |   ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc:311:38: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 1018 [-Wformat-truncation=]
+  311 |   snprintf(commandline, 1024, "rm -f %s", tempfile);
+      |                                      ^~   ~~~~~~~~
+ptx_loader.cc:311:11: note: ‘snprintf’ output between 7 and 1030 bytes into a destination of size 1024
+  311 |   snprintf(commandline, 1024, "rm -f %s", tempfile);
+      |   ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc: In member function ‘void gpgpu_context::gpgpu_ptxinfo_load_from_string(const char*, unsigned int, unsigned int, int)’:
+ptx_loader.cc:512:41: warning: ‘info’ directive output may be truncated writing 4 bytes into a region of size between 1 and 1024 [-Wformat-truncation=]
+  512 |     snprintf(tempfile_ptxinfo, 1024, "%sinfo", fname);
+      |                                         ^~~~
+ptx_loader.cc:512:13: note: ‘snprintf’ output between 5 and 1028 bytes into a destination of size 1024
+  512 |     snprintf(tempfile_ptxinfo, 1024, "%sinfo", fname);
+      |     ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc:527:39: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 995 [-Wformat-truncation=]
+  527 |         "$CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  /dev/null 2> %s",
+      |                                       ^~
+  528 |         extra_flags, fname2, tempfile_ptxinfo);
+      |         ~~~~~~~~~~~                    
+ptx_loader.cc:525:13: note: ‘snprintf’ output between 63 and 3132 bytes into a destination of size 1024
+  525 |     snprintf(
+      |     ~~~~~~~~^
+  526 |         commandline, 1024,
+      |         ~~~~~~~~~~~~~~~~~~
+  527 |         "$CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  /dev/null 2> %s",
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  528 |         extra_flags, fname2, tempfile_ptxinfo);
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc:575:42: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 1018 [-Wformat-truncation=]
+  575 |       snprintf(commandline, 1024, "rm -f %s %s %s", fname, fname2,
+      |                                          ^~         ~~~~~
+ptx_loader.cc:575:15: note: ‘snprintf’ output between 9 and 3078 bytes into a destination of size 1024
+  575 |       snprintf(commandline, 1024, "rm -f %s %s %s", fname, fname2,
+      |       ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  576 |                tempfile_ptxinfo);
+      |                ~~~~~~~~~~~~~~~~~
+ptx_loader.cc:572:42: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 1018 [-Wformat-truncation=]
+  572 |       snprintf(commandline, 1024, "rm -f %s %s %s", fname, fname2,
+      |                                          ^~         ~~~~~
+ptx_loader.cc:572:15: note: ‘snprintf’ output between 9 and 3078 bytes into a destination of size 1024
+  572 |       snprintf(commandline, 1024, "rm -f %s %s %s", fname, fname2,
+      |       ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  573 |                final_tempfile_ptxinfo);
+      |                ~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc:421:41: warning: ‘info’ directive output may be truncated writing 4 bytes into a region of size between 1 and 1024 [-Wformat-truncation=]
+  421 |     snprintf(tempfile_ptxinfo, 1024, "%sinfo", fname);
+      |                                         ^~~~
+ptx_loader.cc:421:13: note: ‘snprintf’ output between 5 and 1028 bytes into a destination of size 1024
+  421 |     snprintf(tempfile_ptxinfo, 1024, "%sinfo", fname);
+      |     ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc:444:50: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 989 [-Wformat-truncation=]
+  444 |              "$PTXAS_CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  "
+      |                                                  ^~
+  445 |              "/dev/null 2> %s",
+  446 |              extra_flags, fname2, tempfile_ptxinfo);
+      |              ~~~~~~~~~~~                          
+ptx_loader.cc:443:13: note: ‘snprintf’ output between 69 and 3138 bytes into a destination of size 1024
+  443 |     snprintf(commandline, 1024,
+      |     ~~~~~~~~^~~~~~~~~~~~~~~~~~~
+  444 |              "$PTXAS_CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  "
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  445 |              "/dev/null 2> %s",
+      |              ~~~~~~~~~~~~~~~~~~
+  446 |              extra_flags, fname2, tempfile_ptxinfo);
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ptx_loader.cc:463:48: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 995 [-Wformat-truncation=]
+  463 |                  "$CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  "
+      |                                                ^~
+  464 |                  "/dev/null 2> %s",
+  465 |                  extra_flags, fname2, tempfile_ptxinfo);
+      |                  ~~~~~~~~~~~                    
+ptx_loader.cc:462:17: note: ‘snprintf’ output between 63 and 3132 bytes into a destination of size 1024
+  462 |         snprintf(commandline, 1024,
+      |         ~~~~~~~~^~~~~~~~~~~~~~~~~~~
+  463 |                  "$CUDA_INSTALL_PATH/bin/ptxas %s -v %s --output-file  "
+      |                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  464 |                  "/dev/null 2> %s",
+      |                  ~~~~~~~~~~~~~~~~~~
+  465 |                  extra_flags, fname2, tempfile_ptxinfo);
+      |                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ar rcs /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/libgpgpu_ptx_sim.a /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx.tab.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/lex.ptx_.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptxinfo.tab.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/lex.ptxinfo_.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_parser.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_loader.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/cuda_device_printf.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/instructions.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/cuda-sim.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_ir.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx_sim.o  /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/memory.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx-stats.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/decuda_pred_table/decuda_pred_table.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptx.tab.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/lex.ptx_.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/ptxinfo.tab.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/lex.ptxinfo_.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/cuda_device_runtime.o
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim”
+make -C ./src/gpgpu-sim/ depend
+make -C ./libcuda/ depend
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim”
+make -C ./cuobjdump_to_ptxplus/ depend
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/libcuda”
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/cuobjdump_to_ptxplus”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuobjdump_to_ptxplus/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuobjdump_to_ptxplus/Makefile.makedepend cuobjdumpInst.cc cuobjdumpInstList.cc cuobjdump_to_ptxplus.cc 2> /dev/null
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/cuobjdump_to_ptxplus”
+make -C ./cuobjdump_to_ptxplus/
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/cuobjdump_to_ptxplus”
+:
+:
+:
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/cuobjdump_to_ptxplus”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/ cuda_runtime_api.cc 2> /dev/null
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/ addrdec.cc dram.cc dram_sched.cc gpu-cache.cc gpu-misc.cc gpu-sim.cc hashing.cc histogram.cc icnt_wrapper.cc l2cache.cc local_interconnect.cc mem_fetch.cc mem_latency_stat.cc power_interface.cc power_stat.cc scoreboard.cc shader.cc stack.cc stat-tool.cc traffic_breakdown.cc visualizer.cc 2> /dev/null
+make[2]: “depend”已是最新。
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/libcuda”
+make -C ./libcuda/
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/libcuda”
+make[2]: “depend”已是最新。
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim”
+make -C ./src/gpgpu-sim/
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/ cuda_runtime_api.cc 2> /dev/null
+g++  -std=c++0x -Wall -Wno-unused-function -Wno-sign-compare -g -fPIC  -DCUDART_VERSION=12010 -I./ -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda -I/usr/local/cuda-12.1/include  -c cuda_runtime_api.cc -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuda_runtime_api.o
+:
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/ addrdec.cc dram.cc dram_sched.cc gpu-cache.cc gpu-misc.cc gpu-sim.cc hashing.cc histogram.cc icnt_wrapper.cc l2cache.cc local_interconnect.cc mem_fetch.cc mem_latency_stat.cc power_interface.cc power_stat.cc scoreboard.cc shader.cc stack.cc stat-tool.cc traffic_breakdown.cc visualizer.cc 2> /dev/null
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/addrdec.o -c addrdec.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/dram.o -c dram.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/dram_sched.o -c dram_sched.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-cache.o -c gpu-cache.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-sim.o -c gpu-sim.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/l2cache.o -c l2cache.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/mem_fetch.o -c mem_fetch.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/mem_latency_stat.o -c mem_latency_stat.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/power_interface.o -c power_interface.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/power_stat.o -c power_stat.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/scoreboard.o -c scoreboard.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/shader.o -c shader.cc
+g++  -g3 -fPIC -DCUDART_VERSION=12010 -Wall -DDEBUG -DTRACING_ON=1 -std=c++0x  -I/usr/local/cuda-12.1/include -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/accelwattch/ -DGPGPUSIM_POWER_MODEL -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/visualizer.o -c visualizer.cc
+In file included from cuda_runtime_api.cc:128:
+/usr/local/cuda-12.1/include/host_defines.h:54:2: warning: #warning "host_defines.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead." [-Wcpp]
+   54 | #warning "host_defines.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead."
+      |  ^~~~~~~
+In file included from gpu-cache.cc:33:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from visualizer.cc:32:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from power_stat.h:37,
+                 from power_stat.cc:32:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from power_interface.h:35,
+                 from power_interface.cc:32:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from mem_fetch.cc:30:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from addrdec.cc:33:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from mem_latency_stat.cc:34:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from dram_sched.h:36,
+                 from dram.cc:34:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from dram_sched.h:36,
+                 from dram_sched.cc:29:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from gpu-sim.h:44,
+                 from gpu-sim.cc:33:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from l2cache.cc:43:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from shader.h:54,
+                 from shader.cc:33:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from shader.h:54,
+                 from scoreboard.cc:31:
+gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../src/cuda-sim/cuda-sim.h:37,
+                 from cuda_runtime_api.cc:138:
+../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+gpu-cache.cc: In member function ‘void cache_stats::print_stats(FILE*, long long unsigned int, const char*) const’:
+gpu-cache.cc:935:19: warning: comparison of integer expressions of different signedness: ‘long long unsigned int’ and ‘int’ [-Wsign-compare]
+  935 |     if ((streamID != -1) && (streamid != streamID)) continue;
+      |          ~~~~~~~~~^~~~~
+gpu-cache.cc: In member function ‘void cache_stats::print_fail_stats(FILE*, long long unsigned int, const char*) const’:
+gpu-cache.cc:967:19: warning: comparison of integer expressions of different signedness: ‘long long unsigned int’ and ‘int’ [-Wsign-compare]
+  967 |     if ((streamID != -1) && (streamid != streamID)) continue;
+      |          ~~~~~~~~~^~~~~
+shader.cc: In member function ‘virtual void shader_core_ctx::issue_warp(register_set&, const warp_inst_t*, const active_mask_t&, unsigned int, unsigned int)’:
+shader.cc:1116:25: warning: comparison of integer expressions of different signedness: ‘const address_type’ {aka ‘const long long unsigned int’} and ‘int’ [-Wsign-compare]
+ 1116 |         if (group[j].pc != -1) {
+shader.cc: In member function ‘void shader_core_ctx::unset_depbar(const warp_inst_t&)’:
+shader.cc:1905:30: warning: comparison of integer expressions of different signedness: ‘address_type’ {aka ‘long long unsigned int’} and ‘int’ [-Wsign-compare]
+ 1905 |         if (ldg_buf[i][j].pc != -1) {
+shader.cc: In member function ‘bool ldst_unit::memory_cycle(warp_inst_t&, mem_stage_stall_type&, mem_stage_access_type&)’:
+shader.cc:2284:23: warning: unused variable ‘access’ [-Wunused-variable]
+ 2284 |   const mem_access_t &access = inst.accessq_back();
+      |                       ^~~~~~
+shader.h: In constructor ‘ldst_unit::ldst_unit(mem_fetch_interface*, shader_core_mem_fetch_allocator*, shader_core_ctx*, opndcoll_rfu_t*, Scoreboard*, const shader_core_config*, const memory_config*, shader_core_stats*, unsigned int, unsigned int, gpgpu_sim*)’:
+shader.h:1463:15: warning: ‘ldst_unit::m_next_wb’ will be initialized after [-Wreorder]
+ 1463 |   warp_inst_t m_next_wb;
+      |               ^~~~~~~~~
+shader.h:1443:14: warning:   ‘gpgpu_sim* ldst_unit::m_gpu’ [-Wreorder]
+ 1443 |   gpgpu_sim *m_gpu;
+      |              ^~~~~
+shader.cc:2644:1: warning:   when initialized here [-Wreorder]
+ 2644 | ldst_unit::ldst_unit(mem_fetch_interface *icnt,
+      | ^~~~~~~~~
+gpu-sim.cc: In member function ‘void sst_gpgpu_sim::SST_cycle()’:
+gpu-sim.cc:2365:32: warning: variable ‘sec’ set but not used [-Wunused-but-set-variable]
+ 2365 |     time_t days, hrs, minutes, sec;
+      |                                ^~~
+cuda_runtime_api.cc: In function ‘void __cudaRegisterFunctionSST(unsigned int, uint64_t, char*)’:
+cuda_runtime_api.cc:3932:32: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+ 3932 |   cudaRegisterFunctionInternal((void **)fatCubinHandle, (const char *)hostFun,
+      |                                ^~~~~~~~~~~~~~~~~~~~~~~
+cuda_runtime_api.cc:3933:57: warning: passing NULL to non-pointer argument 5 of ‘void cudaRegisterFunctionInternal(void**, const char*, char*, const char*, int, uint3*, uint3*, dim3*, dim3*, gpgpu_context*)’ [-Wconversion-null]
+ 3933 |                                (char *)deviceFun, NULL, NULL, NULL, NULL, NULL,
+      |                                                         ^~~~
+cuda_runtime_api.cc:810:39: note:   declared here
+  810 |                                   int thread_limit, uint3 *tid, uint3 *bid,
+      |                                   ~~~~^~~~~~~~~~~~
+cuda_runtime_api.cc: In function ‘cudaError_t cudaSetDeviceFlagsSST(int)’:
+cuda_runtime_api.cc:4110:72: warning: format ‘%p’ expects argument of type ‘void*’, but argument 3 has type ‘int’ [-Wformat=]
+ 4110 |       "GPGPU-Sim PTX: Execution warning: ignoring call to \"%s ( flag=%p)\"\n",
+      |                                                                       ~^
+      |                                                                        |
+      |                                                                        void*
+      |                                                                       %d
+ 4111 |       __my_func__, flags);
+      |                    ~~~~~                                                
+      |                    |
+      |                    int
+cuda_runtime_api.cc: In member function ‘void cuda_runtime_api::extract_ptx_files_using_cuobjdump_internal(CUctx_st*, std::string&)’:
+cuda_runtime_api.cc:3274:30: warning: ‘%s’ directive output may be truncated writing up to 1023 bytes into a region of size 922 [-Wformat-truncation=]
+ 3274 |            "awk '{$1=$1}1' > %s",
+      |                              ^~
+ 3275 |            app_binary.c_str(), ptx_list_file_name);
+      |                                ~~~~~~~~~~~~~~~~~~
+cuda_runtime_api.cc:3272:11: note: ‘snprintf’ output 79 or more bytes (assuming 1102) into a destination of size 1000
+ 3272 |   snprintf(command, 1000,
+      |   ~~~~~~~~^~~~~~~~~~~~~~~
+ 3273 |            "$CUDA_INSTALL_PATH/bin/cuobjdump -lptx %s  | cut -d \":\" -f 2 | "
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 3274 |            "awk '{$1=$1}1' > %s",
+      |            ~~~~~~~~~~~~~~~~~~~~~~
+ 3275 |            app_binary.c_str(), ptx_list_file_name);
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+echo /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuda_runtime_api.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuobjdump_lexer.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuobjdump_parser.o
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuda_runtime_api.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuobjdump_lexer.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuobjdump_parser.o
+ar rcs /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/libcuda.a /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuda_runtime_api.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuobjdump_lexer.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/cuobjdump_parser.o
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/libcuda”
+ar rcs  /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/libgpu_uarch_sim.a /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/addrdec.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/dram.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/dram_sched.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-cache.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-misc.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-sim.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/hashing.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/histogram.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/icnt_wrapper.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/l2cache.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/local_interconnect.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/mem_fetch.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/mem_latency_stat.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/power_interface.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/power_stat.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/scoreboard.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/shader.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/stack.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/stat-tool.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/traffic_breakdown.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/visualizer.o
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim”
+make "CREATE_LIBRARY=1" "DEBUG=1" -C ./src/intersim2
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/intersim2”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2/Makefile.makedepend -I-I. -Iarbiters -Iallocators -Irouters -Inetworks -Ipower -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim/ -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2/ config_utils.cpp booksim_config.cpp module.cpp buffer.cpp vc.cpp routefunc.cpp traffic.cpp flitchannel.cpp trafficmanager.cpp batchtrafficmanager.cpp packet_reply_info.cpp buffer_state.cpp stats.cpp credit.cpp outputset.cpp flit.cpp injection.cpp misc_utils.cpp rng_wrapper.cpp rng_double_wrapper.cpp power_module.cpp switch_monitor.cpp buffer_monitor.cpp main.cpp gputrafficmanager.cpp intersim_config.cpp interconnect_interface.cpp allocators/allocator.cpp allocators/islip.cpp allocators/loa.cpp allocators/maxsize.cpp allocators/pim.cpp allocators/selalloc.cpp allocators/separable.cpp allocators/separable_input_first.cpp allocators/separable_output_first.cpp allocators/wavefront.cpp arbiters/arbiter.cpp arbiters/matrix_arb.cpp arbiters/prio_arb.cpp arbiters/roundrobin_arb.cpp arbiters/tree_arb.cpp networks/anynet.cpp networks/cmesh.cpp networks/dragonfly.cpp networks/fattree.cpp networks/flatfly_onchip.cpp networks/fly.cpp networks/kncube.cpp networks/network.cpp networks/qtree.cpp networks/tree4.cpp power/buffer_monitor.cpp power/power_module.cpp power/switch_monitor.cpp routers/chaos_router.cpp routers/event_router.cpp routers/iq_router.cpp routers/router.cpp 2> /dev/null
+g++ -Wall -I. -Iarbiters -Iallocators -Irouters -Inetworks -Ipower -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim/  -DCREATE_LIBRARY -g -fPIC -I/usr/local/cuda-12.1/include -c interconnect_interface.cpp -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2/interconnect_interface.o
+In file included from interconnect_interface.cpp:39:
+trafficmanager.hpp:273:16: warning: ‘virtual void TrafficManager::_GeneratePacket(int, int, int, int)’ was hidden [-Woverloaded-virtual=]
+  273 |   virtual void _GeneratePacket( int source, int size, int cl, int time );
+      |                ^~~~~~~~~~~~~~~
+In file included from interconnect_interface.cpp:43:
+gputrafficmanager.hpp:46:16: note:   by ‘virtual void GPUTrafficManager::_GeneratePacket(int, int, int, int, int, int, const Flit::FlitType&, void*, int)’
+   46 |   virtual void _GeneratePacket(int source, int stype, int cl, int time, int subnet, int package_size, const Flit::FlitType& packet_type, void* const data, int dest);
+      |                ^~~~~~~~~~~~~~~
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/intersim2”
+make -C ./src/ depend
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/ abstract_hardware_model.cc debug.cc gpgpusim_entrypoint.cc option_parser.cc statwrapper.cc stream_manager.cc trace.cc 2> /dev/null
+make[2]: “depend”已是最新。
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src”
+make -C ./src/
+make[2]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src”
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/ abstract_hardware_model.cc debug.cc gpgpusim_entrypoint.cc option_parser.cc statwrapper.cc stream_manager.cc trace.cc 2> /dev/null
+g++  -g3 -fPIC -Wall -DDEBUG -DCUDART_VERSION=12010 -std=c++0x -DTRACING_ON=1  -I/usr/local/cuda-12.1/include -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/abstract_hardware_model.o -c abstract_hardware_model.cc
+g++  -g3 -fPIC -Wall -DDEBUG -DCUDART_VERSION=12010 -std=c++0x -DTRACING_ON=1  -I/usr/local/cuda-12.1/include -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpusim_entrypoint.o -c gpgpusim_entrypoint.cc
+g++  -g3 -fPIC -Wall -DDEBUG -DCUDART_VERSION=12010 -std=c++0x -DTRACING_ON=1  -I/usr/local/cuda-12.1/include -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/stream_manager.o -c stream_manager.cc
+g++  -g3 -fPIC -Wall -DDEBUG -DCUDART_VERSION=12010 -std=c++0x -DTRACING_ON=1  -I/usr/local/cuda-12.1/include -o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/trace.o -c trace.cc
+make   -C ./gpgpu-sim
+make[3]: 进入目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src”
+make[3]: 警告: jobserver 不可用: 正使用 -j1。添加 “+” 到父 make 的规则。
+touch /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/Makefile.makedepend
+makedepend -f/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/Makefile.makedepend -p/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/ addrdec.cc dram.cc dram_sched.cc gpu-cache.cc gpu-misc.cc gpu-sim.cc hashing.cc histogram.cc icnt_wrapper.cc l2cache.cc local_interconnect.cc mem_fetch.cc mem_latency_stat.cc power_interface.cc power_stat.cc scoreboard.cc shader.cc stack.cc stat-tool.cc traffic_breakdown.cc visualizer.cc 2> /dev/null
+ar rcs  /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/libgpu_uarch_sim.a /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/addrdec.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/dram.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/dram_sched.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-cache.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-misc.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/gpu-sim.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/hashing.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/histogram.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/icnt_wrapper.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/l2cache.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/local_interconnect.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/mem_fetch.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/mem_latency_stat.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/power_interface.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/power_stat.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/scoreboard.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/shader.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/stack.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/stat-tool.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/traffic_breakdown.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/visualizer.o
+make[3]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/gpgpu-sim”
+In file included from ../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../libcuda/gpgpu_context.h:3,
+                 from gpgpusim_entrypoint.cc:32:
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../libcuda/gpgpu_context.h:3,
+                 from stream_manager.cc:30:
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+In file included from ../libcuda/../src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from ../libcuda/../src/cuda-sim/cuda-sim.h:37,
+                 from ../libcuda/gpgpu_context.h:3,
+                 from abstract_hardware_model.cc:37:
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+../libcuda/../src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+ar rcs  /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libgpgpusim.a /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/abstract_hardware_model.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/debug.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpusim_entrypoint.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/option_parser.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/statwrapper.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/stream_manager.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/trace.o /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/*.o
+make[2]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src”
+g++ -shared -Wl,-soname,libcudart.so -Wl,--version-script=linux-so-version.txt\
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/libcuda/*.o \
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/*.o \
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/cuda-sim/decuda_pred_table/*.o \
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/gpgpu-sim/*.o \
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/intersim2/*.o \
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/*.o -lm -lz -lGL -pthread \
+		/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/build/gcc-13.1.0/cuda-12010/debug/accelwattch/*.o \
+		-o lib/gcc-13.1.0/cuda-12010/debug/libcudart.so
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.2 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.2; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.3 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.3; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.4 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.4; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.5.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.5.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.5.5 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.5.5; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.6.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.6.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.6.5 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.6.5; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.7.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.7.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.7.5 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.7.5; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.8.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.8.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.9.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.9.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.9.1 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.9.1; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.9.2 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.9.2; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.10.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.10.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.10.1 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.10.1; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.11.0 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.11.0; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.12 ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart.so.12; fi
+if [ ! -f lib/gcc-13.1.0/cuda-12010/debug/libcudart_mod.so ]; then ln -s libcudart.so lib/gcc-13.1.0/cuda-12010/debug/libcudart_mod.so; fi
+make[1]: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim”
+g++ -Wall -O0 -g3 -fPIC -std=c++17 -I./trace-driven -I./trace-parser -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/libcuda -I/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src -I/usr/local/cuda-12.1/include -I./build/debug -L/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/lib/gcc-13.1.0/cuda-12010/debug/ -lcudart -lm -lz -lGL -pthread ./build/debug/*.o  -o ./bin/debug/accel-sim.out accel-sim.cc main.cc 
+In file included from /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/cuda-sim.h:37,
+                 from accel-sim.h:13,
+                 from accel-sim.cc:1:
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/shader.h: At global scope:
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/shader.h:205:24: warning: ‘virtual address_type shd_warp_t::get_pc() const’ was hidden [-Woverloaded-virtual=]
+  205 |   virtual address_type get_pc() const { return m_next_pc; }
+      |                        ^~~~~~
+In file included from accel-sim.h:19:
+./trace-driven/trace_driven.h:154:24: note:   by ‘virtual address_type trace_shd_warp_t::get_pc()’
+  154 |   virtual address_type get_pc();
+      |                        ^~~~~~
+In file included from /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/shader.h:54,
+                 from /home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/cuda-sim.h:37,
+                 from accel-sim.h:13,
+                 from main.cc:4:
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h: In constructor ‘baseline_cache::baseline_cache(const char*, cache_config&, int, int, mem_fetch_interface*, mem_fetch_status, cache_gpu_level, gpgpu_sim*)’:
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h:1479:24: warning: ‘baseline_cache::m_bandwidth_management’ will be initialized after [-Wreorder]
+ 1479 |   bandwidth_management m_bandwidth_management;
+      |                        ^~~~~~~~~~~~~~~~~~~~~~
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h:1399:19: warning:   ‘cache_gpu_level baseline_cache::m_level’ [-Wreorder]
+ 1399 |   cache_gpu_level m_level;
+      |                   ^~~~~~~
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/gpu-cache.h:1282:3: warning:   when initialized here [-Wreorder]
+ 1282 |   baseline_cache(const char *name, cache_config &config, int core_id,
+      |   ^~~~~~~~~~~~~~
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/shader.h: At global scope:
+/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator/gpgpu-sim/src/cuda-sim/../gpgpu-sim/shader.h:205:24: warning: ‘virtual address_type shd_warp_t::get_pc() const’ was hidden [-Woverloaded-virtual=]
+  205 |   virtual address_type get_pc() const { return m_next_pc; }
+      |                        ^~~~~~
+In file included from accel-sim.h:19:
+./trace-driven/trace_driven.h:154:24: note:   by ‘virtual address_type trace_shd_warp_t::get_pc()’
+  154 |   virtual address_type get_pc();
+      |                        ^~~~~~
+make: 离开目录“/home/kuanbba/dev/accel-sim/accel-sim-framework/gpu-simulator”

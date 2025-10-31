@@ -449,6 +449,35 @@ for logfile in parsed_logfiles:
             errfile = os.path.join(output_dir, common_name + "." + "e" + jobId)
             outfile = os.path.join(output_dir, common_name + "." + "o" + jobId)
 
+            # New layout support: if files are not found in the config dir, also look
+            # in one-level subdirectories (e.g., variant_tag layout) for simplified names
+            # like '<bench>-<args>.o<jobid>' / '.e<jobid>'.
+            if not os.path.isfile(outfile) or not os.path.isfile(errfile):
+                try:
+                    # expected simplified basename '<bench>-<args>'
+                    simple_base = os.path.basename(app) + "-" + args
+                    found_out = None
+                    found_err = None
+                    for entry in os.listdir(output_dir):
+                        sub = os.path.join(output_dir, entry)
+                        if not os.path.isdir(sub):
+                            continue
+                        cand_out = os.path.join(sub, f"{simple_base}.o{jobId}")
+                        cand_err = os.path.join(sub, f"{simple_base}.e{jobId}")
+                        if os.path.isfile(cand_out):
+                            found_out = cand_out
+                        if os.path.isfile(cand_err):
+                            found_err = cand_err
+                        # If both found, no need to continue scanning
+                        if found_out and found_err:
+                            break
+                    if found_out:
+                        outfile = found_out
+                    if found_err:
+                        errfile = found_err
+                except Exception:
+                    pass
+
             status_string = ""
             additional_stats = ""
             stat_found = set()

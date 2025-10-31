@@ -357,6 +357,9 @@ class ConfigurationSpec:
                                 gpgpusim_build_handle
         # Truncate long simulation file names
         sim_name = sim_name[:200]
+        # Variant outputs: simplified basename and optional subdir
+        simple_basename = os.path.basename(benchmark) + "-" + self.benchmark_args_subdirs[command_line_args]
+        outdir = options.variant_tag if options.variant_tag != "" else "."
         replacement_dict = {"NAME":sim_name,
                             "NODES":"1", 
                             "GPGPUSIM_ROOT":os.getenv("GPGPUSIM_ROOT"),
@@ -368,7 +371,10 @@ class ConfigurationSpec:
                             "EXEC_NAME":exec_name,
                             "QUEUE_NAME":queue_name,
                             "COMMAND_LINE":txt_args,
-                            "MEM_USAGE": mem_usage
+                            "MEM_USAGE": mem_usage,
+                            "JOB_BASENAME": simple_basename,
+                            "OUTDIR": outdir,
+                            "FILE_BASENAME": simple_basename
                             }
         torque_text = open(this_directory + job_template).read().strip()
         for entry in replacement_dict:
@@ -403,6 +409,10 @@ class ConfigurationSpec:
 
         config_text = open(config_text_file).read()
         config_text += "\n" + benchmark_spec_opts + "\n" + self.params + "\n"
+
+        # Append user-specified extra parameters if provided
+        if options.extra_sim_params:
+            config_text += "\n" + options.extra_sim_params + "\n"
 
         if options.accelwattch_HW:
             # if bench_name == "cutlass_perf_test":

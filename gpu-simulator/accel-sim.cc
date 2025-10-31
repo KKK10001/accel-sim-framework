@@ -1,5 +1,6 @@
 #include "accel-sim.h"
 #include "accelsim_version.h"
+#include "gpgpu-sim/src/trace.h"
 
 accel_sim_framework::accel_sim_framework(std::string config_file,
                                           std::string trace_file) {
@@ -57,7 +58,13 @@ void accel_sim_framework::simulation_loop() {
       }
       if (!stream_busy && m_gpgpu_sim->can_start_kernel() &&
           !k->was_launched()) {
-        std::cout << "launching kernel name: " << k->get_name()
+        // In trace-driven mode, prefer the kernel name from the trace header to avoid
+        // relying on function_info name plumbing which may be unset in some builds.
+        const char *trace_kernel_name = "<unknown>";
+        if (k && k->get_trace_info()) {
+          trace_kernel_name = k->get_trace_info()->kernel_name.c_str();
+        }
+        std::cout << "launching kernel name: " << trace_kernel_name
                   << " uid: " << k->get_uid()
                   << " cuda_stream_id: " << k->get_cuda_stream_id()
                   << std::endl;
@@ -211,6 +218,11 @@ gpgpu_sim *accel_sim_framework::gpgpu_trace_sim_init_perf_model(
   option_parser_cmdline(opp, argc, argv);  // parse configuration options
   fprintf(stdout, "GPGPU-Sim: Configuration options:\n\n");
   option_parser_print(opp, stdout);
+  // Initialize Trace streams and optional output redirection after parsing
+  // configuration. Without this, -trace_enabled/-trace_components won't emit.
+  if (Trace::enabled) {
+    Trace::init();
+  }
   // Set the Numeric locale to a standard locale where a decimal point is a
   // "dot" not a "comma" so it does the parsing correctly independent of the
   // system environment variables

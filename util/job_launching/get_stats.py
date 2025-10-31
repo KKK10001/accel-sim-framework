@@ -50,7 +50,7 @@ help_str = (
     + "    If you do this, then the jobs in the specific logfile will be parsed"
     + " If no options are specified, then it basically defaults to the -l"
     + " option using the latest logfile."
-    + " \n3) Specify a list of configs -C and benchmarks -B suite names you want data for."
+    + " \n3) Specify a list of configs -C and benchmarks  suite names you want data for."
 )
 
 
@@ -83,7 +83,7 @@ parser.add_option(
     default="",
 )
 parser.add_option(
-    "-B",
+    "",
     "--benchmark_list",
     dest="benchmark_list",
     help="a comma seperated list of benchmark suites to run. See apps/define-*.yml for "
