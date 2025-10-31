@@ -80,6 +80,10 @@ now_time = datetime.datetime.now()
 day_string = now_time.strftime("%y.%m.%d-%A")
 time_string = now_time.strftime("%H:%M:%S")
 logfile = day_string + "--" + time_string + ".csv"
+log_path = os.path.join(this_directory, logfile)
+log_file = open(log_path, "w")
+log_file.write("status,benchmark,run_name,run_dir,detail\n")
+overall_success = True
 
 nvbit_tracer_path = os.path.join(this_directory, "tracer_tool")
 nvbit_spinlock_path = os.path.join(this_directory, "others", "spinlock_tool")
@@ -220,9 +224,42 @@ for bench in benchmarks:
 
             # Call the spinlock detection script
             if options.spinlock_handling == 'fast_forward':
-                if subprocess.call(["bash", "run_spinlock_detection.sh"]) != 0:
-                    sys.exit(f"Error invoking spinlock detection on {this_run_dir}")
+                spinlock_rc = subprocess.call(["bash", "run_spinlock_detection.sh"])
+                if spinlock_rc != 0:
+                    overall_success = False
+                    log_file.write(
+                        f"FAIL_SPINLOCK,{exe},{run_name},{this_run_dir},Command: bash run_spinlock_detection.sh\n"
+                    )
+                    log_file.flush()
+                    os.chdir(saved_dir)
+                    continue
 
-            if subprocess.call(["bash", "run.sh"]) != 0:
-                sys.exit(f"Error invoking nvbit on {this_run_dir}")
+            run_rc = subprocess.call(["bash", "run.sh"])
+            if run_rc != 0:
+                overall_success = False
+                log_file.write(
+                    f"FAIL,{exe},{run_name},{this_run_dir},Command: bash run.sh\n"
+                )
+                try:
+                    with open(os.path.join(this_run_dir, "run.sh"), "r") as run_sh:
+                        log_file.write("run.sh contents:\n")
+                        run_sh_contents = run_sh.read()
+                        log_file.write(run_sh_contents)
+                        if not run_sh_contents.endswith("\n"):
+                            log_file.write("\n")
+                except OSError:
+                    log_file.write("<unable to read run.sh>\n")
+                log_file.write("---\n")
+                log_file.flush()
+            else:
+                log_file.write(
+                    f"PASS,{exe},{run_name},{this_run_dir},Command: bash run.sh\n"
+                )
+                log_file.flush()
             os.chdir(saved_dir)
+
+log_file.close()
+if not overall_success:
+    print(f"Some workloads failed. See log: {log_path}")
+    sys.exit(1)
+print(f"All workloads passed. Log saved to {log_path}")

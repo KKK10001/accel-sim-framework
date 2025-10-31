@@ -73,6 +73,7 @@ const trace_warp_inst_t *trace_shd_warp_t::get_next_trace_inst() {
 void trace_shd_warp_t::clear() {
   trace_pc = 0;
   warp_traces.clear();
+  m_trace_active_threads.reset();
 }
 
 // functional_done
@@ -87,6 +88,25 @@ address_type trace_shd_warp_t::get_pc() {
   assert(warp_traces.size() > 0);
   assert(trace_pc < warp_traces.size());
   return warp_traces[trace_pc].m_pc;
+}
+
+void trace_shd_warp_t::init_active_threads(unsigned active_count) {
+  m_trace_active_threads.reset();
+  unsigned limit = std::min<unsigned>(active_count, MAX_WARP_SIZE);
+  for (unsigned lane = 0; lane < limit; ++lane) {
+    m_trace_active_threads.set(lane);
+  }
+}
+
+bool trace_shd_warp_t::is_lane_active(unsigned lane) const {
+  if (lane >= MAX_WARP_SIZE) return false;
+  return m_trace_active_threads.test(lane);
+}
+
+void trace_shd_warp_t::mark_lane_completed(unsigned lane) {
+  if (!is_lane_active(lane)) return;
+  m_trace_active_threads.reset(lane);
+  shd_warp_t::set_completed(lane);
 }
 
 trace_kernel_info_t::trace_kernel_info_t(dim3 gridDim, dim3 blockDim,
@@ -590,8 +610,8 @@ const warp_inst_t *trace_shader_core_ctx::get_next_inst(unsigned warp_id,
         m_warp[warp_id]->stores_done() &&
         !m_scoreboard->pendingWrites(warp_id)) {
       for (unsigned t = 0; t < m_warp_size; t++) {
-        if (m_warp[warp_id]->test_active(t)) {
-          m_warp[warp_id]->set_completed(t);
+        if (m_trace_warp->is_lane_active(t)) {
+          m_trace_warp->mark_lane_completed(t);
         }
       }
       m_barriers.warp_exit(warp_id);
@@ -622,6 +642,16 @@ void trace_shader_core_ctx::init_traces(unsigned start_warp, unsigned end_warp,
     trace_shd_warp_t *m_trace_warp = static_cast<trace_shd_warp_t *>(m_warp[i]);
     m_trace_warp->set_next_pc(m_trace_warp->get_start_trace_pc());
     m_trace_warp->set_kernel(&trace_kernel);
+    unsigned warp_local_idx = i - start_warp;
+    int cta_threads = kernel.threads_per_cta();
+    int threads_remaining =
+        cta_threads - static_cast<int>(warp_local_idx * m_config->warp_size);
+  unsigned active_count =
+    threads_remaining > 0
+      ? std::min<unsigned>(static_cast<unsigned>(threads_remaining),
+                 m_config->warp_size)
+      : 0;
+    m_trace_warp->init_active_threads(active_count);
   }
 }
 

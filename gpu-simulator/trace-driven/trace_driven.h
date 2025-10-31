@@ -41,6 +41,7 @@
 #include "../trace-parser/trace_parser.h"
 #include "abstract_hardware_model.h"
 #include "gpgpu-sim/shader.h"
+#include <bitset>
 
 class trace_function_info : public function_info {
  public:
@@ -156,10 +157,14 @@ class trace_shd_warp_t : public shd_warp_t {
   void set_kernel(trace_kernel_info_t *kernel_info) {
     m_kernel_info = kernel_info;
   }
+  void init_active_threads(unsigned active_count);
+  bool is_lane_active(unsigned lane) const;
+  void mark_lane_completed(unsigned lane);
 
  private:
   unsigned trace_pc;
   trace_kernel_info_t *m_kernel_info;
+  std::bitset<MAX_WARP_SIZE> m_trace_active_threads;
 };
 
 class trace_gpgpu_sim : public gpgpu_sim {

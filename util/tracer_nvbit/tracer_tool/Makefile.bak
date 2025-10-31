@@ -1,30 +1,4 @@
-############################################################
-# Host compiler selection and nvcc wrapper flags
-# Prefer CUDAHOSTCXX if provided; else use CXX; fallback handled by system
-ifeq ($(origin CXX), default)
-	ifneq ($(CUDAHOSTCXX),)
-		CXX := $(CUDAHOSTCXX)
-	else
-		# Try to pick a CUDA-supported host compiler automatically
-		ifneq (,$(wildcard /usr/bin/g++-12))
-			CXX := /usr/bin/g++-12
-		else ifneq (,$(wildcard /usr/bin/g++-11))
-			CXX := /usr/bin/g++-11
-		else ifneq (,$(wildcard /usr/bin/g++-10))
-			CXX := /usr/bin/g++-10
-		endif
-	endif
-endif
-
-# If host GCC is newer than CUDA supports, allow override automatically
-GCC_VER:=$(shell $(CXX) -dumpfullversion -dumpversion 2>/dev/null)
-GCC_MAJ:=$(shell echo $(GCC_VER) | cut -d. -f1)
-GCC_GT_12:=$(shell expr "$(GCC_MAJ)" \> 12 2>/dev/null)
-
 NVCC=nvcc -ccbin=$(CXX) -D_FORCE_INLINES
-ifeq ($(GCC_GT_12),1)
-	NVCC+= -allow-unsupported-compiler
-endif
 PTXAS=ptxas
 
 NVCC_VER_REQ=10.1
