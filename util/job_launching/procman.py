@@ -188,8 +188,9 @@ class ProcMan:
         print("ProcMan spawned [pid={0}]".format(p.pid))
 
     def killJobs(self):
-        print("Killing {0} jobs".format(len(self.activeJobs)))
-        for jid, activeJob in self.activeJobs.items():
+        jobs_to_kill = list(self.activeJobs.items())
+        print("Killing {0} jobs".format(len(jobs_to_kill)))
+        for jid, activeJob in jobs_to_kill:
             try:
                 p = psutil.Process(activeJob.procId)
             except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
@@ -197,7 +198,10 @@ class ProcMan:
                 continue
             for child in p.children(recursive=True):
                 os.kill(child.pid, 9)
-        os.kill(activeJob.procId, 9)
+            try:
+                os.kill(activeJob.procId, 9)
+            except ProcessLookupError as e:
+                print(e)
 
     def tick(self):
         if self.tickingProcess == None:
