@@ -322,8 +322,10 @@ class ConfigurationSpec:
             exec_name = (
                 options.benchmark_exec_prefix
                 + " "
-                + os.path.join(libpath, "accel-sim.out")
+                + os.path.join(libpath, "accel-sim.out")            
             )
+            print("trace_dir=" + options.trace_dir)
+            print("Used exec_name=" + exec_name)
 
         # Test the existance of required env variables
         if str(os.getenv("GPGPUSIM_ROOT")) == "None":
@@ -427,6 +429,15 @@ class ConfigurationSpec:
                 os.path.join("$ACCELSIM_ROOT", cfgsubdir, "trace.config")
             )
             config_text += open(accelsim_cfg).read()
+
+        # If user provides an environment variable CUSTOM_GPGPUSIM_CONFIG, append its contents LAST as override.
+        custom_cfg_env = os.getenv("CUSTOM_GPGPUSIM_CONFIG")
+        if custom_cfg_env and os.path.isfile(custom_cfg_env):
+            try:
+                custom_text = open(custom_cfg_env).read()
+                config_text += "\n# ---- Custom gpgpusim.config overrides (appended last) ----\n" + custom_text + "\n"
+            except Exception as e:
+                print(f"[WARN] Failed to append custom config file '{custom_cfg_env}': {e}")
 
         open(os.path.join(this_run_dir, "gpgpusim.config"), "w").write(config_text)
 
@@ -538,6 +549,15 @@ if not any(
 
 benchmarks = []
 benchmarks = common.gen_apps_from_suite_list(options.benchmark_list.split(","))
+
+# Optional filtering to a single benchmark (or substring match) if --only_benchmark provided
+if options.only_benchmark != "":
+    filtered = [b for b in benchmarks if options.only_benchmark in b]
+    if len(filtered) == 0:
+        print(f"[ERROR] --only_benchmark '{options.only_benchmark}' 没有匹配到任何基准; 原始列表: {benchmarks}")
+        sys.exit(1)
+    print(f"[INFO] 过滤前基准数: {len(benchmarks)}, 过滤后: {len(filtered)} -> {filtered}")
+    benchmarks = filtered
 
 cfgs = common.gen_configs_from_list(options.configs_list.split(","))
 configurations = []

@@ -18,6 +18,7 @@ env:
 
 jobs:
   check-format:
+    if: github.repository == 'accel-sim/accel-sim-framework'
     runs-on: tgrogers-raid
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +41,7 @@ jobs:
             exit 1
           fi
   SASS-Simulation:
+    if: github.repository == 'accel-sim/accel-sim-framework'
     runs-on: tgrogers-raid
     needs: [check-format]
     defaults:
@@ -178,6 +180,7 @@ jobs:
             chmod -R 777 /scratch/tgrogers-disk01/a/tgrghci/ci/lastSuccess/${{ github.repository }}/$BRANCH_NAME/
           fi
   PTX-Simulation:
+    if: github.repository == 'accel-sim/accel-sim-framework'
     needs: [check-format]
     runs-on: tgrogers-raid
     defaults:
@@ -250,6 +253,7 @@ jobs:
 
           ./util/job_launching/monitor_func_test.py -v --sleep_time 300 -s stats-per-app-ptx.csv -N short-ptx-${{ github.run_number }}_${{ github.run_attempt}}
   Tracer-Tool:
+    if: github.repository == 'accel-sim/accel-sim-framework'
     needs: [check-format]
     runs-on: tgrogers-gpu01
     defaults:
@@ -312,6 +316,7 @@ jobs:
           ./util/job_launching/run_simulations.py -B rodinia_2.0-ft -C QV100-SASS -T ./hw_run/traces/device-7/ -N rodinia_2.0-ft-$$
           ./util/job_launching/monitor_func_test.py -I -v -s rodinia-stats-per-app.csv -N rodinia_2.0-ft-$$
   SASS-Simulation-Docker:
+    if: github.repository == 'accel-sim/accel-sim-framework'
     needs: [check-format]
     runs-on: ubuntu-latest
     container:
@@ -325,6 +330,7 @@ jobs:
       - name: Run Simulation
         run: /bin/bash $GITHUB_WORKSPACE/short-tests.sh
   CI-Success:
+    if: github.repository == 'accel-sim/accel-sim-framework'
     env:
       ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     runs-on: tgrogers-raid
@@ -350,7 +356,7 @@ jobs:
           fi
 
   failures:
-    if: failure()
+    if: github.repository == 'accel-sim/accel-sim-framework' && failure()
     env:
       ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       REPORT_URL: ""

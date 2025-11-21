@@ -242,6 +242,12 @@ def parse_run_simulations_options():
         default="QV100",
     )
     parser.add_option(
+        "--only_benchmark",
+        dest="only_benchmark",
+        help="Substring filter: run only benchmarks whose name contains this string (after suite expansion).",
+        default="",
+    )
+    parser.add_option(
         "-p",
         "--benchmark_exec_prefix",
         dest="benchmark_exec_prefix",

@@ -12,8 +12,7 @@ accel_sim_framework::accel_sim_framework(std::string config_file,
   const char *argv[] = {"accel-sim.out", "-config", config_file.c_str(),
                         "-trace", trace_file.c_str()};
 
-  gpgpu_sim *m_gpgpu_sim =
-      gpgpu_trace_sim_init_perf_model(argc, argv, m_gpgpu_context, &tconfig);
+  m_gpgpu_sim = gpgpu_trace_sim_init_perf_model(argc, argv, m_gpgpu_context, &tconfig);
   m_gpgpu_sim->init();
 
   tracer = trace_parser(tconfig.get_traces_filename());
@@ -27,8 +26,7 @@ accel_sim_framework::accel_sim_framework(int argc, const char **argv) {
   std::cout << "Accel-Sim [build " << g_accelsim_version << "]";
   m_gpgpu_context = new gpgpu_context();
 
-  m_gpgpu_sim =
-      gpgpu_trace_sim_init_perf_model(argc, argv, m_gpgpu_context, &tconfig);
+  m_gpgpu_sim = gpgpu_trace_sim_init_perf_model(argc, argv, m_gpgpu_context, &tconfig);
   m_gpgpu_sim->init();
 
   tracer = trace_parser(tconfig.get_traces_filename());
@@ -209,10 +207,8 @@ gpgpu_sim *accel_sim_framework::gpgpu_trace_sim_init_perf_model(
 
   icnt_reg_options(opp);
 
-  m_gpgpu_context->the_gpgpusim->g_the_gpu_config =
-      new gpgpu_sim_config(m_gpgpu_context);
-  m_gpgpu_context->the_gpgpusim->g_the_gpu_config->reg_options(
-      opp);  // register GPU microrachitecture options
+  m_gpgpu_context->the_gpgpusim->g_the_gpu_config = new gpgpu_sim_config(m_gpgpu_context);
+  m_gpgpu_context->the_gpgpusim->g_the_gpu_config->reg_options(opp);  // register GPU microrachitecture options
   m_config->reg_options(opp);
 
   option_parser_cmdline(opp, argc, argv);  // parse configuration options
@@ -222,15 +218,15 @@ gpgpu_sim *accel_sim_framework::gpgpu_trace_sim_init_perf_model(
   // configuration. Without this, -trace_enabled/-trace_components won't emit.
   if (Trace::enabled) {
     Trace::init();
-  }
+  }  
   // Set the Numeric locale to a standard locale where a decimal point is a
   // "dot" not a "comma" so it does the parsing correctly independent of the
   // system environment variables
   assert(setlocale(LC_NUMERIC, "C"));
   m_gpgpu_context->the_gpgpusim->g_the_gpu_config->init();
 
-  m_gpgpu_context->the_gpgpusim->g_the_gpu = new trace_gpgpu_sim(
-      *(m_gpgpu_context->the_gpgpusim->g_the_gpu_config), m_gpgpu_context);
+  m_gpgpu_context->the_gpgpusim->g_the_gpu = new trace_gpgpu_sim
+      (*(m_gpgpu_context->the_gpgpusim->g_the_gpu_config), m_gpgpu_context);
 
   m_gpgpu_context->the_gpgpusim->g_stream_manager =
       new stream_manager((m_gpgpu_context->the_gpgpusim->g_the_gpu),

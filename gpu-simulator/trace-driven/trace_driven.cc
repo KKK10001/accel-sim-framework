@@ -426,7 +426,34 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   return true;
 }
 
-trace_config::trace_config() {}
+trace_config::trace_config() {
+  printf("Inside trace_config::trace_config()...\n");
+  int_latency    = 0;
+  fp_latency     = 0;
+  dp_latency     = 0;
+  sfu_latency    = 0;
+  tensor_latency = 0;
+  int_init       = 0;
+  fp_init        = 0;
+  dp_init        = 0;
+  sfu_init       = 0;
+  tensor_init    = 0;
+  for (size_t i = 0; i < SPECIALIZED_UNIT_NUM; i++)
+  {
+    specialized_unit_latency[i] = 0;
+    specialized_unit_initiation[i] = 0;
+  }
+
+  g_traces_filename = nullptr;
+  trace_opcode_latency_initiation_int = nullptr;
+  trace_opcode_latency_initiation_sp = nullptr;
+  trace_opcode_latency_initiation_dp = nullptr;
+  trace_opcode_latency_initiation_sfu = nullptr;
+  trace_opcode_latency_initiation_tensor = nullptr;
+  for (size_t i = 0; i < SPECIALIZED_UNIT_NUM; ++i) {
+    trace_opcode_latency_initiation_specialized_op[i] = nullptr;
+  }
+}
 
 void trace_config::reg_options(option_parser_t opp) {
   option_parser_register(opp, "-trace", OPT_CSTR, &g_traces_filename,
@@ -472,16 +499,23 @@ void trace_config::reg_options(option_parser_t opp) {
 }
 
 void trace_config::parse_config() {
-  sscanf(trace_opcode_latency_initiation_int, "%u,%u", &int_latency, &int_init);
-  sscanf(trace_opcode_latency_initiation_sp, "%u,%u", &fp_latency, &fp_init);
-  sscanf(trace_opcode_latency_initiation_dp, "%u,%u", &dp_latency, &dp_init);
-  sscanf(trace_opcode_latency_initiation_sfu, "%u,%u", &sfu_latency, &sfu_init);
-  sscanf(trace_opcode_latency_initiation_tensor, "%u,%u", &tensor_latency,
-         &tensor_init);
+  if (trace_opcode_latency_initiation_int)
+    sscanf(trace_opcode_latency_initiation_int, "%u,%u", &int_latency, &int_init);
+  if (trace_opcode_latency_initiation_sp)
+    sscanf(trace_opcode_latency_initiation_sp, "%u,%u", &fp_latency, &fp_init);
+  if (trace_opcode_latency_initiation_dp)
+    sscanf(trace_opcode_latency_initiation_dp, "%u,%u", &dp_latency, &dp_init);
+  if (trace_opcode_latency_initiation_sfu)
+    sscanf(trace_opcode_latency_initiation_sfu, "%u,%u", &sfu_latency, &sfu_init);
+  if (trace_opcode_latency_initiation_tensor)
+    sscanf(trace_opcode_latency_initiation_tensor, "%u,%u", &tensor_latency,
+           &tensor_init);
 
   for (unsigned j = 0; j < SPECIALIZED_UNIT_NUM; ++j) {
-    sscanf(trace_opcode_latency_initiation_specialized_op[j], "%u,%u",
-           &specialized_unit_latency[j], &specialized_unit_initiation[j]);
+    if (trace_opcode_latency_initiation_specialized_op[j]) {
+      sscanf(trace_opcode_latency_initiation_specialized_op[j], "%u,%u",
+             &specialized_unit_latency[j], &specialized_unit_initiation[j]);
+    }
   }
 }
 void trace_config::set_latency(unsigned category, unsigned &latency,
@@ -526,6 +560,9 @@ void trace_config::set_latency(unsigned category, unsigned &latency,
 }
 
 void trace_gpgpu_sim::createSIMTCluster() {
+  assert(m_shader_config && "m_shader_config is null in trace_gpgpu_sim::createSIMTCluster");
+  assert(m_shader_config->n_simt_clusters > 0 && "n_simt_clusters must be > 0");
+
   m_cluster = new simt_core_cluster *[m_shader_config->n_simt_clusters];
   for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++)
     m_cluster[i] =
