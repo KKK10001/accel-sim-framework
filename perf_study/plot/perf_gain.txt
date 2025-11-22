@@ -193,21 +193,21 @@ streamcluster-rodinia-2.0-ft 128 17.3283 17.3342 0.034 540194 477710 -11.567 269
 streamcluster-rodinia-2.0-ft 129 17.4161 17.4652 0.282 544813 481857 -11.556 27304 10260 -62.423 better better better
 streamcluster-rodinia-2.0-ft 130 17.4416 17.4988 0.328 549454 485762 -11.592 27774 10449 -62.378 better better better
 
-benchmark AVG ipc_gain_pct read_change_pct write_change_pct
-backprop-rodinia-2.0-ft AVG -0.001 -13.119 -82.258
-bfs-rodinia-2.0-ft AVG 0.037 -32.741 -50.000
-heartwall-rodinia-2.0-ft AVG 0.456 -13.225 -100.000
-hotspot-rodinia-2.0-ft AVG -0.000 -58.549 0.000
-lud-rodinia-2.0-ft AVG -0.015 -80.000 0.000
-nn-rodinia-2.0-ft AVG -0.093 -36.181 0.000
-nw-rodinia-2.0-ft AVG 0.000 0.000 0.000
-pathfinder-rodinia-2.0-ft AVG -0.018 -100.000 -100.000
-srad_v2-rodinia-2.0-ft AVG 0.154 -57.161 -25.330
-streamcluster-rodinia-2.0-ft AVG 0.056 -11.693 -87.951
+benchmark ipc_gain_pct read_change_pct write_change_pct
+backprop-rodinia-2.0-ft -0.004 -13.157 -82.360
+bfs-rodinia-2.0-ft 0.037 -55.311 -100.000
+heartwall-rodinia-2.0-ft 0.456 -13.225 -100.000
+hotspot-rodinia-2.0-ft -0.000 -58.553 0.000
+lud-rodinia-2.0-ft -0.015 -100.000 0.000
+nn-rodinia-2.0-ft -0.094 -36.255 0.000
+nw-rodinia-2.0-ft 0.000 0.000 0.000
+pathfinder-rodinia-2.0-ft -0.018 -100.000 -100.000
+srad_v2-rodinia-2.0-ft 0.154 -77.954 -25.332
+streamcluster-rodinia-2.0-ft 0.055 -11.694 -94.720
 
 GEOMETRIC MEAN SUMMARY
-IPC geomean percent change: 4.895%
-GLOBAL_ACC_R geomean percent change: -96.013%
-GLOBAL_ACC_W geomean percent change: -99.754%
-Benchmark-level IPC geomean (weights=1 per benchmark): 4.895%
-IPC geomean percent change (ALT mean-of-IPC method): 0.992%
+IPC geomean percent change: 0.057%
+GLOBAL_ACC_R geomean percent change: -77.481%
+GLOBAL_ACC_W geomean percent change: -83.148%
+GLOBAL_ACC_R win/loss/neutral benchmarks: 9/0/1
+GLOBAL_ACC_W win/loss/neutral benchmarks: 6/0/4

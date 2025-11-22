@@ -200,22 +200,21 @@
 
 ## Averages
 
-|benchmark|kernel_index|ipc_gain_pct|read_change_pct|write_change_pct|
-|---|---|---|---|---|
-|backprop-rodinia-2.0-ft|AVG|<span style='background-color:#f8d0d0'>-0.001</span>|<span style='background-color:#d4f5d4'>-13.119</span>|<span style='background-color:#d4f5d4'>-82.258</span>|
-|bfs-rodinia-2.0-ft|AVG|<span style='background-color:#d4f5d4'>0.037</span>|<span style='background-color:#d4f5d4'>-32.741</span>|<span style='background-color:#d4f5d4'>-50.000</span>|
-|heartwall-rodinia-2.0-ft|AVG|<span style='background-color:#d4f5d4'>0.456</span>|<span style='background-color:#d4f5d4'>-13.225</span>|<span style='background-color:#d4f5d4'>-100.000</span>|
-|hotspot-rodinia-2.0-ft|AVG|<span style='background-color:#f8d0d0'>-0.000</span>|<span style='background-color:#d4f5d4'>-58.549</span>|0.000|
-|lud-rodinia-2.0-ft|AVG|<span style='background-color:#f8d0d0'>-0.015</span>|<span style='background-color:#d4f5d4'>-80.000</span>|0.000|
-|nn-rodinia-2.0-ft|AVG|<span style='background-color:#f8d0d0'>-0.093</span>|<span style='background-color:#d4f5d4'>-36.181</span>|0.000|
-|nw-rodinia-2.0-ft|AVG|0.000|0.000|0.000|
-|pathfinder-rodinia-2.0-ft|AVG|<span style='background-color:#f8d0d0'>-0.018</span>|<span style='background-color:#d4f5d4'>-100.000</span>|<span style='background-color:#d4f5d4'>-100.000</span>|
-|srad_v2-rodinia-2.0-ft|AVG|<span style='background-color:#d4f5d4'>0.154</span>|<span style='background-color:#d4f5d4'>-57.161</span>|<span style='background-color:#d4f5d4'>-25.330</span>|
-|streamcluster-rodinia-2.0-ft|AVG|<span style='background-color:#d4f5d4'>0.056</span>|<span style='background-color:#d4f5d4'>-11.693</span>|<span style='background-color:#d4f5d4'>-87.951</span>|
+|benchmark|ipc_gain_pct|read_change_pct|write_change_pct|
+|---|---|---|---|
+|backprop-rodinia-2.0-ft|<span style='background-color:#f8d0d0'>-0.004</span>|<span style='background-color:#d4f5d4'>-13.157</span>|<span style='background-color:#d4f5d4'>-82.360</span>|
+|bfs-rodinia-2.0-ft|<span style='background-color:#d4f5d4'>0.037</span>|<span style='background-color:#d4f5d4'>-55.311</span>|<span style='background-color:#d4f5d4'>-100.000</span>|
+|heartwall-rodinia-2.0-ft|<span style='background-color:#d4f5d4'>0.456</span>|<span style='background-color:#d4f5d4'>-13.225</span>|<span style='background-color:#d4f5d4'>-100.000</span>|
+|hotspot-rodinia-2.0-ft|<span style='background-color:#f8d0d0'>-0.000</span>|<span style='background-color:#d4f5d4'>-58.553</span>|0.000|
+|lud-rodinia-2.0-ft|<span style='background-color:#f8d0d0'>-0.015</span>|<span style='background-color:#d4f5d4'>-100.000</span>|0.000|
+|nn-rodinia-2.0-ft|<span style='background-color:#f8d0d0'>-0.094</span>|<span style='background-color:#d4f5d4'>-36.255</span>|0.000|
+|nw-rodinia-2.0-ft|0.000|0.000|0.000|
+|pathfinder-rodinia-2.0-ft|<span style='background-color:#f8d0d0'>-0.018</span>|<span style='background-color:#d4f5d4'>-100.000</span>|<span style='background-color:#d4f5d4'>-100.000</span>|
+|srad_v2-rodinia-2.0-ft|<span style='background-color:#d4f5d4'>0.154</span>|<span style='background-color:#d4f5d4'>-77.954</span>|<span style='background-color:#d4f5d4'>-25.332</span>|
+|streamcluster-rodinia-2.0-ft|<span style='background-color:#d4f5d4'>0.055</span>|<span style='background-color:#d4f5d4'>-11.694</span>|<span style='background-color:#d4f5d4'>-94.720</span>|
 
 ## Overall Summary
 
-- IPC geomean percent change: <b>4.895%</b>
-- GLOBAL_ACC_R geomean percent change: <b>-96.013%</b>
-- GLOBAL_ACC_W geomean percent change: <b>-99.754%</b>
-- Benchmark-level IPC geomean (benchmark weight=1): <b>4.895%</b>
+- IPC geomean percent change: <b>0.057%</b>
+- GLOBAL_ACC_R geomean percent change: <b>-77.481%</b>
+- GLOBAL_ACC_W geomean percent change: <b>-83.148%</b>

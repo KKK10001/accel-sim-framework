@@ -1,6 +1,6 @@
 # Overall Performance Study
 
-|study|IPC gain (geomain)|GLOBAL_ACC_R fails (geomain)|GLOBAL_ACC_W fails (geomain)|
+|study|IPC (geomean)|GLOBAL_ACC_R fails (geomean)|GLOBAL_ACC_W fails (geomean)|
 |---|---:|---:|---:|
-|base-config|0.000%|0.000%|0.000%|
-|mshr-entries-32|4.895%|-96.013%|-99.754%|
+|base-config|60.960|1950.799|44.344|
+|mshr-entries-32|60.995 (+0.057%)|439.309 (-77.481%)|7.473 (-83.148%)|
