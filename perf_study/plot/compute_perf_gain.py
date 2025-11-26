@@ -6,29 +6,48 @@ Generates performance gain outputs comparing base vs tuned variant:
     - Text (legacy): perf_gain.txt
     - CSV: perf_gain.csv
     - Markdown: perf_gain.md (tables per benchmark + summary)
+    - Fail cause breakdown (sorted): fail_cause_breakdown.xlsx
 
 Metrics:
     IPC, GLOBAL_ACC_R fail count, GLOBAL_ACC_W fail count.
-
-Base variant identified from tag 'default-config' (normalized to 'base-config').
-Tuned variant identified by substring 'mshr-entries-32'.
-Infinite percentage change (base == 0 and tuned > 0) rendered as 'inf'.
-
-example useage:
-python3 compute_perf_gain.py \
-  --variants regress-default-config regress-mshr-entries-32-again \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \
   --html-file perf_gain.html \
-  --xlsx-file perf_gain.xlsx
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants regress-default-cfg-11-25-eve fuck-perf-study-mshr-max-merge-32 \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+
+python3 compute_perf_gain.py \
+  --variants regress-default-cfg-11-25-eve fuck-perf-study-miss-q-entries-32 \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
 """
 import argparse, os, re, sys, math
+from collections import defaultdict
 from copy import copy
 
 GPU_IPC_RE = re.compile(r"gpu_ipc\s*=\s*([0-9]+\.?[0-9]*)")
 TOTAL_R_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\s*=\s*([0-9]+)")
 TOTAL_W_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\s*=\s*([0-9]+)")
+CAUSE_R_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\[([^\]]+)\]\s*=\s*([0-9]+)")
+CAUSE_W_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\[([^\]]+)\]\s*=\s*([0-9]+)")
+CAUSE_DRIVER_R_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\[([^\]]+)\]\[([^\]]+)\]\s*=\s*([0-9]+)")
+CAUSE_DRIVER_W_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\[([^\]]+)\]\[([^\]]+)\]\s*=\s*([0-9]+)")
+KERNEL_NAME_RE = re.compile(r"(?:-kernel name|kernel_name)\s*=\s*(.+)")
+KERNEL_UID_RE = re.compile(r"kernel_launch_uid\s*=\s*([0-9]+)")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -44,20 +63,137 @@ def parse_o_file(path: str):
         lines=open(path).read().splitlines()
     except Exception:
         return []
-    kernels=[]; current=None
-    r_total=0; w_total=0
-    def commit():
-        if current is not None:
-            current['r_total']=r_total; current['w_total']=w_total; kernels.append(current)
+    kernels=[]
+    current=None
+    r_total=0
+    w_total=0
+    r_reasons={}
+    w_reasons={}
+    r_driver_reasons={}
+    w_driver_reasons={}
+    pending_kernel_name=None
+    pending_kernel_uid=None
+
+    def reset_state():
+        nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
+        r_total=0
+        w_total=0
+        r_reasons={}
+        w_reasons={}
+        r_driver_reasons={}
+        w_driver_reasons={}
+
+    def commit_current():
+        nonlocal current
+        if current is None:
+            return
+        current['r_total']=r_total
+        current['w_total']=w_total
+        current['r_reasons']=dict(r_reasons)
+        current['w_reasons']=dict(w_reasons)
+        current['r_drivers']={cause: dict(drivers) for cause, drivers in r_driver_reasons.items()}
+        current['w_drivers']={cause: dict(drivers) for cause, drivers in w_driver_reasons.items()}
+        kernels.append(current)
+        current=None
+        reset_state()
+
     for line in lines:
-        m=GPU_IPC_RE.search(line)
-        if m:
-            commit(); current={'ipc':float(m.group(1))}; continue
-        m=TOTAL_R_RE.search(line); m and (r_total:=int(m.group(1)))
-        m=TOTAL_W_RE.search(line); m and (w_total:=int(m.group(1)))
-    commit()
-    if not kernels and (r_total or w_total):
-        kernels=[{'ipc':None,'r_total':r_total,'w_total':w_total}]
+        kernel_name_match=KERNEL_NAME_RE.search(line)
+        if kernel_name_match:
+            name=kernel_name_match.group(1).strip()
+            if current is not None:
+                current['kernel']=name
+            else:
+                pending_kernel_name=name
+            continue
+
+        kernel_uid_match=KERNEL_UID_RE.search(line)
+        if kernel_uid_match:
+            uid=int(kernel_uid_match.group(1))
+            if current is not None:
+                current['kernel_uid']=uid
+            else:
+                pending_kernel_uid=uid
+            continue
+
+        ipc_match=GPU_IPC_RE.search(line)
+        if ipc_match:
+            if current is not None or r_total or w_total or r_reasons or w_reasons or r_driver_reasons or w_driver_reasons:
+                commit_current()
+            current={'ipc':float(ipc_match.group(1))}
+            if pending_kernel_name is not None:
+                current['kernel']=pending_kernel_name
+                pending_kernel_name=None
+            if pending_kernel_uid is not None:
+                current['kernel_uid']=pending_kernel_uid
+                pending_kernel_uid=None
+            reset_state()
+            continue
+
+        total_r_match=TOTAL_R_RE.search(line)
+        if total_r_match:
+            r_total=int(total_r_match.group(1))
+            continue
+
+        total_w_match=TOTAL_W_RE.search(line)
+        if total_w_match:
+            w_total=int(total_w_match.group(1))
+            continue
+
+        cause_r_match=CAUSE_R_RE.search(line)
+        if cause_r_match:
+            try:
+                r_reasons[cause_r_match.group(1)]=int(cause_r_match.group(2))
+            except ValueError:
+                pass
+            continue
+
+        cause_driver_r_match=CAUSE_DRIVER_R_RE.search(line)
+        if cause_driver_r_match:
+            cause=cause_driver_r_match.group(1)
+            driver=cause_driver_r_match.group(2)
+            try:
+                amt=int(cause_driver_r_match.group(3))
+            except ValueError:
+                pass
+            else:
+                r_driver_reasons.setdefault(cause, {})[driver]=amt
+            continue
+
+        cause_w_match=CAUSE_W_RE.search(line)
+        if cause_w_match:
+            try:
+                w_reasons[cause_w_match.group(1)]=int(cause_w_match.group(2))
+            except ValueError:
+                pass
+            continue
+
+        cause_driver_w_match=CAUSE_DRIVER_W_RE.search(line)
+        if cause_driver_w_match:
+            cause=cause_driver_w_match.group(1)
+            driver=cause_driver_w_match.group(2)
+            try:
+                amt=int(cause_driver_w_match.group(3))
+            except ValueError:
+                pass
+            else:
+                w_driver_reasons.setdefault(cause, {})[driver]=amt
+            continue
+
+    if current is not None:
+        commit_current()
+    elif r_total or w_total or r_reasons or w_reasons or r_driver_reasons or w_driver_reasons:
+        kernels=[{
+            'ipc': None,
+            'kernel': pending_kernel_name,
+            'kernel_uid': pending_kernel_uid,
+            'r_total': r_total,
+            'w_total': w_total,
+            'r_reasons': dict(r_reasons),
+            'w_reasons': dict(w_reasons),
+            'r_drivers': {cause: dict(drivers) for cause, drivers in r_driver_reasons.items()},
+            'w_drivers': {cause: dict(drivers) for cause, drivers in w_driver_reasons.items()},
+        }]
     return kernels
 
 def discover(root:str):
@@ -292,6 +428,7 @@ def main():
     ap.add_argument('--md-file',default='perf_gain.md',help='Markdown output file.')
     ap.add_argument('--html-file',default='perf_gain.html',help='Colored HTML table output file.')
     ap.add_argument('--xlsx-file',help='Optional XLSX output file (requires openpyxl).')
+    ap.add_argument('--fail-cause-xlsx', default='fail_cause_breakdown.xlsx', help='Fail cause breakdown XLSX output (requires openpyxl). Provide empty string to skip.')
     ap.add_argument('--epsilon',type=float,default=0.2,help='Percent threshold to treat as neutral (+/-). Default 0.2%%.')
     ap.add_argument('--debug-geomean',action='store_true',help='Print detailed geometric mean inputs and alternate calculations.')
     ap.add_argument('--overall-csv', default=os.path.join(SCRIPT_DIR, 'overall_perf_study.csv'), help='Aggregate CSV across studies with per-study geomean results.')
@@ -303,145 +440,393 @@ def main():
     if not sim_root: sys.exit('[ERROR] sim-root unresolved.')
     benches=args.benchmarks if args.benchmarks else discover(sim_root)
     if not benches: sys.exit('[WARN] no benchmarks found.')
-    base_variant, tuned_variant = find_base_and_tuned(args.variants)
-    if not base_variant or not tuned_variant:
-        sys.exit('[ERROR] unable to identify base or tuned variant (need default-config and mshr-entries-32).')
-    rows=[]  # per-kernel rows raw
-    avg_rows=[]  # summary rows raw
-    md_rows=[]  # colored per-kernel rows
-    md_avg_rows=[]  # colored avg rows
-    metric_ratios={metric:[] for metric in METRIC_ORDER}
-    metric_geomean_inputs={metric:{'base':[], 'tuned':[]} for metric in METRIC_ORDER}
-    bench_pct_records=[]
-    header_cols=['benchmark','kernel_index','ipc_base','ipc_tuned','ipc_gain_pct','read_base','read_tuned','read_change_pct','write_base','write_tuned','write_change_pct']
+    requested_variants=list(args.variants)
+    if not requested_variants:
+        sys.exit('[ERROR] --variants is required.')
+    base_variant, _default_tuned = find_base_and_tuned(requested_variants)
+    if not base_variant:
+        base_variant=requested_variants[0]
+    compare_variants=[v for v in requested_variants if v!=base_variant]
+    if not compare_variants:
+        compare_variants=[base_variant]
+
+    variant_labels={base_variant: normalize_variant_name(base_variant)}
+    for variant in compare_variants:
+        variant_labels.setdefault(variant, normalize_variant_name(variant))
+    if args.study_name and len(compare_variants)==1:
+        variant_labels[compare_variants[0]]=args.study_name
+
+    base_label=variant_labels.get(base_variant, normalize_variant_name(base_variant))
+
+    header_cols=['variant','benchmark','kernel_index','ipc_base','ipc_tuned','ipc_gain_pct','read_base','read_tuned','read_change_pct','write_base','write_tuned','write_change_pct']
     csv_header_extended=header_cols + ['ipc_gain_class','read_change_class','write_change_class']
+    avg_header=['variant','benchmark','ipc_gain_pct','read_change_pct','write_change_pct']
+
+    rows_all=[]
+    md_rows_all=[]
+    avg_rows_all=[]
+    md_avg_rows_all=[]
+    bench_pct_records_ordered=[]
+
+    variant_results={
+        variant: {
+            'rows': [],
+            'md_rows': [],
+            'avg_rows': [],
+            'md_avg_rows': [],
+            'bench_pct_records': [],
+            'metric_geomean_inputs': {metric: {'base': [], 'tuned': []} for metric in METRIC_ORDER},
+            'metric_ratios': {metric: [] for metric in METRIC_ORDER},
+        }
+        for variant in compare_variants
+    }
+
+    per_kernel_cause_records=defaultdict(list)
+    per_kernel_driver_records=defaultdict(list)
+
+    base_fail_causes={
+        'global_acc_r': defaultdict(int),
+        'global_acc_w': defaultdict(int),
+    }
+    variant_fail_causes={
+        variant: {
+            'global_acc_r': defaultdict(int),
+            'global_acc_w': defaultdict(int),
+        }
+        for variant in compare_variants
+    }
+
+    def accumulate_fail_causes(target, records):
+        for rec in records:
+            for cause, count in rec.get('r_reasons', {}).items():
+                try:
+                    amt=int(count)
+                except (TypeError, ValueError):
+                    continue
+                target['global_acc_r'][cause]+=amt
+            for cause, count in rec.get('w_reasons', {}).items():
+                try:
+                    amt=int(count)
+                except (TypeError, ValueError):
+                    continue
+                target['global_acc_w'][cause]+=amt
+
+    def make_kernel_label(index: int, kernel_name) -> str:
+        return f"k{index}"
+
+    def record_per_kernel_details(variant_label: str, bench_name: str, records):
+        if not records:
+            return
+        for idx, rec in enumerate(records, start=1):
+            kernel_name=rec.get('kernel')
+            kernel_label=make_kernel_label(idx, kernel_name)
+            for access_type, total_key, reason_key, driver_key in (
+                ('GLOBAL_ACC_R', 'r_total', 'r_reasons', 'r_drivers'),
+                ('GLOBAL_ACC_W', 'w_total', 'w_reasons', 'w_drivers'),
+            ):
+                total=rec.get(total_key) or 0
+                try:
+                    total_int=int(total)
+                except (TypeError, ValueError):
+                    total_int=0
+                raw_reasons=rec.get(reason_key) or {}
+                numeric_reasons={}
+                for cause, count in raw_reasons.items():
+                    try:
+                        val=int(count)
+                    except (TypeError, ValueError):
+                        continue
+                    if val<=0:
+                        continue
+                    numeric_reasons[cause]=val
+                if not numeric_reasons:
+                    continue
+                effective_total=total_int if total_int>0 else sum(numeric_reasons.values())
+                if effective_total<=0:
+                    continue
+                total_display=total_int if total_int>0 else effective_total
+                for cause, fails in numeric_reasons.items():
+                    pct=(fails/effective_total*100.0) if effective_total else 0.0
+                    per_kernel_cause_records[variant_label].append({
+                        'benchmark': bench_name,
+                        'kernel': kernel_label,
+                        'kernel_index': idx,
+                        'access_type': access_type,
+                        'cause': cause,
+                        'fails': fails,
+                        'total_fails': total_display,
+                        'pct': pct,
+                    })
+                    driver_map=(rec.get(driver_key) or {}).get(cause, {})
+                    if not driver_map:
+                        continue
+                    cause_total=fails
+                    for driver, driver_count in driver_map.items():
+                        try:
+                            driver_fails=int(driver_count)
+                        except (TypeError, ValueError):
+                            continue
+                        if driver_fails<=0:
+                            continue
+                        driver_pct=(driver_fails/cause_total*100.0) if cause_total else 0.0
+                        per_kernel_driver_records[variant_label].append({
+                            'benchmark': bench_name,
+                            'kernel': kernel_label,
+                            'kernel_index': idx,
+                            'access_type': access_type,
+                            'cause': cause,
+                            'driver': driver,
+                            'fails': driver_fails,
+                            'pct': driver_pct,
+                            'cause_total': cause_total,
+                        })
+
+    def sanitize_sheet_name(name: str) -> str:
+        invalid=set('[]:*?/\\')
+        cleaned=''.join('_' if ch in invalid else ch for ch in name)
+        cleaned=cleaned.strip()
+        if not cleaned:
+            cleaned='Sheet'
+        return cleaned[:31]
+
+    def write_fail_table(ws, start_row, metric_key, base_counts, base_total, variant_label, variant_counts, sort_counts):
+        metric_title=METRIC_LABELS.get(metric_key, metric_key)
+        variant_total=sum(variant_counts.values())
+        ws.cell(start_row,1).value=metric_title
+        ws.cell(start_row,2).value=f'{variant_label} total: {variant_total}'
+        ws.cell(start_row,4).value=f'Base total: {base_total}'
+        headers=['Cause','Base Count','Base %',f'{variant_label} Count',f'{variant_label} %','Delta Count','Delta %']
+        for col, header in enumerate(headers, start=1):
+            ws.cell(start_row+1,col).value=header
+        combined=set(base_counts.keys()) | set(variant_counts.keys())
+        if not combined:
+            ws.cell(start_row+2,1).value='No fail causes'
+            return start_row+4
+        sorted_causes=sorted(
+            combined,
+            key=lambda c: (-sort_counts.get(c, 0), c)
+        )
+        row=start_row+2
+        for cause in sorted_causes:
+            base_count=base_counts.get(cause,0)
+            variant_count=variant_counts.get(cause,0)
+            base_pct=(base_count/base_total*100.0) if base_total else 0.0
+            variant_pct=(variant_count/variant_total*100.0) if variant_total else 0.0
+            delta_count=variant_count-base_count
+            delta_pct=variant_pct-base_pct
+            values=[cause, base_count, round(base_pct,3), variant_count, round(variant_pct,3), delta_count, round(delta_pct,3)]
+            for col, value in enumerate(values, start=1):
+                ws.cell(row,col).value=value
+            row+=1
+        return row+2
+
+    sheet_name_registry=set()
+
+    def unique_sheet_name(label: str) -> str:
+        base=sanitize_sheet_name(label)
+        if base not in sheet_name_registry:
+            sheet_name_registry.add(base)
+            return base
+        suffix=1
+        while True:
+            candidate=sanitize_sheet_name(f"{base}_{suffix}")
+            if candidate not in sheet_name_registry:
+                sheet_name_registry.add(candidate)
+                return candidate
+            suffix+=1
+
+    def align_variant_records(base_records, tuned_records):
+        base_list=list(base_records)
+        tuned_list=list(tuned_records)
+        target_len=max(len(base_list), len(tuned_list))
+        if target_len==0:
+            return [], [], 0
+
+        def extend(records):
+            if not records:
+                return []
+            if len(records)>=target_len:
+                return list(records[:target_len])
+            return list(records) + [records[-1]]*(target_len-len(records))
+
+        return extend(base_list), extend(tuned_list), target_len
+
+    def classify_change(value, metric_type):
+        if value is None:
+            return 'neutral'
+        if value==float('inf'):
+            return 'better' if metric_type=='ipc' else 'worse'
+        if metric_type=='ipc':
+            if value>0:
+                return 'better'
+            if value<0:
+                return 'worse'
+            return 'neutral'
+        if value<0:
+            return 'better'
+        if value>0:
+            return 'worse'
+        return 'neutral'
+
+    def format_colored_pct(value, metric_name):
+        display=format_pct(value)
+        if value is None or display=='NA':
+            return display
+        metric_class=classify_change(value, metric_name)
+        if metric_class=='better':
+            return f"<span style='background-color:#d4f5d4'>{display}</span>"
+        if metric_class=='worse':
+            return f"<span style='background-color:#f8d0d0'>{display}</span>"
+        return display
+
+    base_cache={}
     for bench in benches:
-        base_data=collect_variant(sim_root, bench, base_variant)
-        tuned_data=collect_variant(sim_root, bench, tuned_variant)
-        if not base_data or not tuned_data:
+        base_data=base_cache.get(bench)
+        if base_data is None:
+            base_data=collect_variant(sim_root, bench, base_variant)
+            base_cache[bench]=base_data
+        if base_data:
+            accumulate_fail_causes(base_fail_causes, base_data)
+            record_per_kernel_details(base_label, bench, base_data)
+        if not base_data:
             continue
-        kc=max(len(base_data), len(tuned_data))
-        # extend shorter by repeating last
-        if len(base_data)<kc and base_data:
-            base_data=base_data + [base_data[-1]]*(kc-len(base_data))
-        if len(tuned_data)<kc and tuned_data:
-            tuned_data=tuned_data + [tuned_data[-1]]*(kc-len(tuned_data))
-        ipc_gains=[]; read_changes=[]; write_changes=[]
-        for i in range(kc):
-            b=base_data[i]; t=tuned_data[i]
-            ipc_gain=pct_change(t.get('ipc'), b.get('ipc')) if b.get('ipc') is not None and t.get('ipc') is not None else 0.0
-            read_change=pct_change(t.get('r_total'), b.get('r_total'))
-            write_change=pct_change(t.get('w_total'), b.get('w_total'))
-            ipc_gains.append(ipc_gain); read_changes.append(read_change); write_changes.append(write_change)
-            ipc_gain_str = 'inf' if ipc_gain==float('inf') else f"{ipc_gain:.3f}"
-            read_change_str = 'inf' if read_change==float('inf') else f"{read_change:.3f}"
-            write_change_str = 'inf' if write_change==float('inf') else f"{write_change:.3f}"
-            # classification: IPC higher better (gain>0 or inf); fail counts lower better (change<0)
-            ipc_good = (ipc_gain==float('inf')) or (ipc_gain is not None and ipc_gain>0)
-            read_good = (read_change is not None and read_change<0)
-            write_good = (write_change is not None and write_change<0)
-            ipc_class = 'better' if ipc_good else ('worse' if ipc_gain<0 else 'neutral')
-            read_class = 'better' if read_good else ('worse' if read_change>0 else 'neutral')
-            write_class = 'better' if write_good else ('worse' if write_change>0 else 'neutral')
-            rows.append([
-                bench, str(i+1),
-                str(b.get('ipc')), str(t.get('ipc')),
-                ipc_gain_str,
-                str(b.get('r_total')), str(t.get('r_total')),
-                read_change_str,
-                str(b.get('w_total')), str(t.get('w_total')),
-                write_change_str,
-                ipc_class, read_class, write_class
-            ])
-            # colored MD row
-            def color_wrap(val, good_flag, bad_flag):
-                if good_flag:
+
+        for variant in compare_variants:
+            tuned_data=collect_variant(sim_root, bench, variant)
+            if not tuned_data:
+                continue
+            accumulate_fail_causes(variant_fail_causes[variant], tuned_data)
+            variant_label=variant_labels.get(variant, variant)
+            if variant != base_variant:
+                record_per_kernel_details(variant_label, bench, tuned_data)
+            base_aligned, tuned_aligned, kernel_count=align_variant_records(base_data, tuned_data)
+            if kernel_count==0:
+                continue
+
+            result=variant_results[variant]
+
+            def color_wrap(val, is_good, is_bad):
+                if is_good:
                     return f"<span style='background-color:#d4f5d4'>{val}</span>"
-                if bad_flag:
+                if is_bad:
                     return f"<span style='background-color:#f8d0d0'>{val}</span>"
                 return val
-            md_rows.append([
-                bench, str(i+1),
-                str(b.get('ipc')), str(t.get('ipc')),
-                color_wrap(ipc_gain_str, ipc_good, (not ipc_good and ipc_gain!=0)),
-                str(b.get('r_total')), str(t.get('r_total')),
-                color_wrap(read_change_str, read_good, (not read_good and read_change!=0)),
-                str(b.get('w_total')), str(t.get('w_total')),
-                color_wrap(write_change_str, write_good, (not write_good and write_change!=0))
-            ])
-        bench_metric_pct={}
-        for metric in METRIC_ORDER:
-            key = METRIC_VALUE_KEYS[metric]
-            base_geo=geometric_mean_from_records(base_data, key)
-            tuned_geo=geometric_mean_from_records(tuned_data, key)
-            ratio=ratio_from_geomeans(base_geo, tuned_geo)
-            pct=ratio_to_pct(ratio)
-            bench_metric_pct[metric]=pct
-            if base_geo is not None:
-                metric_geomean_inputs[metric]['base'].append(base_geo)
-            if tuned_geo is not None:
-                metric_geomean_inputs[metric]['tuned'].append(tuned_geo)
-            if ratio is not None:
-                metric_ratios[metric].append(ratio)
-        avg_rows.append([
-            bench,
-            format_pct(bench_metric_pct.get('ipc')),
-            format_pct(bench_metric_pct.get('global_acc_r')),
-            format_pct(bench_metric_pct.get('global_acc_w'))
-        ])
-        def colorize(val, metric_type):
-            display=format_pct(val)
-            if val is None or display=='NA':
-                return display
-            if val==float('inf'):
-                is_better = (metric_type=='ipc')
-                is_worse = not is_better
-            else:
-                fv=float(val)
-                if metric_type=='ipc':
-                    is_better = fv>0
-                    is_worse = fv<0
-                else:
-                    is_better = fv<0
-                    is_worse = fv>0
-            if is_better:
-                return f"<span style='background-color:#d4f5d4'>{display}</span>"
-            if is_worse:
-                return f"<span style='background-color:#f8d0d0'>{display}</span>"
-            return display
-        ipc_val=bench_metric_pct.get('ipc')
-        read_val=bench_metric_pct.get('global_acc_r')
-        write_val=bench_metric_pct.get('global_acc_w')
-        md_avg_rows.append([
-            bench,
-            colorize(ipc_val,'ipc'),
-            colorize(read_val,'global_acc_r'),
-            colorize(write_val,'global_acc_w')
-        ])
-        bench_pct_records.append((bench, bench_metric_pct))
-    # Build overall summary from avg_rows
-    ipc_geo_pct = rd_geo_pct = wr_geo_pct = None
-    metric_geo_base={}
-    metric_geo_tuned={}
-    overall_lines=[]
-    overall_summary_rows=[]
-    overall_metric_map={}
-    overall_order=[]
-    if bench_pct_records:
-        eps=args.epsilon
+
+            for idx in range(kernel_count):
+                b_record=base_aligned[idx]
+                t_record=tuned_aligned[idx]
+                base_ipc=b_record.get('ipc')
+                tuned_ipc=t_record.get('ipc')
+                ipc_gain=pct_change(tuned_ipc, base_ipc) if base_ipc is not None and tuned_ipc is not None else 0.0
+                read_change=pct_change(t_record.get('r_total'), b_record.get('r_total'))
+                write_change=pct_change(t_record.get('w_total'), b_record.get('w_total'))
+
+                ipc_class=classify_change(ipc_gain, 'ipc')
+                read_class=classify_change(read_change, 'global_acc_r')
+                write_class=classify_change(write_change, 'global_acc_w')
+
+                ipc_gain_str='inf' if ipc_gain==float('inf') else f"{ipc_gain:.3f}"
+                read_change_str='inf' if read_change==float('inf') else f"{read_change:.3f}"
+                write_change_str='inf' if write_change==float('inf') else f"{write_change:.3f}"
+
+                row=[
+                    variant_label,
+                    bench,
+                    str(idx+1),
+                    str(b_record.get('ipc')),
+                    str(t_record.get('ipc')),
+                    ipc_gain_str,
+                    str(b_record.get('r_total')),
+                    str(t_record.get('r_total')),
+                    read_change_str,
+                    str(b_record.get('w_total')),
+                    str(t_record.get('w_total')),
+                    write_change_str,
+                    ipc_class,
+                    read_class,
+                    write_class,
+                ]
+                result['rows'].append(row)
+                rows_all.append(row)
+
+                md_row=[
+                    variant_label,
+                    bench,
+                    str(idx+1),
+                    str(b_record.get('ipc')),
+                    str(t_record.get('ipc')),
+                    color_wrap(ipc_gain_str, ipc_class=='better', ipc_class=='worse'),
+                    str(b_record.get('r_total')),
+                    str(t_record.get('r_total')),
+                    color_wrap(read_change_str, read_class=='better', read_class=='worse'),
+                    str(b_record.get('w_total')),
+                    str(t_record.get('w_total')),
+                    color_wrap(write_change_str, write_class=='better', write_class=='worse'),
+                ]
+                result['md_rows'].append(md_row)
+                md_rows_all.append(md_row)
+
+            bench_metric_pct={}
+            for metric in METRIC_ORDER:
+                key=METRIC_VALUE_KEYS[metric]
+                base_geo=geometric_mean_from_records(base_aligned, key)
+                tuned_geo=geometric_mean_from_records(tuned_aligned, key)
+                ratio=ratio_from_geomeans(base_geo, tuned_geo)
+                pct=ratio_to_pct(ratio)
+                bench_metric_pct[metric]=pct
+                if base_geo is not None:
+                    result['metric_geomean_inputs'][metric]['base'].append(base_geo)
+                if tuned_geo is not None:
+                    result['metric_geomean_inputs'][metric]['tuned'].append(tuned_geo)
+                if ratio is not None:
+                    result['metric_ratios'][metric].append(ratio)
+
+            avg_row=[
+                variant_label,
+                bench,
+                format_pct(bench_metric_pct.get('ipc')),
+                format_pct(bench_metric_pct.get('global_acc_r')),
+                format_pct(bench_metric_pct.get('global_acc_w')),
+            ]
+            result['avg_rows'].append(avg_row)
+            avg_rows_all.append(avg_row)
+
+            md_avg_row=[
+                variant_label,
+                bench,
+                format_colored_pct(bench_metric_pct.get('ipc'), 'ipc'),
+                format_colored_pct(bench_metric_pct.get('global_acc_r'), 'global_acc_r'),
+                format_colored_pct(bench_metric_pct.get('global_acc_w'), 'global_acc_w'),
+            ]
+            result['md_avg_rows'].append(md_avg_row)
+            md_avg_rows_all.append(md_avg_row)
+
+            result['bench_pct_records'].append((bench, bench_metric_pct))
+            bench_pct_records_ordered.append((variant, bench, bench_metric_pct))
+
+    overall_entries=[]
+    base_metrics_ref=None
+    missing_variants=[]
+    for variant in compare_variants:
+        variant_data=variant_results[variant]
+        bench_pct_records=variant_data['bench_pct_records']
+        if not bench_pct_records:
+            missing_variants.append(variant_labels.get(variant, variant))
+            continue
+
         metric_geo_pct={}
+        metric_geo_base={}
+        metric_geo_tuned={}
         for metric in METRIC_ORDER:
-            inputs=metric_geomean_inputs[metric]
+            inputs=variant_data['metric_geomean_inputs'][metric]
             base_geo=geometric_mean(inputs['base'])
             tuned_geo=geometric_mean(inputs['tuned'])
             ratio=ratio_from_geomeans(base_geo, tuned_geo)
             metric_geo_pct[metric]=ratio_to_pct(ratio)
             metric_geo_base[metric]=base_geo
             metric_geo_tuned[metric]=tuned_geo
-        overall_lines=['GEOMETRIC MEAN SUMMARY']
-        overall_lines.append(f"IPC geomean percent change: {format_pct(metric_geo_pct.get('ipc'))}%")
-        overall_lines.append(f"GLOBAL_ACC_R geomean percent change: {format_pct(metric_geo_pct.get('global_acc_r'))}%")
-        overall_lines.append(f"GLOBAL_ACC_W geomean percent change: {format_pct(metric_geo_pct.get('global_acc_w'))}%")
+
+        eps=args.epsilon
 
         def count_wins(metric, better_is_greater):
             wins=losses=neutrals=0
@@ -469,53 +854,89 @@ def main():
                     else:
                         wins+=1
             return wins, losses, neutrals
-        ipc_w, ipc_l, ipc_n = count_wins('ipc', True)
-        rd_w, rd_l, rd_n = count_wins('global_acc_r', False)
-        wr_w, wr_l, wr_n = count_wins('global_acc_w', False)
-        overall_lines.append(f"GLOBAL_ACC_R win/loss/neutral benchmarks: {rd_w}/{rd_l}/{rd_n}")
-        overall_lines.append(f"GLOBAL_ACC_W win/loss/neutral benchmarks: {wr_w}/{wr_l}/{wr_n}")
 
-        ipc_geo_pct = metric_geo_pct.get('ipc')
-        rd_geo_pct = metric_geo_pct.get('global_acc_r')
-        wr_geo_pct = metric_geo_pct.get('global_acc_w')
+        ipc_w, ipc_l, ipc_n=count_wins('ipc', True)
+        rd_w, rd_l, rd_n=count_wins('global_acc_r', False)
+        wr_w, wr_l, wr_n=count_wins('global_acc_w', False)
+
+        variant_label=variant_labels.get(variant, variant)
+        lines=[f"GEOMETRIC MEAN SUMMARY ({variant_label})"]
+        lines.append(f"IPC geomean percent change: {format_pct(metric_geo_pct.get('ipc'))}%")
+        lines.append(f"GLOBAL_ACC_R geomean percent change: {format_pct(metric_geo_pct.get('global_acc_r'))}%")
+        lines.append(f"GLOBAL_ACC_W geomean percent change: {format_pct(metric_geo_pct.get('global_acc_w'))}%")
+        lines.append(f"GLOBAL_ACC_R win/loss/neutral benchmarks: {rd_w}/{rd_l}/{rd_n}")
+        lines.append(f"GLOBAL_ACC_W win/loss/neutral benchmarks: {wr_w}/{wr_l}/{wr_n}")
 
         if args.debug_geomean:
-            print('[DEBUG] Bench-level geomean ratios:')
-            for metric, ratios in metric_ratios.items():
+            print(f"[DEBUG] Bench-level geomean ratios for {variant_label}:")
+            for metric, ratios in variant_data['metric_ratios'].items():
                 print(f'  {metric}:', ratios)
-            print('[DEBUG] Bench-level percent changes:')
-            for bench, pct_map in bench_pct_records:
-                print(f"  {bench}: ipc={pct_map.get('ipc')}%, global_acc_r={pct_map.get('global_acc_r')}%, global_acc_w={pct_map.get('global_acc_w')}%")
+            print(f"[DEBUG] Bench-level percent changes for {variant_label}:")
+            for bench_name, pct_map in bench_pct_records:
+                print(f"  {bench_name}: ipc={pct_map.get('ipc')}%, global_acc_r={pct_map.get('global_acc_r')}%, global_acc_w={pct_map.get('global_acc_w')}%")
+
+        variant_data['metric_geo_pct']=metric_geo_pct
+        variant_data['metric_geo_base']=metric_geo_base
+        variant_data['metric_geo_tuned']=metric_geo_tuned
+        variant_data['overall_lines']=lines
+
+        overall_entries.append({
+            'variant': variant,
+            'label': variant_label,
+            'overall_lines': lines,
+            'metric_geo_pct': metric_geo_pct,
+            'metric_geo_base': metric_geo_base,
+            'metric_geo_tuned': metric_geo_tuned,
+        })
+
+        if base_metrics_ref is None:
+            base_metrics_ref=metric_geo_base
+
+    if missing_variants:
+        print(f"[WARN] no benchmark data found for: {', '.join(missing_variants)}")
+
+    overall_summary_rows=[]
+    overall_metric_map={}
+    overall_order=[]
+    overall_header_labels=None
 
     # TXT legacy
     txt_lines=[' '.join(csv_header_extended)]
-    txt_lines.extend([' '.join(r) for r in rows])
+    txt_lines.extend([' '.join(r) for r in rows_all])
     txt_lines.append('')
-    txt_lines.append('benchmark ipc_gain_pct read_change_pct write_change_pct')
-    for a in avg_rows:
-        txt_lines.append(f"{a[0]} {a[1]} {a[2]} {a[3]}")
-    if overall_lines:
+    txt_lines.append(' '.join(avg_header))
+    for a in avg_rows_all:
+        txt_lines.append(' '.join(a))
+    for entry in overall_entries:
         txt_lines.append('')
-        txt_lines.extend(overall_lines)
+        txt_lines.extend(entry['overall_lines'])
     with open(args.txt_file,'w') as f:
         f.write('\n'.join(txt_lines))
     print(f"[INFO] wrote {args.txt_file}")
-    # CSV
+
     import csv
     with open(args.csv_file,'w',newline='') as cf:
         w=csv.writer(cf)
         w.writerow(csv_header_extended)
-        for r in rows: w.writerow(r)
+        for r in rows_all:
+            w.writerow(r)
         w.writerow([])
-        w.writerow(['benchmark','ipc_gain_pct','read_change_pct','write_change_pct'])
-        for a in avg_rows:
-            w.writerow([a[0],a[1],a[2],a[3]])
-        if overall_lines:
+        w.writerow(avg_header)
+        for a in avg_rows_all:
+            w.writerow(a)
+        if overall_entries:
             w.writerow([])
-            w.writerow(['OVERALL','ipc_geomean_pct','global_acc_r_geomean_pct','global_acc_w_geomean_pct'])
-            w.writerow(['OVERALL', format_pct(ipc_geo_pct), format_pct(rd_geo_pct), format_pct(wr_geo_pct)])
+            w.writerow(['variant','ipc_geomean_pct','global_acc_r_geomean_pct','global_acc_w_geomean_pct'])
+            for entry in overall_entries:
+                metric_geo_pct=entry['metric_geo_pct']
+                w.writerow([
+                    entry['label'],
+                    format_pct(metric_geo_pct.get('ipc')),
+                    format_pct(metric_geo_pct.get('global_acc_r')),
+                    format_pct(metric_geo_pct.get('global_acc_w')),
+                ])
     print(f"[INFO] wrote {args.csv_file}")
-    # Markdown
+
     md_lines=[
         "# Performance Gain Report",
         "",
@@ -524,156 +945,151 @@ def main():
         '|'+'|'.join(header_cols)+'|',
         '|'+'|'.join(['---']*len(header_cols))+'|'
     ]
-    for r in md_rows:
+    for r in md_rows_all:
         md_lines.append('|'+'|'.join(r)+'|')
     md_lines.append('')
     md_lines.append('## Averages')
     md_lines.append('')
-    md_lines.append('|benchmark|ipc_gain_pct|read_change_pct|write_change_pct|')
-    md_lines.append('|---|---|---|---|')
-    for a in md_avg_rows:
-        md_lines.append(f"|{a[0]}|{a[1]}|{a[2]}|{a[3]}|")
-    if overall_lines:
+    md_lines.append('|variant|benchmark|ipc_gain_pct|read_change_pct|write_change_pct|')
+    md_lines.append('|---|---|---|---|---|')
+    for a in md_avg_rows_all:
+        md_lines.append(f"|{a[0]}|{a[1]}|{a[2]}|{a[3]}|{a[4]}|")
+    if overall_entries:
         md_lines.append('')
         md_lines.append('## Overall Summary')
-        md_lines.append('')
-        md_lines.append(f"- IPC geomean percent change: <b>{format_pct(ipc_geo_pct)}%</b>")
-        md_lines.append(f"- GLOBAL_ACC_R geomean percent change: <b>{format_pct(rd_geo_pct)}%</b>")
-        md_lines.append(f"- GLOBAL_ACC_W geomean percent change: <b>{format_pct(wr_geo_pct)}%</b>")
+        for entry in overall_entries:
+            md_lines.append('')
+            md_lines.append(f"### {entry['label']}")
+            md_lines.append('')
+            md_lines.append(f"- IPC geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('ipc'))}%</b>")
+            md_lines.append(f"- GLOBAL_ACC_R geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_r'))}%</b>")
+            md_lines.append(f"- GLOBAL_ACC_W geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_w'))}%</b>")
+        if md_lines and md_lines[-1]=='':
+            md_lines.pop()
     with open(args.md_file,'w') as mf:
         mf.write('\n'.join(md_lines))
     print(f"[INFO] wrote {args.md_file}")
 
-    # HTML colored output
     html_lines=["<html><head><meta charset='utf-8'><title>Performance Gain Report</title><style>table{border-collapse:collapse;font-family:monospace;} td,th{border:1px solid #888;padding:4px;} .better{background:#d4f5d4;} .worse{background:#f8d0d0;} .neutral{background:#f0f0f0;}</style></head><body>","<h1>Performance Gain Report</h1>"]
     html_lines.append('<h2>Per-Kernel Details</h2>')
     html_lines.append('<table>')
     html_lines.append('<tr>' + ''.join(f'<th>{c}</th>' for c in header_cols) + '</tr>')
-    # map md_rows (no class info) -> need classification from rows list
-    for raw, colored in zip(rows, md_rows):
-        ipc_class=raw[-3]; read_class=raw[-2]; write_class=raw[-1]
-        # colored list has no class columns, rebuild row with classes applied to gain/change cells
+    for raw in rows_all:
+        ipc_class=raw[-3]
+        read_class=raw[-2]
+        write_class=raw[-1]
         html_lines.append('<tr>' +
-            f'<td>{raw[0]}</td><td>{raw[1]}</td>' +
-            f'<td>{raw[2]}</td><td>{raw[3]}</td>' +
-            f'<td class="{ipc_class}">{raw[4]}</td>' +
-            f'<td>{raw[5]}</td><td>{raw[6]}</td>' +
-            f'<td class="{read_class}">{raw[7]}</td>' +
-            f'<td>{raw[8]}</td><td>{raw[9]}</td>' +
-            f'<td class="{write_class}">{raw[10]}</td>' +
+            f'<td>{raw[0]}</td>' +
+            f'<td>{raw[1]}</td>' +
+            f'<td>{raw[2]}</td>' +
+            f'<td>{raw[3]}</td>' +
+            f'<td>{raw[4]}</td>' +
+            f'<td class="{ipc_class}">{raw[5]}</td>' +
+            f'<td>{raw[6]}</td>' +
+            f'<td>{raw[7]}</td>' +
+            f'<td class="{read_class}">{raw[8]}</td>' +
+            f'<td>{raw[9]}</td>' +
+            f'<td>{raw[10]}</td>' +
+            f'<td class="{write_class}">{raw[11]}</td>' +
             '</tr>')
     html_lines.append('</table>')
     html_lines.append('<h2>Averages</h2>')
     html_lines.append('<table>')
-    html_lines.append('<tr><th>benchmark</th><th>ipc_gain_pct</th><th>read_change_pct</th><th>write_change_pct</th></tr>')
-    def classify_metric(val, metric_type):
-        if val is None:
-            return 'neutral'
-        if val==float('inf'):
-            return 'better' if metric_type=='ipc' else 'worse'
-        if metric_type=='ipc':
-            return 'better' if val>0 else ('worse' if val<0 else 'neutral')
-        return 'better' if val<0 else ('worse' if val>0 else 'neutral')
-
-    for (bench, pct_map), a_raw, _ in zip(bench_pct_records, avg_rows, md_avg_rows):
-        ipc_val_num=pct_map.get('ipc')
-        read_val_num=pct_map.get('global_acc_r')
-        write_val_num=pct_map.get('global_acc_w')
-        ipc_val=a_raw[1]; read_val=a_raw[2]; write_val=a_raw[3]
-        ipc_class = classify_metric(ipc_val_num, 'ipc')
-        read_class = classify_metric(read_val_num, 'global_acc_r')
-        write_class = classify_metric(write_val_num, 'global_acc_w')
+    html_lines.append('<tr><th>variant</th><th>benchmark</th><th>ipc_gain_pct</th><th>read_change_pct</th><th>write_change_pct</th></tr>')
+    for (_, _, pct_map), avg_row in zip(bench_pct_records_ordered, avg_rows_all):
+        ipc_class=classify_change(pct_map.get('ipc'), 'ipc')
+        read_class=classify_change(pct_map.get('global_acc_r'), 'global_acc_r')
+        write_class=classify_change(pct_map.get('global_acc_w'), 'global_acc_w')
         html_lines.append('<tr>' +
-            f'<td>{bench}</td>' +
-            f'<td class="{ipc_class}">{ipc_val}</td>' +
-            f'<td class="{read_class}">{read_val}</td>' +
-            f'<td class="{write_class}">{write_val}</td>' +
+            f'<td>{avg_row[0]}</td>' +
+            f'<td>{avg_row[1]}</td>' +
+            f'<td class="{ipc_class}">{avg_row[2]}</td>' +
+            f'<td class="{read_class}">{avg_row[3]}</td>' +
+            f'<td class="{write_class}">{avg_row[4]}</td>' +
             '</tr>')
-    if overall_lines:
-        html_lines.append('</table>')
+    html_lines.append('</table>')
+    if overall_entries:
         html_lines.append('<h2>Overall Summary</h2>')
-        html_lines.append('<ul>')
-        html_lines.append(f"<li>IPC geomean percent change: <b>{format_pct(ipc_geo_pct)}%</b></li>")
-        html_lines.append(f"<li>GLOBAL_ACC_R geomean percent change: <b>{format_pct(rd_geo_pct)}%</b></li>")
-        html_lines.append(f"<li>GLOBAL_ACC_W geomean percent change: <b>{format_pct(wr_geo_pct)}%</b></li>")
-        # html_lines.append(f"<li>Kernel-flatten IPC geomean (weight=1 per kernel): <b>{kernel_geo_pct:.3f}%</b></li>")
-        # No calculation steps in HTML
-        html_lines.append('</ul>')
-    html_lines.append('</table></body></html>')
+        for entry in overall_entries:
+            html_lines.append(f"<h3>{entry['label']}</h3>")
+            html_lines.append('<ul>')
+            html_lines.append(f"<li>IPC geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('ipc'))}%</b></li>")
+            html_lines.append(f"<li>GLOBAL_ACC_R geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_r'))}%</b></li>")
+            html_lines.append(f"<li>GLOBAL_ACC_W geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_w'))}%</b></li>")
+            html_lines.append('</ul>')
+    html_lines.append('</body></html>')
     with open(args.html_file,'w') as hf:
         hf.write('\n'.join(html_lines))
     print(f"[INFO] wrote {args.html_file}")
 
-    # Update overall study tables aggregating multiple studies
-    if overall_lines:
-        tuned_name = normalize_variant_name(tuned_variant)
-        study_name = args.study_name if args.study_name else tuned_name
-        header_labels = ['study'] + [f"{METRIC_LABELS.get(metric, metric)} (geomean)" for metric in METRIC_ORDER]
+    if overall_entries:
+        overall_header_labels=['study'] + [f"{METRIC_LABELS.get(metric, metric)} (geomean)" for metric in METRIC_ORDER]
 
         def ensure_metric_map(entry=None):
-            entry = dict(entry) if entry else {}
+            entry=dict(entry) if entry else {}
             for metric in METRIC_ORDER:
                 entry.setdefault(metric, {'actual': None, 'pct': None})
             return entry
 
-        # Load existing CSV if present
-        existing = {}
-        if os.path.isfile(args.overall_csv):
-            import csv as _csv
-            with open(args.overall_csv, 'r', newline='') as f:
-                rdr = _csv.reader(f)
-                hdr = next(rdr, None)
-                for row in rdr:
-                    if not row or row[0].startswith('#'):
-                        continue
-                    study = row[0].strip()
-                    if not study:
-                        continue
-                    metric_map = {}
-                    for idx, metric in enumerate(METRIC_ORDER, start=1):
-                        cell = row[idx] if idx < len(row) else ''
-                        metric_map[metric] = parse_overall_cell(cell)
-                    existing[study] = ensure_metric_map(metric_map)
+        existing={}
 
-        base_entry = ensure_metric_map(existing.get('base-config'))
-        for metric in METRIC_ORDER:
-            base_entry[metric] = {'actual': metric_geo_base.get(metric), 'pct': None}
-        existing['base-config'] = base_entry
+        if base_metrics_ref:
+            base_entry=ensure_metric_map()
+            for metric in METRIC_ORDER:
+                base_entry[metric]={'actual': base_metrics_ref.get(metric), 'pct': None}
+            existing['base-config']=base_entry
 
-        study_entry = ensure_metric_map(existing.get(study_name))
-        for metric in METRIC_ORDER:
-            study_entry[metric] = {'actual': metric_geo_tuned.get(metric), 'pct': metric_geo_pct.get(metric)}
-        existing[study_name] = study_entry
+        base_label=variant_labels.get(base_variant, normalize_variant_name(base_variant))
+        if base_metrics_ref and base_label!='base-config':
+            base_alias_entry=ensure_metric_map()
+            for metric in METRIC_ORDER:
+                base_alias_entry[metric]={'actual': base_metrics_ref.get(metric), 'pct': 0.0}
+            existing[base_label]=base_alias_entry
 
-        # Ensure all studies have all metrics
-        for study in list(existing.keys()):
-            existing[study] = ensure_metric_map(existing.get(study))
+        for entry in overall_entries:
+            study_label=entry['label']
+            study_entry=ensure_metric_map()
+            for metric in METRIC_ORDER:
+                study_entry[metric]={
+                    'actual': entry['metric_geo_tuned'].get(metric),
+                    'pct': entry['metric_geo_pct'].get(metric),
+                }
+            existing[study_label]=study_entry
 
-        order = ['base-config'] + sorted([k for k in existing.keys() if k!='base-config'])
-        overall_order = order
-        overall_metric_map = {study: ensure_metric_map(existing.get(study)) for study in order}
+        order=[]
+        if 'base-config' in existing:
+            order.append('base-config')
+        if base_label!='base-config' and base_label in existing:
+            order.append(base_label)
+        for variant in compare_variants:
+            label=variant_labels.get(variant, variant)
+            if label in existing and label not in order:
+                order.append(label)
+
+        overall_order=order
+        overall_metric_map={study: existing[study] for study in order}
+
         formatted_overall_rows=[]
         for study in order:
-            metric_map = overall_metric_map[study]
+            metric_map=overall_metric_map[study]
             cells=[]
             for metric in METRIC_ORDER:
-                entry = metric_map[metric]
-                include_pct = (study!='base-config' and entry['pct'] is not None)
+                entry=metric_map[metric]
+                include_pct=(study!='base-config' and entry['pct'] is not None)
                 cells.append(format_actual_with_pct(entry['actual'], entry['pct'], include_pct))
             formatted_overall_rows.append((study, cells))
-        overall_summary_rows = [header_labels] + [[study] + cells for study, cells in formatted_overall_rows]
 
-        # Write CSV
+        overall_summary_rows=[overall_header_labels] + [[study] + cells for study, cells in formatted_overall_rows]
+
         import csv as _csv
         with open(args.overall_csv,'w',newline='') as f:
             w=_csv.writer(f)
-            w.writerow(header_labels)
+            w.writerow(overall_header_labels)
             for study, cells in formatted_overall_rows:
                 w.writerow([study] + cells)
         print(f"[INFO] updated {args.overall_csv}")
 
-        # Write Markdown
-        md2 = [
+        md2=[
             '# Overall Performance Study',
             '',
             '|study|' + '|'.join(f"{METRIC_LABELS.get(metric, metric)} (geomean)" for metric in METRIC_ORDER) + '|',
@@ -685,36 +1101,263 @@ def main():
             f.write('\n'.join(md2))
         print(f"[INFO] updated {args.overall_md}")
 
-        # Write XLSX (optional)
         try:
             from openpyxl import Workbook as _WB
             from openpyxl.styles import PatternFill as _PF
             wb=_WB(); ws=wb.active; ws.title='Overall'
-            ws.append(header_labels)
+            ws.append(overall_header_labels)
             for study, cells in formatted_overall_rows:
                 ws.append([study] + cells)
             green='FFD4F5D4'; red='FFF8D0D0'; grey='FFF0F0F0'
             for idx, study in enumerate(order, start=2):
-                metric_map = overall_metric_map[study]
+                metric_map=overall_metric_map[study]
                 for col_offset, metric in enumerate(METRIC_ORDER, start=2):
-                    entry = metric_map[metric]
-                    pct_val = entry['pct']
+                    entry=metric_map[metric]
+                    pct_val=entry['pct']
                     if study=='base-config' or pct_val is None:
-                        fill_color = grey
-                    elif pct_val == float('inf'):
-                        fill_color = green if metric=='ipc' else red
+                        fill_color=grey
+                    elif pct_val==float('inf'):
+                        fill_color=green if metric=='ipc' else red
                     else:
                         if metric=='ipc':
-                            fill_color = green if pct_val>0 else red if pct_val<0 else grey
+                            fill_color=green if pct_val>0 else red if pct_val<0 else grey
                         else:
-                            fill_color = green if pct_val<0 else red if pct_val>0 else grey
+                            fill_color=green if pct_val<0 else red if pct_val>0 else grey
                     ws.cell(row=idx, column=col_offset).fill=_PF(fill_type='solid', fgColor=fill_color)
             wb.save(args.overall_xlsx)
             print(f"[INFO] updated {args.overall_xlsx}")
         except ImportError:
             print('[WARN] openpyxl not installed; skipping overall XLSX output.')
 
-    # Optional XLSX output
+    fail_cause_output=(args.fail_cause_xlsx or '').strip()
+    if fail_cause_output:
+        fail_cause_path=os.path.expanduser(os.path.expandvars(fail_cause_output))
+        metric_keys=('global_acc_r','global_acc_w')
+        base_counts={metric: dict(base_fail_causes[metric]) for metric in metric_keys}
+        variant_counts_map={
+            variant: {metric: dict(variant_fail_causes[variant][metric]) for metric in metric_keys}
+            for variant in compare_variants
+        }
+        base_totals={metric: sum(base_counts[metric].values()) for metric in metric_keys}
+        variant_totals={
+            variant: {metric: sum(variant_counts_map[variant][metric].values()) for metric in metric_keys}
+            for variant in compare_variants
+        }
+        has_fail_data=any(base_totals[m]>0 for m in metric_keys) or any(
+            variant_totals[variant][m]>0 for variant in compare_variants for m in metric_keys
+        )
+        if not has_fail_data:
+            print('[INFO] no fail cause data available; skipping fail cause breakdown XLSX.')
+        else:
+            try:
+                from openpyxl import Workbook as _FailWorkbook
+            except ImportError:
+                print('[WARN] openpyxl not installed; skipping fail cause breakdown XLSX.')
+            else:
+                wb=_FailWorkbook()
+                summary_ws=wb.active
+                summary_ws.title='Summary'
+                sheet_name_registry.add('Summary')
+                row=1
+                summary_ws.cell(row,1).value='Fail Cause Breakdown Summary'
+                row+=2
+                base_label=variant_labels.get(base_variant, normalize_variant_name(base_variant))
+                for metric in metric_keys:
+                    row=write_fail_table(
+                        summary_ws,
+                        row,
+                        metric,
+                        base_counts[metric],
+                        base_totals[metric],
+                        base_label,
+                        base_counts[metric],
+                        base_counts[metric],
+                    )
+                if row>1:
+                    row+=1
+                for variant in compare_variants:
+                    variant_label=variant_labels.get(variant, variant)
+                    sheet=wb.create_sheet(unique_sheet_name(variant_label))
+                    r=1
+                    sheet.cell(r,1).value=f'Variant: {variant_label}'
+                    r+=2
+                    for metric in metric_keys:
+                        r=write_fail_table(
+                            sheet,
+                            r,
+                            metric,
+                            base_counts[metric],
+                            base_totals[metric],
+                            variant_label,
+                            variant_counts_map[variant][metric],
+                            variant_counts_map[variant][metric],
+                        )
+
+                variant_label_order=[]
+                seen_variant_labels=set()
+
+                def register_variant_label(label):
+                    if not label or label in seen_variant_labels:
+                        return
+                    seen_variant_labels.add(label)
+                    variant_label_order.append(label)
+
+                register_variant_label(base_label)
+                for variant in compare_variants:
+                    register_variant_label(variant_labels.get(variant, variant))
+                for source in (per_kernel_cause_records, per_kernel_driver_records):
+                    for label in source.keys():
+                        register_variant_label(label)
+
+                access_sort_priority={'GLOBAL_ACC_R': 0, 'GLOBAL_ACC_W': 1}
+
+                cause_sheet=wb.create_sheet(unique_sheet_name('PerKernel-cause-dist'))
+                cause_headers=['benchmark','kernel','access_type','cause','fails','pct','total_fails']
+                cause_sheet.append(cause_headers)
+                cause_data_written=False
+                for label in variant_label_order:
+                    records=per_kernel_cause_records.get(label, [])
+                    if not records:
+                        continue
+                    cause_data_written=True
+                    cause_sheet.append([])
+                    cause_sheet.append(['Variant', label, '', '', '', '', ''])
+                    grouped=defaultdict(list)
+                    for rec in records:
+                        key=(rec['benchmark'], rec['kernel_index'], rec['kernel'], rec['access_type'])
+                        grouped[key].append(rec)
+                    for key in sorted(
+                        grouped.keys(),
+                        key=lambda k: (
+                            k[0],
+                            k[1],
+                            access_sort_priority.get(k[3], 99),
+                            k[2],
+                        ),
+                    ):
+                        rows=grouped[key]
+                        rows.sort(key=lambda entry: (-entry['pct'], entry['cause']))
+                        for entry in rows:
+                            cause_sheet.append([
+                                entry['benchmark'],
+                                entry['kernel'],
+                                entry['access_type'],
+                                entry['cause'],
+                                entry['fails'],
+                                round(entry['pct'], 3),
+                                entry['total_fails'],
+                            ])
+                if not cause_data_written:
+                    cause_sheet.append(['No per-kernel fail cause data'])
+
+                driver_sheet=wb.create_sheet(unique_sheet_name('PerKernel-driver-dist'))
+                driver_headers=['benchmark','kernel','access_type','cause','driver','fails','pct']
+                driver_sheet.append(driver_headers)
+                driver_data_written=False
+                for label in variant_label_order:
+                    records=per_kernel_driver_records.get(label, [])
+                    if not records:
+                        continue
+                    driver_data_written=True
+                    driver_sheet.append([])
+                    driver_sheet.append(['Variant', label, '', '', '', '', ''])
+                    grouped=defaultdict(list)
+                    for rec in records:
+                        key=(rec['benchmark'], rec['kernel_index'], rec['kernel'], rec['access_type'], rec['cause'])
+                        grouped[key].append(rec)
+                    for key in sorted(
+                        grouped.keys(),
+                        key=lambda k: (
+                            k[0],
+                            k[1],
+                            access_sort_priority.get(k[3], 99),
+                            k[4],
+                            k[2],
+                        ),
+                    ):
+                        rows=grouped[key]
+                        rows.sort(key=lambda entry: (-entry['pct'], entry['driver']))
+                        for entry in rows:
+                            driver_sheet.append([
+                                entry['benchmark'],
+                                entry['kernel'],
+                                entry['access_type'],
+                                entry['cause'],
+                                entry['driver'],
+                                entry['fails'],
+                                round(entry['pct'], 3),
+                            ])
+                if not driver_data_written:
+                    driver_sheet.append(['No per-kernel driver data'])
+
+                kernel_weight_sheet=wb.create_sheet(unique_sheet_name('PerBenchmark-kernel-avg'))
+                kernel_weight_headers=['variant','benchmark','access_type','cause','fails','total_fails','avg_pct','kernel_count','nonzero_kernel_count']
+                kernel_weight_sheet.append(kernel_weight_headers)
+                kernel_weight_data_written=False
+                for label in variant_label_order:
+                    records=per_kernel_cause_records.get(label, [])
+                    if not records:
+                        continue
+                    bench_cause_sum=defaultdict(lambda: defaultdict(int))
+                    bench_total_fails=defaultdict(int)
+                    bench_kernel_set=defaultdict(set)
+                    bench_cause_kernel_set=defaultdict(lambda: defaultdict(set))
+                    for rec in records:
+                        bench=rec['benchmark']
+                        cause=rec['cause']
+                        fails_val=rec.get('fails') or 0
+                        try:
+                            fails_int=int(fails_val)
+                        except (TypeError, ValueError):
+                            continue
+                        kernel=rec.get('kernel')
+                        bench_total_fails[bench]+=fails_int
+                        bench_cause_sum[bench][cause]+=fails_int
+                        if kernel:
+                            bench_kernel_set[bench].add(kernel)
+                            if fails_int>0:
+                                bench_cause_kernel_set[bench][cause].add(kernel)
+                    variant_rows=[]
+                    for bench in sorted(bench_cause_sum.keys()):
+                        total_fails=bench_total_fails.get(bench, 0)
+                        kernel_count=len(bench_kernel_set[bench])
+                        if kernel_count<=0 or total_fails<=0:
+                            continue
+                        cause_entries=[]
+                        for cause, cause_fails in bench_cause_sum[bench].items():
+                            if cause_fails<=0:
+                                continue
+                            avg_pct=(cause_fails/total_fails*100.0) if total_fails else 0.0
+                            nonzero=len(bench_cause_kernel_set[bench][cause])
+                            cause_entries.append((cause, cause_fails, avg_pct, nonzero))
+                        cause_entries.sort(key=lambda item: (-item[1], item[0]))
+                        for cause, cause_fails, avg_pct, nonzero in cause_entries:
+                            variant_rows.append([
+                                label,
+                                bench,
+                                'ALL',
+                                cause,
+                                cause_fails,
+                                total_fails,
+                                round(avg_pct, 3),
+                                kernel_count,
+                                nonzero,
+                            ])
+                    if variant_rows:
+                        kernel_weight_data_written=True
+                        kernel_weight_sheet.append([])
+                        kernel_weight_sheet.append(['Variant', label, '', '', '', '', '', '', ''])
+                        for row in variant_rows:
+                            kernel_weight_sheet.append(row)
+                if not kernel_weight_data_written:
+                    kernel_weight_sheet.append(['No kernel-weighted fail cause data'])
+
+                fail_cause_dir=os.path.dirname(fail_cause_path)
+                if fail_cause_dir and not os.path.isdir(fail_cause_dir):
+                    os.makedirs(fail_cause_dir, exist_ok=True)
+                wb.save(fail_cause_path)
+                print(f"[INFO] wrote {fail_cause_path}")
+
     if args.xlsx_file:
         try:
             from openpyxl import Workbook
@@ -725,51 +1368,46 @@ def main():
             ws.append(csv_header_extended)
             # Use ARGB colors with full opacity for better compatibility
             color_map={'better':'FFD4F5D4','worse':'FFF8D0D0','neutral':'FFF0F0F0'}
-            for r in rows:
+            for r in rows_all:
                 ws.append(r)
                 # apply fill to classified cells (ipc_gain_pct at col5, read_change_pct at col8, write_change_pct at col11)
                 last_row=ws.max_row
-                ipc_cell=ws.cell(row=last_row,column=5); ipc_cell.fill=PatternFill(fill_type='solid', fgColor=color_map[r[-3]])
-                read_cell=ws.cell(row=last_row,column=8); read_cell.fill=PatternFill(fill_type='solid', fgColor=color_map[r[-2]])
-                write_cell=ws.cell(row=last_row,column=11); write_cell.fill=PatternFill(fill_type='solid', fgColor=color_map[r[-1]])
+                ipc_cell=ws.cell(row=last_row,column=6); ipc_cell.fill=PatternFill(fill_type='solid', fgColor=color_map[r[-3]])
+                read_cell=ws.cell(row=last_row,column=9); read_cell.fill=PatternFill(fill_type='solid', fgColor=color_map[r[-2]])
+                write_cell=ws.cell(row=last_row,column=12); write_cell.fill=PatternFill(fill_type='solid', fgColor=color_map[r[-1]])
             # Add conditional formatting (works in LibreOffice/Excel)
             green_fill=PatternFill(fill_type='solid', fgColor=color_map['better'])
             red_fill=PatternFill(fill_type='solid', fgColor=color_map['worse'])
             # IPC: greaterThan 0 -> green, lessThan 0 -> red
             if ws.max_row >= 2:
-                ws.conditional_formatting.add(f"E2:E{ws.max_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=green_fill))
-                ws.conditional_formatting.add(f"E2:E{ws.max_row}", CellIsRule(operator='lessThan', formula=['0'], fill=red_fill))
+                ws.conditional_formatting.add(f"F2:F{ws.max_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=green_fill))
+                ws.conditional_formatting.add(f"F2:F{ws.max_row}", CellIsRule(operator='lessThan', formula=['0'], fill=red_fill))
                 # READ fails: lessThan 0 -> green, greaterThan 0 -> red
-                ws.conditional_formatting.add(f"H2:H{ws.max_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
-                ws.conditional_formatting.add(f"H2:H{ws.max_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
+                ws.conditional_formatting.add(f"I2:I{ws.max_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
+                ws.conditional_formatting.add(f"I2:I{ws.max_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
                 # WRITE fails
-                ws.conditional_formatting.add(f"K2:K{ws.max_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
-                ws.conditional_formatting.add(f"K2:K{ws.max_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
+                ws.conditional_formatting.add(f"L2:L{ws.max_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
+                ws.conditional_formatting.add(f"L2:L{ws.max_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
             ws2=wb.create_sheet('Averages')
-            ws2.append(['benchmark','ipc_gain_pct','read_change_pct','write_change_pct'])
-            for bench, pct_map in bench_pct_records:
+            ws2.append(avg_header)
+            for (_, bench, pct_map), avg_row in zip(bench_pct_records_ordered, avg_rows_all):
                 ipc_val_num=pct_map.get('ipc')
                 read_val_num=pct_map.get('global_acc_r')
                 write_val_num=pct_map.get('global_acc_w')
                 ws2.append([
+                    avg_row[0],
                     bench,
                     value_for_excel(ipc_val_num),
                     value_for_excel(read_val_num),
                     value_for_excel(write_val_num)
                 ])
                 lr=ws2.max_row
-                def classify(val, kind):
-                    if val is None:
-                        return 'neutral'
-                    if val==float('inf'):
-                        return 'better' if kind=='ipc' else 'worse'
-                    if kind=='ipc':
-                        return 'better' if val>0 else ('worse' if val<0 else 'neutral')
-                    return 'better' if val<0 else ('worse' if val>0 else 'neutral')
-                ipc_c=classify(ipc_val_num,'ipc'); read_c=classify(read_val_num,'read'); write_c=classify(write_val_num,'write')
-                ws2.cell(row=lr,column=2).fill=PatternFill(fill_type='solid', fgColor=color_map[ipc_c])
-                ws2.cell(row=lr,column=3).fill=PatternFill(fill_type='solid', fgColor=color_map[read_c])
-                ws2.cell(row=lr,column=4).fill=PatternFill(fill_type='solid', fgColor=color_map[write_c])
+                ipc_c=classify_change(ipc_val_num,'ipc')
+                read_c=classify_change(read_val_num,'global_acc_r')
+                write_c=classify_change(write_val_num,'global_acc_w')
+                ws2.cell(row=lr,column=3).fill=PatternFill(fill_type='solid', fgColor=color_map[ipc_c])
+                ws2.cell(row=lr,column=4).fill=PatternFill(fill_type='solid', fgColor=color_map[read_c])
+                ws2.cell(row=lr,column=5).fill=PatternFill(fill_type='solid', fgColor=color_map[write_c])
             avg_section_last_row = ws2.max_row
             if overall_summary_rows:
                 ws2.append([])
@@ -781,10 +1419,10 @@ def main():
                         overall_wb=_load_wb(args.overall_xlsx)
                         overall_ws=overall_wb['Overall']
                         for row in overall_ws.iter_rows(values_only=False):
-                            values=[cell.value for cell in row[:len(header_labels)]]
+                            values=[cell.value for cell in row[:len(overall_header_labels)]]
                             ws2.append(values)
                             dest_row=ws2.max_row
-                            for col_idx, src_cell in enumerate(row[:len(header_labels)], start=1):
+                            for col_idx, src_cell in enumerate(row[:len(overall_header_labels)], start=1):
                                 ws2.cell(row=dest_row, column=col_idx).fill=copy(src_cell.fill)
                         copied_styles=True
                     except Exception as exc:
@@ -792,12 +1430,12 @@ def main():
                     if not copied_styles:
                         for row in overall_summary_rows:
                             ws2.append(row)
-                ws2.conditional_formatting.add(f"B2:B{avg_section_last_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=green_fill))
-                ws2.conditional_formatting.add(f"B2:B{avg_section_last_row}", CellIsRule(operator='lessThan', formula=['0'], fill=red_fill))
-                ws2.conditional_formatting.add(f"C2:C{avg_section_last_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
-                ws2.conditional_formatting.add(f"C2:C{avg_section_last_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
+                ws2.conditional_formatting.add(f"C2:C{avg_section_last_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=green_fill))
+                ws2.conditional_formatting.add(f"C2:C{avg_section_last_row}", CellIsRule(operator='lessThan', formula=['0'], fill=red_fill))
                 ws2.conditional_formatting.add(f"D2:D{avg_section_last_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
                 ws2.conditional_formatting.add(f"D2:D{avg_section_last_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
+                ws2.conditional_formatting.add(f"E2:E{avg_section_last_row}", CellIsRule(operator='lessThan', formula=['0'], fill=green_fill))
+                ws2.conditional_formatting.add(f"E2:E{avg_section_last_row}", CellIsRule(operator='greaterThan', formula=['0'], fill=red_fill))
             wb.save(args.xlsx_file)
             print(f"[INFO] wrote {args.xlsx_file}")
         except ImportError:

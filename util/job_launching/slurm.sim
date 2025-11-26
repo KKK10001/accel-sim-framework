@@ -12,9 +12,18 @@
 #SBATCH --error=/tmp/REPLACE_JOB_BASENAME.e%j
 
 copy_output() {
+    if [ -z "$SLURM_JOB_ID" ]; then
+        return 0
+    fi
+
     mkdir -p REPLACE_OUTDIR
-    mv /tmp/REPLACE_JOB_BASENAME.e$SLURM_JOB_ID REPLACE_OUTDIR/REPLACE_FILE_BASENAME.e$SLURM_JOB_ID
-    mv /tmp/REPLACE_JOB_BASENAME.o$SLURM_JOB_ID REPLACE_OUTDIR/REPLACE_FILE_BASENAME.o$SLURM_JOB_ID
+    for suffix in e o; do
+        src="/tmp/REPLACE_JOB_BASENAME.${suffix}$SLURM_JOB_ID"
+        dst="REPLACE_OUTDIR/REPLACE_FILE_BASENAME.${suffix}$SLURM_JOB_ID"
+        if [ -f "$src" ]; then
+            mv "$src" "$dst"
+        fi
+    done
 }
 
 trap copy_output ERR
@@ -51,6 +60,7 @@ echo "doing export CUDA_LAUNCH_BLOCKING=1"
 export CUDA_LAUNCH_BLOCKING=1
 
 
-echo "doing: REPLACE_EXEC_NAME REPLACE_COMMAND_LINE"
-REPLACE_EXEC_NAME REPLACE_COMMAND_LINE
+CMD="REPLACE_EXEC_NAME REPLACE_COMMAND_LINE"
+echo "doing: $CMD"
+bash -c "$CMD"
 copy_output

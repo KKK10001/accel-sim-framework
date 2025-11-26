@@ -58,7 +58,12 @@ fi
 if [ "$1" = "single" ]; then
   shift
   SINGLE_BENCH="$1"; shift || true
-  VARIANT_TAG="${1:-single-${SINGLE_BENCH}}"; [ $# -gt 0 ] && shift || true
+  if [[ $# -gt 0 && "$1" != --* ]]; then
+    VARIANT_TAG="$1"
+    shift || true
+  else
+    VARIANT_TAG="single-${SINGLE_BENCH}"
+  fi
 
   # 解析可选参数，仅拦截 --config-file，其余原样并入 EXTRA_PARAMS
   CUSTOM_CFG_FILE="${CUSTOM_GPGPUSIM_CONFIG:-}"
