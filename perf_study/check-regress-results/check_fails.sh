@@ -23,7 +23,9 @@ shopt -s nullglob
 
 # regress_tag=perf-study-mshr-max-merge-32 # removed
 # regress_tag=perf-study-miss-q-entries-32
-regress_tag=perf-study-miss-q-ent-32-and-mshr-max-merge-32
+# regress_tag=perf-study-miss-q-ent-32-and-mshr-max-merge-32
+# regress_tag=perf-study-miss-q-ent-64-and-mshr-max-merge-32
+regress_tag=regress-default-cfg-11-25-eve # baseline    
 
 counter=0
 zero_count=0

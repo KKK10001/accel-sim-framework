@@ -27,7 +27,42 @@ python3 compute_perf_gain.py \
   --fail-cause-xlsx fail_cause_breakdown.xlsx  
 
 python3 compute_perf_gain.py \
-  --variants regress-default-cfg-11-25-eve fuck-perf-study-miss-q-entries-32 \
+  --variants \
+    regress-default-cfg-11-25-eve \
+    perf-study-miss-q-ent-32-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-64-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-128-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-256-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-288-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-320-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-352-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-384-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-512-and-mshr-max-merge-32 \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    regress-default-cfg-11-25-eve \
+    perf-study-miss-q-ent-32-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-64-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-128-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-256-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-288-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-320-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-352-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-384-and-mshr-max-merge-32 \
+    perf-study-miss-q-ent-512-and-mshr-max-merge-32 \
+    perf-study-gpgpusim-iter-II-mshr-entries-1024 \
+    perf-study-dse-iter-II-mshr-ent-1024-mq-ent-wp-wb \
+    perf-study-dse-iter-II-mshr-ent-1024-miss-q-ent-512-mq-ent-wp-wb \
+    perf-study-dse-iter-II-mshr-ent-1024-miss-q-ent-1024-mq-ent-wp-wb \
+    perf-study-dse-iter-II-mshr-ent-1024-miss-q-ent-768-mq-ent-wp-wb \
+    perf-study-dse-iter-II-mshr-ent-1024-miss-q-ent-640-mq-ent-wp-wb \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \
@@ -48,6 +83,11 @@ CAUSE_DRIVER_R_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_A
 CAUSE_DRIVER_W_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\[([^\]]+)\]\[([^\]]+)\]\s*=\s*([0-9]+)")
 KERNEL_NAME_RE = re.compile(r"(?:-kernel name|kernel_name)\s*=\s*(.+)")
 KERNEL_UID_RE = re.compile(r"kernel_launch_uid\s*=\s*([0-9]+)")
+
+FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
+L2_BW_RE = re.compile(rf"L2_BW\s*=\s*{FLOAT_CAPTURE}")
+L2_TOTAL_CACHE_ACCESSES_RE = re.compile(rf"L2_total_cache_accesses\s*=\s*{FLOAT_CAPTURE}")
+L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_cache_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -73,15 +113,22 @@ def parse_o_file(path: str):
     w_driver_reasons={}
     pending_kernel_name=None
     pending_kernel_uid=None
+    l2_bw=None
+    l2_total_cache_accesses=None
+    l2_global_acc_w_total_access=None
 
     def reset_state():
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
+        nonlocal l2_bw, l2_total_cache_accesses, l2_global_acc_w_total_access
         r_total=0
         w_total=0
         r_reasons={}
         w_reasons={}
         r_driver_reasons={}
         w_driver_reasons={}
+        l2_bw=None
+        l2_total_cache_accesses=None
+        l2_global_acc_w_total_access=None
 
     def commit_current():
         nonlocal current
@@ -93,6 +140,10 @@ def parse_o_file(path: str):
         current['w_reasons']=dict(w_reasons)
         current['r_drivers']={cause: dict(drivers) for cause, drivers in r_driver_reasons.items()}
         current['w_drivers']={cause: dict(drivers) for cause, drivers in w_driver_reasons.items()}
+        current['l2_bw']=l2_bw
+        current['l2_total_cache_accesses']=l2_total_cache_accesses
+        current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
+        current['total_fail']=(r_total or 0)+(w_total or 0)
         kernels.append(current)
         current=None
         reset_state()
@@ -180,6 +231,30 @@ def parse_o_file(path: str):
                 w_driver_reasons.setdefault(cause, {})[driver]=amt
             continue
 
+        l2_bw_match=L2_BW_RE.search(line)
+        if l2_bw_match:
+            try:
+                l2_bw=parse_float_value(l2_bw_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l2_total_cache_accesses_match=L2_TOTAL_CACHE_ACCESSES_RE.search(line)
+        if l2_total_cache_accesses_match:
+            try:
+                l2_total_cache_accesses=int(float(l2_total_cache_accesses_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l2_global_acc_w_total_access_match=L2_GLOB_ACC_W_TOTAL_ACCESS_RE.search(line)
+        if l2_global_acc_w_total_access_match:
+            try:
+                l2_global_acc_w_total_access=int(float(l2_global_acc_w_total_access_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue
+
     if current is not None:
         commit_current()
     elif r_total or w_total or r_reasons or w_reasons or r_driver_reasons or w_driver_reasons:
@@ -193,6 +268,10 @@ def parse_o_file(path: str):
             'w_reasons': dict(w_reasons),
             'r_drivers': {cause: dict(drivers) for cause, drivers in r_driver_reasons.items()},
             'w_drivers': {cause: dict(drivers) for cause, drivers in w_driver_reasons.items()},
+            'l2_bw': l2_bw,
+            'l2_total_cache_accesses': l2_total_cache_accesses,
+            'l2_global_acc_w_total_access': l2_global_acc_w_total_access,
+            'total_fail': (r_total or 0)+(w_total or 0),
         }]
     return kernels
 
@@ -222,6 +301,8 @@ def normalize_variant_name(v: str) -> str:
     nv=v
     if nv.startswith('regress-'):
         nv=nv[len('regress-'):]
+    if nv.startswith('perf-study-'):
+        nv=nv[len('perf-study-'):]
     if nv.endswith('-again'):
         nv=nv[:-len('-again')]
     if nv=='default-config':
@@ -315,9 +396,63 @@ def geometric_mean(values):
     return math.exp(log_sum/len(cleaned))-1.0
 
 
-METRIC_ORDER=['ipc','global_acc_r','global_acc_w']
-METRIC_VALUE_KEYS={'ipc':'ipc','global_acc_r':'r_total','global_acc_w':'w_total'}
-METRIC_LABELS={'ipc':'IPC','global_acc_r':'GLOBAL_ACC_R fails','global_acc_w':'GLOBAL_ACC_W fails'}
+METRIC_DEFINITIONS={
+    'ipc': {
+        'label': 'IPC',
+        'value_key': 'ipc',
+        'higher_is_better': True,
+    },
+    'global_acc_r': {
+        'label': 'GLOBAL_ACC_R fails',
+        'value_key': 'r_total',
+        'higher_is_better': False,
+    },
+    'global_acc_w': {
+        'label': 'GLOBAL_ACC_W fails',
+        'value_key': 'w_total',
+        'higher_is_better': False,
+    },
+    'l2_bw': {
+        'label': 'L2_BW',
+        'value_key': 'l2_bw',
+        'higher_is_better': False,
+    },
+    'l2_total_cache_accesses': {
+        'label': 'L2_total_cache_accesses',
+        'value_key': 'l2_total_cache_accesses',
+        'higher_is_better': False,
+    },
+    'l2_global_acc_w_total_access': {
+        'label': 'L2_GLOBAL_ACC_W_TOTAL_ACCESS',
+        'value_key': 'l2_global_acc_w_total_access',
+        'higher_is_better': False,
+    },
+}
+
+DEFAULT_METRIC_ORDER=['ipc','global_acc_r','global_acc_w']
+METRIC_ORDER=list(DEFAULT_METRIC_ORDER)
+METRIC_VALUE_KEYS={name: props['value_key'] for name, props in METRIC_DEFINITIONS.items()}
+METRIC_LABELS={name: props['label'] for name, props in METRIC_DEFINITIONS.items()}
+METRIC_ORIENTATION={name: props['higher_is_better'] for name, props in METRIC_DEFINITIONS.items()}
+DEFAULT_FAIL_CAUSE_TYPES=('MSHR_MERGE_ENTRY_FAIL','MISS_QUEUE_FULL')
+
+def _canonicalize_metric_cli_name(name: str) -> str:
+    return re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_') if name else ''
+
+METRIC_NAME_ALIASES={
+    'global_acc_r': 'global_acc_r',
+    'globalacc_r': 'global_acc_r',
+    'global_acc_w': 'global_acc_w',
+    'globalacc_w': 'global_acc_w',
+    'l2_bw': 'l2_bw',
+    'l2totalcacheaccesses': 'l2_total_cache_accesses',
+    'l2_total_cache_accesses': 'l2_total_cache_accesses',
+    'l2_global_acc_w_total_access': 'l2_global_acc_w_total_access',
+    'l2_cache_stats_breakdown_global_acc_w_total_access': 'l2_global_acc_w_total_access',
+}
+
+def resolve_metric_key(name: str) -> str:
+    return METRIC_NAME_ALIASES.get(_canonicalize_metric_cli_name(name or ''))
 
 
 def format_value(value):
@@ -415,6 +550,12 @@ def value_for_excel(value):
         return None
     return round(float(value), 3)
 
+
+def coalesce_metric_actual(metric_key: str, actual):
+    if metric_key=='l2_global_acc_w_total_access' and actual is None:
+        return 0.0
+    return actual
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -435,6 +576,26 @@ def main():
     ap.add_argument('--overall-md', default=os.path.join(SCRIPT_DIR, 'overall_perf_study.md'), help='Aggregate Markdown across studies with per-study geomean results.')
     ap.add_argument('--overall-xlsx', default=os.path.join(SCRIPT_DIR, 'overall_perf_study.xlsx'), help='Aggregate XLSX across studies (requires openpyxl).')
     ap.add_argument('--study-name', help='Override study name for overall tables (default: normalized tuned variant).')
+    ap.add_argument(
+        '--overall-extra-metrics',
+        nargs='*',
+        default=[
+            'L2_BW',
+            'L2_total_cache_accesses',
+            'L2_global_acc_w_total_access',
+        ],
+        help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_total_cache_accesses, L2_global_acc_w_total_access.',
+    )
+    ap.add_argument(
+        '--fail-total-metrics',
+        nargs='*',
+        default=[
+            'L2_BW',
+            'L2_total_cache_accesses',
+            'L2_global_acc_w_total_access',
+        ],
+        help='Metrics to display in Fail-total sheet (case-insensitive). Use NONE to skip defaults.',
+    )
     args=ap.parse_args()
     sim_root=os.path.expanduser(os.path.expandvars(args.sim_root)) if args.sim_root else default_sim_root()
     if not sim_root: sys.exit('[ERROR] sim-root unresolved.')
@@ -458,6 +619,91 @@ def main():
 
     base_label=variant_labels.get(base_variant, normalize_variant_name(base_variant))
 
+    overall_extra_requests=args.overall_extra_metrics or []
+    fail_total_requests=args.fail_total_metrics or []
+
+    def _resolve_metric_tokens(tokens):
+        resolved=[]
+        unknown=[]
+        for token in tokens:
+            if token is None:
+                continue
+            token_str=str(token).strip()
+            if not token_str:
+                continue
+            if token_str.lower() in ('none','null'):
+                continue
+            metric_key=resolve_metric_key(token_str)
+            if not metric_key or metric_key not in METRIC_DEFINITIONS:
+                unknown.append(token_str)
+                continue
+            resolved.append(metric_key)
+        return resolved, unknown
+
+    overall_extra_resolved, overall_extra_unknown=_resolve_metric_tokens(overall_extra_requests)
+    fail_total_resolved, fail_total_unknown=_resolve_metric_tokens(fail_total_requests)
+
+    unknown_metrics=sorted(set(overall_extra_unknown + fail_total_unknown))
+    if unknown_metrics:
+        sys.exit(f"[ERROR] Unknown metrics requested via --overall-extra-metrics/--fail-total-metrics: {', '.join(unknown_metrics)}")
+
+    fail_total_metric_keys=[]
+    for metric in fail_total_resolved:
+        if metric not in fail_total_metric_keys:
+            fail_total_metric_keys.append(metric)
+
+    extra_metric_keys=[]
+
+    def _maybe_add_extra(metric):
+        if metric in ('global_acc_r','global_acc_w'):
+            return
+        if metric not in extra_metric_keys:
+            extra_metric_keys.append(metric)
+
+    for metric in overall_extra_resolved:
+        _maybe_add_extra(metric)
+    for metric in fail_total_metric_keys:
+        _maybe_add_extra(metric)
+
+    extra_metric_keys=[metric for metric in extra_metric_keys if metric not in DEFAULT_METRIC_ORDER]
+
+    optional_summary_metrics=set()
+    for metric in overall_extra_resolved:
+        if metric in ('global_acc_r','global_acc_w'):
+            optional_summary_metrics.add(metric)
+    for metric in fail_total_metric_keys:
+        if metric in ('global_acc_r','global_acc_w'):
+            optional_summary_metrics.add(metric)
+
+    primary_overall_metrics=['ipc']
+    for metric in ('global_acc_r','global_acc_w'):
+        if metric in optional_summary_metrics and metric not in primary_overall_metrics:
+            primary_overall_metrics.append(metric)
+
+    def summary_metric_label(metric_key: str) -> str:
+        if metric_key=='ipc':
+            return 'IPC'
+        if metric_key=='global_acc_r':
+            return 'GLOBAL_ACC_R'
+        if metric_key=='global_acc_w':
+            return 'GLOBAL_ACC_W'
+        return METRIC_LABELS.get(metric_key, metric_key)
+    extra_metric_actual_by_label=defaultdict(dict)
+    base_extra_metrics_ref=None
+
+    ordered_variant_labels=[]
+    _seen_variant_labels=set()
+
+    def _register_variant_label(label: str):
+        if not label or label in _seen_variant_labels:
+            return
+        _seen_variant_labels.add(label)
+        ordered_variant_labels.append(label)
+
+    _register_variant_label(base_label)
+    for variant in compare_variants:
+        _register_variant_label(variant_labels.get(variant, variant))
+
     header_cols=['variant','benchmark','kernel_index','ipc_base','ipc_tuned','ipc_gain_pct','read_base','read_tuned','read_change_pct','write_base','write_tuned','write_change_pct']
     csv_header_extended=header_cols + ['ipc_gain_class','read_change_class','write_change_class']
     avg_header=['variant','benchmark','ipc_gain_pct','read_change_pct','write_change_pct']
@@ -477,6 +723,8 @@ def main():
             'bench_pct_records': [],
             'metric_geomean_inputs': {metric: {'base': [], 'tuned': []} for metric in METRIC_ORDER},
             'metric_ratios': {metric: [] for metric in METRIC_ORDER},
+            'extra_metric_geo_inputs': {metric: {'base': [], 'tuned': []} for metric in extra_metric_keys},
+            'extra_metric_ratios': {metric: [] for metric in extra_metric_keys},
         }
         for variant in compare_variants
     }
@@ -495,6 +743,14 @@ def main():
         }
         for variant in compare_variants
     }
+
+    fail_cause_bench_summary={}
+    fail_cause_overall_entries={}
+    base_fail_cause_overall={}
+    tracked_fail_causes=[]
+    fail_metric_keys=[]
+    fail_metric_labels={}
+    fail_cause_bench_order=[]
 
     def accumulate_fail_causes(target, records):
         for rec in records:
@@ -544,7 +800,6 @@ def main():
                 effective_total=total_int if total_int>0 else sum(numeric_reasons.values())
                 if effective_total<=0:
                     continue
-                total_display=total_int if total_int>0 else effective_total
                 for cause, fails in numeric_reasons.items():
                     pct=(fails/effective_total*100.0) if effective_total else 0.0
                     per_kernel_cause_records[variant_label].append({
@@ -554,7 +809,6 @@ def main():
                         'access_type': access_type,
                         'cause': cause,
                         'fails': fails,
-                        'total_fails': total_display,
                         'pct': pct,
                     })
                     driver_map=(rec.get(driver_key) or {}).get(cause, {})
@@ -624,16 +878,18 @@ def main():
 
     def unique_sheet_name(label: str) -> str:
         base=sanitize_sheet_name(label)
-        if base not in sheet_name_registry:
-            sheet_name_registry.add(base)
-            return base
+        candidate=base
         suffix=1
-        while True:
-            candidate=sanitize_sheet_name(f"{base}_{suffix}")
-            if candidate not in sheet_name_registry:
-                sheet_name_registry.add(candidate)
-                return candidate
+        while candidate in sheet_name_registry:
+            suffix_str=f"_{suffix}"
+            max_len=max(1, 31-len(suffix_str))
+            trimmed=base[:max_len]
+            if not trimmed.strip():
+                trimmed='Sheet'
+            candidate=f"{trimmed}{suffix_str}"
             suffix+=1
+        sheet_name_registry.add(candidate)
+        return candidate
 
     def align_variant_records(base_records, tuned_records):
         base_list=list(base_records)
@@ -654,9 +910,14 @@ def main():
     def classify_change(value, metric_type):
         if value is None:
             return 'neutral'
+        better_is_greater=METRIC_ORIENTATION.get(metric_type, False)
+        if metric_type.startswith('fail::'):
+            better_is_greater=False
         if value==float('inf'):
-            return 'better' if metric_type=='ipc' else 'worse'
-        if metric_type=='ipc':
+            return 'better' if better_is_greater else 'worse'
+        if value==float('-inf'):
+            return 'worse' if better_is_greater else 'better'
+        if better_is_greater:
             if value>0:
                 return 'better'
             if value<0:
@@ -781,6 +1042,18 @@ def main():
                 if ratio is not None:
                     result['metric_ratios'][metric].append(ratio)
 
+            for metric in extra_metric_keys:
+                key=METRIC_VALUE_KEYS[metric]
+                base_geo=geometric_mean_from_records(base_aligned, key)
+                tuned_geo=geometric_mean_from_records(tuned_aligned, key)
+                ratio=ratio_from_geomeans(base_geo, tuned_geo)
+                if base_geo is not None:
+                    result['extra_metric_geo_inputs'][metric]['base'].append(base_geo)
+                if tuned_geo is not None:
+                    result['extra_metric_geo_inputs'][metric]['tuned'].append(tuned_geo)
+                if ratio is not None:
+                    result['extra_metric_ratios'][metric].append(ratio)
+
             avg_row=[
                 variant_label,
                 bench,
@@ -826,9 +1099,22 @@ def main():
             metric_geo_base[metric]=base_geo
             metric_geo_tuned[metric]=tuned_geo
 
+        extra_metric_geo_pct={}
+        extra_metric_geo_base={}
+        extra_metric_geo_tuned={}
+        for metric in extra_metric_keys:
+            inputs_extra=variant_data['extra_metric_geo_inputs'][metric]
+            base_geo=geometric_mean(inputs_extra['base']) if inputs_extra['base'] else None
+            tuned_geo=geometric_mean(inputs_extra['tuned']) if inputs_extra['tuned'] else None
+            ratio=ratio_from_geomeans(base_geo, tuned_geo)
+            extra_metric_geo_pct[metric]=ratio_to_pct(ratio)
+            extra_metric_geo_base[metric]=base_geo
+            extra_metric_geo_tuned[metric]=tuned_geo
+
         eps=args.epsilon
 
-        def count_wins(metric, better_is_greater):
+        def count_wins(metric):
+            better_is_greater=METRIC_ORIENTATION.get(metric, False)
             wins=losses=neutrals=0
             for _, pct_map in bench_pct_records:
                 val=pct_map.get(metric)
@@ -855,17 +1141,25 @@ def main():
                         wins+=1
             return wins, losses, neutrals
 
-        ipc_w, ipc_l, ipc_n=count_wins('ipc', True)
-        rd_w, rd_l, rd_n=count_wins('global_acc_r', False)
-        wr_w, wr_l, wr_n=count_wins('global_acc_w', False)
+        win_loss_stats={}
+        for metric in primary_overall_metrics:
+            win_loss_stats[metric]=count_wins(metric)
 
         variant_label=variant_labels.get(variant, variant)
         lines=[f"GEOMETRIC MEAN SUMMARY ({variant_label})"]
-        lines.append(f"IPC geomean percent change: {format_pct(metric_geo_pct.get('ipc'))}%")
-        lines.append(f"GLOBAL_ACC_R geomean percent change: {format_pct(metric_geo_pct.get('global_acc_r'))}%")
-        lines.append(f"GLOBAL_ACC_W geomean percent change: {format_pct(metric_geo_pct.get('global_acc_w'))}%")
-        lines.append(f"GLOBAL_ACC_R win/loss/neutral benchmarks: {rd_w}/{rd_l}/{rd_n}")
-        lines.append(f"GLOBAL_ACC_W win/loss/neutral benchmarks: {wr_w}/{wr_l}/{wr_n}")
+        for metric in primary_overall_metrics:
+            label=summary_metric_label(metric)
+            lines.append(f"{label} geomean percent change: {format_pct(metric_geo_pct.get(metric))}%")
+            if metric in ('global_acc_r','global_acc_w'):
+                wins, losses, neutrals=win_loss_stats.get(metric, (0,0,0))
+                lines.append(f"{label} win/loss/neutral benchmarks: {wins}/{losses}/{neutrals}")
+
+        added_summary_metrics=set(METRIC_ORDER)
+        for metric in extra_metric_keys:
+            if metric in added_summary_metrics:
+                continue
+            lines.append(f"{METRIC_LABELS.get(metric, metric)} geomean percent change: {format_pct(extra_metric_geo_pct.get(metric))}%")
+            added_summary_metrics.add(metric)
 
         if args.debug_geomean:
             print(f"[DEBUG] Bench-level geomean ratios for {variant_label}:")
@@ -878,7 +1172,18 @@ def main():
         variant_data['metric_geo_pct']=metric_geo_pct
         variant_data['metric_geo_base']=metric_geo_base
         variant_data['metric_geo_tuned']=metric_geo_tuned
+        variant_data['extra_metric_geo_pct']=extra_metric_geo_pct
+        variant_data['extra_metric_geo_base']=extra_metric_geo_base
+        variant_data['extra_metric_geo_tuned']=extra_metric_geo_tuned
         variant_data['overall_lines']=lines
+
+        if base_extra_metrics_ref is None:
+            base_extra_metrics_ref=extra_metric_geo_base
+            extra_metric_actual_by_label[base_label]={metric: coalesce_metric_actual(metric, value) for metric, value in extra_metric_geo_base.items()}
+        elif base_label not in extra_metric_actual_by_label:
+            extra_metric_actual_by_label[base_label]={metric: coalesce_metric_actual(metric, value) for metric, value in extra_metric_geo_base.items()}
+
+        extra_metric_actual_by_label[variant_label]={metric: coalesce_metric_actual(metric, value) for metric, value in extra_metric_geo_tuned.items()}
 
         overall_entries.append({
             'variant': variant,
@@ -887,13 +1192,162 @@ def main():
             'metric_geo_pct': metric_geo_pct,
             'metric_geo_base': metric_geo_base,
             'metric_geo_tuned': metric_geo_tuned,
+            'extra_metric_geo_pct': extra_metric_geo_pct,
+            'extra_metric_geo_base': extra_metric_geo_base,
+            'extra_metric_geo_tuned': extra_metric_geo_tuned,
         })
 
         if base_metrics_ref is None:
             base_metrics_ref=metric_geo_base
+        if base_extra_metrics_ref is None:
+            base_extra_metrics_ref=extra_metric_geo_base
+
+    if base_label in per_kernel_cause_records and per_kernel_cause_records[base_label]:
+        def _build_cause_map(records):
+            mapping=defaultdict(lambda: defaultdict(dict))
+            for rec in records or []:
+                bench=rec.get('benchmark')
+                kernel_index=rec.get('kernel_index')
+                cause=rec.get('cause')
+                fails=rec.get('fails')
+                if bench is None or kernel_index is None or cause is None:
+                    continue
+                try:
+                    kernel_idx=int(kernel_index)
+                    fail_count=int(fails)
+                except (TypeError, ValueError):
+                    continue
+                if fail_count < 0:
+                    continue
+                mapping[bench].setdefault(kernel_idx, {})[cause]=fail_count
+            return mapping
+
+        base_cause_map=_build_cause_map(per_kernel_cause_records.get(base_label, []))
+        cause_totals_base=defaultdict(int)
+        for bench_map in base_cause_map.values():
+            for kernel_map in bench_map.values():
+                for cause, count in kernel_map.items():
+                    try:
+                        cause_totals_base[cause]+=int(count)
+                    except (TypeError, ValueError):
+                        continue
+
+        aggregated_fail_totals=defaultdict(int)
+        for label_records in per_kernel_cause_records.values():
+            for rec in label_records or []:
+                cause=rec.get('cause')
+                fails_val=rec.get('fails')
+                if not cause:
+                    continue
+                try:
+                    fails_int=int(fails_val)
+                except (TypeError, ValueError):
+                    continue
+                if fails_int<=0:
+                    continue
+                aggregated_fail_totals[cause]+=fails_int
+
+        if aggregated_fail_totals:
+            tracked_fail_causes=[cause for cause, _ in sorted(aggregated_fail_totals.items(), key=lambda item: (-item[1], item[0]))]
+        else:
+            tracked_fail_causes=[cause for cause in DEFAULT_FAIL_CAUSE_TYPES if cause_totals_base.get(cause, 0)>0]
+
+        if tracked_fail_causes:
+            fail_metric_keys=[f"fail::{cause}" for cause in tracked_fail_causes]
+            fail_metric_labels={f"fail::{cause}": cause for cause in tracked_fail_causes}
+            METRIC_LABELS.update(fail_metric_labels)
+
+            fail_cause_bench_order=sorted(base_cause_map.keys())
+            fail_cause_bench_summary={label: {} for label in ordered_variant_labels}
+            fail_cause_overall_values=defaultdict(lambda: defaultdict(lambda: {'base': [], 'tuned': []}))
+
+            for label in ordered_variant_labels:
+                variant_map=_build_cause_map(per_kernel_cause_records.get(label, []))
+                bench_summary=fail_cause_bench_summary.setdefault(label, {})
+                for bench in fail_cause_bench_order:
+                    base_kernel_map=base_cause_map.get(bench)
+                    if not base_kernel_map:
+                        continue
+                    kernel_indices=sorted(base_kernel_map.keys())
+                    if not kernel_indices:
+                        continue
+                    bench_entry=bench_summary.setdefault(bench, {})
+                    for cause in tracked_fail_causes:
+                        base_values=[]
+                        tuned_values=[]
+                        for idx in kernel_indices:
+                            base_values.append(int(base_kernel_map[idx].get(cause, 0)))
+                            tuned_values.append(int(variant_map.get(bench, {}).get(idx, {}).get(cause, 0)))
+                        base_geo=geometric_mean(base_values) if base_values else None
+                        tuned_geo=geometric_mean(tuned_values) if tuned_values else None
+                        ratio=ratio_from_geomeans(base_geo, tuned_geo)
+                        pct=ratio_to_pct(ratio)
+                        bench_entry[cause]={
+                            'base_geo': base_geo,
+                            'tuned_geo': tuned_geo,
+                            'ratio': ratio,
+                            'pct': pct,
+                        }
+                        if base_geo is not None:
+                            fail_cause_overall_values[label][cause]['base'].append(base_geo)
+                        if tuned_geo is not None:
+                            fail_cause_overall_values[label][cause]['tuned'].append(tuned_geo)
+
+            fail_cause_overall_entries={}
+            base_fail_cause_overall={}
+            for label, cause_map in fail_cause_overall_values.items():
+                summary={}
+                for cause, values in cause_map.items():
+                    base_geo=geometric_mean(values['base']) if values['base'] else None
+                    tuned_geo=geometric_mean(values['tuned']) if values['tuned'] else None
+                    ratio=ratio_from_geomeans(base_geo, tuned_geo)
+                    pct=ratio_to_pct(ratio)
+                    summary[cause]={
+                        'actual': tuned_geo,
+                        'pct': pct,
+                        'base_actual': base_geo,
+                    }
+                    if label==base_label:
+                        base_fail_cause_overall[cause]=base_geo
+                if summary:
+                    fail_cause_overall_entries[label]=summary
+
+            overall_entry_map={entry['label']: entry for entry in overall_entries}
+            if base_label not in fail_cause_overall_entries:
+                fail_cause_overall_entries[base_label]={}
+            if base_metrics_ref:
+                base_fail_cause_overall['GLOBAL_ACC_R']=base_metrics_ref.get('global_acc_r')
+                base_fail_cause_overall['GLOBAL_ACC_W']=base_metrics_ref.get('global_acc_w')
+                fail_cause_overall_entries[base_label]['GLOBAL_ACC_R']={
+                    'actual': base_metrics_ref.get('global_acc_r'),
+                    'pct': None,
+                }
+                fail_cause_overall_entries[base_label]['GLOBAL_ACC_W']={
+                    'actual': base_metrics_ref.get('global_acc_w'),
+                    'pct': None,
+                }
+            for label, entry in overall_entry_map.items():
+                summary=fail_cause_overall_entries.setdefault(label, {})
+                summary['GLOBAL_ACC_R']={
+                    'actual': entry['metric_geo_tuned'].get('global_acc_r'),
+                    'pct': entry['metric_geo_pct'].get('global_acc_r'),
+                }
+                summary['GLOBAL_ACC_W']={
+                    'actual': entry['metric_geo_tuned'].get('global_acc_w'),
+                    'pct': entry['metric_geo_pct'].get('global_acc_w'),
+                }
 
     if missing_variants:
         print(f"[WARN] no benchmark data found for: {', '.join(missing_variants)}")
+
+    if tracked_fail_causes:
+        for entry in overall_entries:
+            fail_summary=fail_cause_overall_entries.get(entry['label'])
+            if not fail_summary:
+                continue
+            for cause in tracked_fail_causes:
+                pct_val=(fail_summary.get(cause) or {}).get('pct')
+                entry['overall_lines'].append(f"{cause} geomean percent change: {format_pct(pct_val)}%")
 
     overall_summary_rows=[]
     overall_metric_map={}
@@ -926,15 +1380,21 @@ def main():
             w.writerow(a)
         if overall_entries:
             w.writerow([])
-            w.writerow(['variant','ipc_geomean_pct','global_acc_r_geomean_pct','global_acc_w_geomean_pct'])
+            overall_csv_header=['variant'] + [f"{METRIC_LABELS.get(metric, metric)}_geomean_pct" for metric in primary_overall_metrics]
+            for cause in tracked_fail_causes:
+                overall_csv_header.append(f"{cause}_geomean_pct")
+            w.writerow(overall_csv_header)
             for entry in overall_entries:
                 metric_geo_pct=entry['metric_geo_pct']
-                w.writerow([
-                    entry['label'],
-                    format_pct(metric_geo_pct.get('ipc')),
-                    format_pct(metric_geo_pct.get('global_acc_r')),
-                    format_pct(metric_geo_pct.get('global_acc_w')),
-                ])
+                row=[entry['label']]
+                for metric in primary_overall_metrics:
+                    row.append(format_pct(metric_geo_pct.get(metric)))
+                if tracked_fail_causes:
+                    fail_summary=fail_cause_overall_entries.get(entry['label'], {})
+                    for cause in tracked_fail_causes:
+                        pct_val=(fail_summary.get(cause) or {}).get('pct')
+                        row.append(format_pct(pct_val))
+                w.writerow(row)
     print(f"[INFO] wrote {args.csv_file}")
 
     md_lines=[
@@ -961,9 +1421,21 @@ def main():
             md_lines.append('')
             md_lines.append(f"### {entry['label']}")
             md_lines.append('')
-            md_lines.append(f"- IPC geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('ipc'))}%</b>")
-            md_lines.append(f"- GLOBAL_ACC_R geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_r'))}%</b>")
-            md_lines.append(f"- GLOBAL_ACC_W geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_w'))}%</b>")
+            for metric in primary_overall_metrics:
+                label=summary_metric_label(metric)
+                pct_val=entry['metric_geo_pct'].get(metric)
+                md_lines.append(f"- {label} geomean percent change: <b>{format_pct(pct_val)}%</b>")
+            for metric in extra_metric_keys:
+                if metric in METRIC_ORDER:
+                    continue
+                pct_val=entry['extra_metric_geo_pct'].get(metric)
+                md_lines.append(f"- {METRIC_LABELS.get(metric, metric)} geomean percent change: <b>{format_pct(pct_val)}%</b>")
+            if tracked_fail_causes:
+                fail_summary=fail_cause_overall_entries.get(entry['label'])
+                if fail_summary:
+                    for cause in tracked_fail_causes:
+                        pct_val=(fail_summary.get(cause) or {}).get('pct')
+                        md_lines.append(f"- {cause} geomean percent change: <b>{format_pct(pct_val)}%</b>")
         if md_lines and md_lines[-1]=='':
             md_lines.pop()
     with open(args.md_file,'w') as mf:
@@ -1013,9 +1485,21 @@ def main():
         for entry in overall_entries:
             html_lines.append(f"<h3>{entry['label']}</h3>")
             html_lines.append('<ul>')
-            html_lines.append(f"<li>IPC geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('ipc'))}%</b></li>")
-            html_lines.append(f"<li>GLOBAL_ACC_R geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_r'))}%</b></li>")
-            html_lines.append(f"<li>GLOBAL_ACC_W geomean percent change: <b>{format_pct(entry['metric_geo_pct'].get('global_acc_w'))}%</b></li>")
+            for metric in primary_overall_metrics:
+                label=summary_metric_label(metric)
+                pct_val=entry['metric_geo_pct'].get(metric)
+                html_lines.append(f"<li>{label} geomean percent change: <b>{format_pct(pct_val)}%</b></li>")
+            for metric in extra_metric_keys:
+                if metric in METRIC_ORDER:
+                    continue
+                pct_val=entry['extra_metric_geo_pct'].get(metric)
+                html_lines.append(f"<li>{METRIC_LABELS.get(metric, metric)} geomean percent change: <b>{format_pct(pct_val)}%</b></li>")
+            if tracked_fail_causes:
+                fail_summary=fail_cause_overall_entries.get(entry['label'])
+                if fail_summary:
+                    for cause in tracked_fail_causes:
+                        pct_val=(fail_summary.get(cause) or {}).get('pct')
+                        html_lines.append(f"<li>{cause} geomean percent change: <b>{format_pct(pct_val)}%</b></li>")
             html_lines.append('</ul>')
     html_lines.append('</body></html>')
     with open(args.html_file,'w') as hf:
@@ -1023,11 +1507,23 @@ def main():
     print(f"[INFO] wrote {args.html_file}")
 
     if overall_entries:
-        overall_header_labels=['study'] + [f"{METRIC_LABELS.get(metric, metric)} (geomean)" for metric in METRIC_ORDER]
+        combined_metric_keys=[]
+
+        def _append_metric(metric_key):
+            if metric_key and metric_key not in combined_metric_keys:
+                combined_metric_keys.append(metric_key)
+
+        for metric in primary_overall_metrics:
+            _append_metric(metric)
+        for metric in extra_metric_keys:
+            _append_metric(metric)
+        for metric in fail_metric_keys:
+            _append_metric(metric)
+        overall_header_labels=['study'] + [METRIC_LABELS.get(metric, metric) for metric in combined_metric_keys]
 
         def ensure_metric_map(entry=None):
             entry=dict(entry) if entry else {}
-            for metric in METRIC_ORDER:
+            for metric in combined_metric_keys:
                 entry.setdefault(metric, {'actual': None, 'pct': None})
             return entry
 
@@ -1035,25 +1531,67 @@ def main():
 
         if base_metrics_ref:
             base_entry=ensure_metric_map()
-            for metric in METRIC_ORDER:
+            for metric in primary_overall_metrics:
                 base_entry[metric]={'actual': base_metrics_ref.get(metric), 'pct': None}
+            for metric in extra_metric_keys:
+                if metric in METRIC_ORDER:
+                    continue
+                actual_val=(base_extra_metrics_ref or {}).get(metric) if base_extra_metrics_ref else None
+                actual_val=coalesce_metric_actual(metric, actual_val)
+                base_entry[metric]={'actual': actual_val, 'pct': None}
+            for metric_key in fail_metric_keys:
+                cause=metric_key.split('fail::',1)[1]
+                base_entry[metric_key]={'actual': base_fail_cause_overall.get(cause), 'pct': None}
             existing['base-config']=base_entry
 
         base_label=variant_labels.get(base_variant, normalize_variant_name(base_variant))
         if base_metrics_ref and base_label!='base-config':
             base_alias_entry=ensure_metric_map()
-            for metric in METRIC_ORDER:
+            for metric in primary_overall_metrics:
                 base_alias_entry[metric]={'actual': base_metrics_ref.get(metric), 'pct': 0.0}
+            for metric in extra_metric_keys:
+                if metric in METRIC_ORDER:
+                    continue
+                base_value=(base_extra_metrics_ref or {}).get(metric) if base_extra_metrics_ref else None
+                base_value=coalesce_metric_actual(metric, base_value)
+                base_alias_entry[metric]={
+                    'actual': base_value,
+                    'pct': 0.0 if base_value is not None else None,
+                }
+            for metric_key in fail_metric_keys:
+                cause=metric_key.split('fail::',1)[1]
+                base_value=base_fail_cause_overall.get(cause)
+                base_alias_entry[metric_key]={
+                    'actual': base_value,
+                    'pct': 0.0 if base_value is not None else None,
+                }
             existing[base_label]=base_alias_entry
 
         for entry in overall_entries:
             study_label=entry['label']
             study_entry=ensure_metric_map()
-            for metric in METRIC_ORDER:
+            for metric in primary_overall_metrics:
                 study_entry[metric]={
                     'actual': entry['metric_geo_tuned'].get(metric),
                     'pct': entry['metric_geo_pct'].get(metric),
                 }
+            for metric in extra_metric_keys:
+                if metric in METRIC_ORDER:
+                    continue
+                actual_val=coalesce_metric_actual(metric, entry['extra_metric_geo_tuned'].get(metric))
+                study_entry[metric]={
+                    'actual': actual_val,
+                    'pct': entry['extra_metric_geo_pct'].get(metric),
+                }
+            if fail_metric_keys:
+                fail_summary=fail_cause_overall_entries.get(study_label, {})
+                for metric_key in fail_metric_keys:
+                    cause=metric_key.split('fail::',1)[1]
+                    stats=fail_summary.get(cause, {})
+                    study_entry[metric_key]={
+                        'actual': stats.get('actual'),
+                        'pct': stats.get('pct'),
+                    }
             existing[study_label]=study_entry
 
         order=[]
@@ -1073,7 +1611,7 @@ def main():
         for study in order:
             metric_map=overall_metric_map[study]
             cells=[]
-            for metric in METRIC_ORDER:
+            for metric in combined_metric_keys:
                 entry=metric_map[metric]
                 include_pct=(study!='base-config' and entry['pct'] is not None)
                 cells.append(format_actual_with_pct(entry['actual'], entry['pct'], include_pct))
@@ -1092,8 +1630,8 @@ def main():
         md2=[
             '# Overall Performance Study',
             '',
-            '|study|' + '|'.join(f"{METRIC_LABELS.get(metric, metric)} (geomean)" for metric in METRIC_ORDER) + '|',
-            '|---|' + '|'.join(['---:']*len(METRIC_ORDER)) + '|'
+            '|study|' + '|'.join(METRIC_LABELS.get(metric, metric) for metric in combined_metric_keys) + '|',
+            '|---|' + '|'.join(['---:']*len(combined_metric_keys)) + '|'
         ]
         for study, cells in formatted_overall_rows:
             md2.append(f"|{study}|{'|'.join(cells)}|")
@@ -1111,18 +1649,24 @@ def main():
             green='FFD4F5D4'; red='FFF8D0D0'; grey='FFF0F0F0'
             for idx, study in enumerate(order, start=2):
                 metric_map=overall_metric_map[study]
-                for col_offset, metric in enumerate(METRIC_ORDER, start=2):
+                for col_offset, metric in enumerate(combined_metric_keys, start=2):
                     entry=metric_map[metric]
                     pct_val=entry['pct']
+                    better_is_greater=METRIC_ORIENTATION.get(metric, False)
+                    if metric.startswith('fail::'):
+                        better_is_greater=False
                     if study=='base-config' or pct_val is None:
                         fill_color=grey
                     elif pct_val==float('inf'):
-                        fill_color=green if metric=='ipc' else red
+                        fill_color=green if better_is_greater else red
+                    elif pct_val==float('-inf'):
+                        fill_color=red if better_is_greater else green
+                    elif pct_val>0:
+                        fill_color=green if better_is_greater else red
+                    elif pct_val<0:
+                        fill_color=red if better_is_greater else green
                     else:
-                        if metric=='ipc':
-                            fill_color=green if pct_val>0 else red if pct_val<0 else grey
-                        else:
-                            fill_color=green if pct_val<0 else red if pct_val>0 else grey
+                        fill_color=grey
                     ws.cell(row=idx, column=col_offset).fill=_PF(fill_type='solid', fgColor=fill_color)
             wb.save(args.overall_xlsx)
             print(f"[INFO] updated {args.overall_xlsx}")
@@ -1154,6 +1698,8 @@ def main():
             except ImportError:
                 print('[WARN] openpyxl not installed; skipping fail cause breakdown XLSX.')
             else:
+                from openpyxl.styles import PatternFill as _FailPatternFill
+
                 wb=_FailWorkbook()
                 summary_ws=wb.active
                 summary_ws.title='Summary'
@@ -1205,6 +1751,8 @@ def main():
                 register_variant_label(base_label)
                 for variant in compare_variants:
                     register_variant_label(variant_labels.get(variant, variant))
+                for label in ordered_variant_labels:
+                    register_variant_label(label)
                 for source in (per_kernel_cause_records, per_kernel_driver_records):
                     for label in source.keys():
                         register_variant_label(label)
@@ -1212,7 +1760,7 @@ def main():
                 access_sort_priority={'GLOBAL_ACC_R': 0, 'GLOBAL_ACC_W': 1}
 
                 cause_sheet=wb.create_sheet(unique_sheet_name('PerKernel-cause-dist'))
-                cause_headers=['benchmark','kernel','access_type','cause','fails','pct','total_fails']
+                cause_headers=['benchmark','kernel','access_type','cause','fails','pct']
                 cause_sheet.append(cause_headers)
                 cause_data_written=False
                 for label in variant_label_order:
@@ -1221,7 +1769,7 @@ def main():
                         continue
                     cause_data_written=True
                     cause_sheet.append([])
-                    cause_sheet.append(['Variant', label, '', '', '', '', ''])
+                    cause_sheet.append(['Variant', label, '', '', '', ''])
                     grouped=defaultdict(list)
                     for rec in records:
                         key=(rec['benchmark'], rec['kernel_index'], rec['kernel'], rec['access_type'])
@@ -1245,7 +1793,6 @@ def main():
                                 entry['cause'],
                                 entry['fails'],
                                 round(entry['pct'], 3),
-                                entry['total_fails'],
                             ])
                 if not cause_data_written:
                     cause_sheet.append(['No per-kernel fail cause data'])
@@ -1291,7 +1838,7 @@ def main():
                     driver_sheet.append(['No per-kernel driver data'])
 
                 kernel_weight_sheet=wb.create_sheet(unique_sheet_name('PerBenchmark-kernel-avg'))
-                kernel_weight_headers=['variant','benchmark','access_type','cause','fails','total_fails','avg_pct','kernel_count','nonzero_kernel_count']
+                kernel_weight_headers=['variant','benchmark','access_type','cause','fails','avg_pct','kernel_count','nonzero_kernel_count']
                 kernel_weight_sheet.append(kernel_weight_headers)
                 kernel_weight_data_written=False
                 for label in variant_label_order:
@@ -1338,7 +1885,6 @@ def main():
                                 'ALL',
                                 cause,
                                 cause_fails,
-                                total_fails,
                                 round(avg_pct, 3),
                                 kernel_count,
                                 nonzero,
@@ -1346,11 +1892,191 @@ def main():
                     if variant_rows:
                         kernel_weight_data_written=True
                         kernel_weight_sheet.append([])
-                        kernel_weight_sheet.append(['Variant', label, '', '', '', '', '', '', ''])
+                        kernel_weight_sheet.append(['Variant', label, '', '', '', '', '', ''])
                         for row in variant_rows:
                             kernel_weight_sheet.append(row)
                 if not kernel_weight_data_written:
                     kernel_weight_sheet.append(['No kernel-weighted fail cause data'])
+
+                overall_entry_lookup={entry['label']: entry for entry in overall_entries}
+
+                if (base_metrics_ref or overall_entries or fail_cause_overall_entries):
+                    fail_geomean_sheet=wb.create_sheet(unique_sheet_name('Fail-geomean'))
+                    cause_headers=list(tracked_fail_causes)
+                    geomean_headers=['variant','GLOBAL_ACC_R fails','GLOBAL_ACC_W fails'] + cause_headers
+                    fail_geomean_sheet.append(geomean_headers)
+                    data_written=False
+                    ordered_labels=ordered_variant_labels or variant_label_order
+
+                total_sheet=wb.create_sheet(unique_sheet_name('Fail-total'))
+
+                def _fail_total_header(metric_key: str) -> str:
+                    if metric_key=='global_acc_r':
+                        return 'GLOBAL_ACC_R total'
+                    if metric_key=='global_acc_w':
+                        return 'GLOBAL_ACC_W total'
+                    label=METRIC_LABELS.get(metric_key, metric_key)
+                    if metric_key in METRIC_DEFINITIONS and metric_key not in ('global_acc_r','global_acc_w'):
+                        if label.startswith('L2_'):
+                            return label
+                        return f"{label} geomean"
+                    return label
+
+                fail_total_headers=['variant']
+                for metric in fail_total_metric_keys:
+                    fail_total_headers.append(_fail_total_header(metric))
+                fail_total_headers += cause_headers
+                total_sheet.append(fail_total_headers)
+
+                def _lookup_total_counts(label: str):
+                    if label == base_label:
+                        return {
+                            'r_counts': base_counts['global_acc_r'],
+                            'w_counts': base_counts['global_acc_w'],
+                            'r_total': base_totals['global_acc_r'],
+                            'w_total': base_totals['global_acc_w'],
+                        }
+                    for variant in compare_variants:
+                        if variant_labels.get(variant, variant) == label:
+                            return {
+                                'r_counts': variant_counts_map[variant]['global_acc_r'],
+                                'w_counts': variant_counts_map[variant]['global_acc_w'],
+                                'r_total': variant_totals[variant]['global_acc_r'],
+                                'w_total': variant_totals[variant]['global_acc_w'],
+                            }
+                    agg_r=defaultdict(int)
+                    agg_w=defaultdict(int)
+                    total_r=0
+                    total_w=0
+                    for rec in per_kernel_cause_records.get(label, []):
+                        cause=rec.get('cause')
+                        access_type=rec.get('access_type')
+                        fails_val=rec.get('fails')
+                        if not cause:
+                            continue
+                        try:
+                            fails_int=int(fails_val)
+                        except (TypeError, ValueError):
+                            continue
+                        if fails_int<=0:
+                            continue
+                        if access_type=='GLOBAL_ACC_R':
+                            agg_r[cause]+=fails_int
+                            total_r+=fails_int
+                        elif access_type=='GLOBAL_ACC_W':
+                            agg_w[cause]+=fails_int
+                            total_w+=fails_int
+                    return {
+                        'r_counts': agg_r,
+                        'w_counts': agg_w,
+                        'r_total': total_r,
+                        'w_total': total_w,
+                    }
+
+                base_total_r = base_totals['global_acc_r']
+                base_total_w = base_totals['global_acc_w']
+                base_extra_values = extra_metric_actual_by_label.get(base_label, {})
+                base_cause_totals = {cause: base_counts['global_acc_r'].get(cause, 0) + base_counts['global_acc_w'].get(cause, 0) for cause in cause_headers}
+
+                def _format_total_cell(label: str, value, base_value):
+                    def _format_number(val):
+                        if val is None:
+                            return 'NA'
+                        try:
+                            f_val=float(val)
+                        except (TypeError, ValueError):
+                            return str(val)
+                        if math.isfinite(f_val) and abs(f_val-round(f_val))<1e-6:
+                            return str(int(round(f_val)))
+                        return f"{f_val:.3f}"
+
+                    formatted_value=_format_number(value)
+                    if label == base_label:
+                        return formatted_value, None
+                    if value is None or base_value is None:
+                        return formatted_value, None
+                    try:
+                        val_float=float(value) if value is not None else 0.0
+                    except (TypeError, ValueError):
+                        val_float=0.0
+                    try:
+                        base_float=float(base_value) if base_value is not None else 0.0
+                    except (TypeError, ValueError):
+                        base_float=0.0
+                    if base_float == 0.0:
+                        if val_float == 0.0:
+                            pct_val = 0.0
+                            pct_str = '(0.00%)'
+                        else:
+                            pct_val = math.inf
+                            pct_str = '(+∞%)'
+                    else:
+                        pct_val = (val_float - base_float) / base_float * 100.0
+                        pct_str = f"({pct_val:+.2f}%)"
+                    return f"{formatted_value} {pct_str}", pct_val
+
+                for label in ordered_labels:
+                    totals=_lookup_total_counts(label)
+                    r_counts=totals['r_counts']
+                    w_counts=totals['w_counts']
+                    row=[label]
+                    fill_specs=[]
+
+                    for metric in fail_total_metric_keys:
+                        if metric=='global_acc_r':
+                            value=totals['r_total']
+                            base_value=base_total_r
+                        elif metric=='global_acc_w':
+                            value=totals['w_total']
+                            base_value=base_total_w
+                        else:
+                            metric_values=extra_metric_actual_by_label.get(label, {})
+                            value=coalesce_metric_actual(metric, metric_values.get(metric))
+                            base_value=coalesce_metric_actual(metric, base_extra_values.get(metric))
+                        display_val, pct_val=_format_total_cell(label, value, base_value)
+                        row.append(display_val)
+                        if pct_val is not None:
+                            fill_specs.append({'column': len(row), 'pct': pct_val, 'metric': metric})
+
+                    for cause in cause_headers:
+                        combined_val = r_counts.get(cause, 0) + w_counts.get(cause, 0)
+                        display_cause, pct_cause=_format_total_cell(label, combined_val, base_cause_totals.get(cause, 0))
+                        row.append(display_cause)
+                        if pct_cause is not None:
+                            fill_specs.append({'column': len(row), 'pct': pct_cause, 'metric': f"fail::{cause}"})
+
+                    total_sheet.append(row)
+                    current_row=total_sheet.max_row
+                    for spec in fill_specs:
+                        pct_val=spec['pct']
+                        if pct_val is None or pct_val == 0:
+                            continue
+                        metric_name=spec.get('metric')
+                        better_is_greater=False
+                        if metric_name:
+                            if metric_name in METRIC_ORIENTATION:
+                                better_is_greater=METRIC_ORIENTATION[metric_name]
+                            elif isinstance(metric_name, str) and metric_name.startswith('fail::'):
+                                better_is_greater=False
+                        if math.isinf(pct_val):
+                            ratio=1.0
+                        else:
+                            ratio=min(abs(pct_val)/100.0, 1.0)
+                        sign_positive=pct_val>0
+                        is_improvement=(sign_positive and better_is_greater) or ((not sign_positive) and (not better_is_greater))
+                        if is_improvement:
+                            start_rgb=(0xE6, 0xF4, 0xE6)
+                            end_rgb=(0x63, 0xB8, 0x63)
+                        else:
+                            start_rgb=(0xF9, 0xE3, 0xE3)
+                            end_rgb=(0xD4, 0x5B, 0x5B)
+                        blended_r=int(round(start_rgb[0] + (end_rgb[0]-start_rgb[0])*ratio))
+                        blended_g=int(round(start_rgb[1] + (end_rgb[1]-start_rgb[1])*ratio))
+                        blended_b=int(round(start_rgb[2] + (end_rgb[2]-start_rgb[2])*ratio))
+                        color=f"FF{blended_r:02X}{blended_g:02X}{blended_b:02X}"
+                        cell=total_sheet.cell(row=current_row, column=spec['column'])
+                        cell.fill=_FailPatternFill(fill_type='solid', fgColor=color)
+
 
                 fail_cause_dir=os.path.dirname(fail_cause_path)
                 if fail_cause_dir and not os.path.isdir(fail_cause_dir):
