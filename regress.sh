@@ -145,7 +145,10 @@ fi
 # Remove possible failed logs before regression to avoid a misleading message
 # rm -f ~/dev/accel-sim/accel-sim-framework/util/job_launching/logfiles/*
 
-# Example: Rodinia SASS regression with specialized-unit-4 added to SM7_QV100/trace.config
+# Example: Directly use regress.sh
+# ./regress.sh $VARIANT_TAG
+
+# Example: Passing paras one-by-one to run_simulations.py
 # ```
 # python3 ./util/job_launching/run_simulations.py \
 # -B rodinia_2.0-ft -C QV100-SASS \
