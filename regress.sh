@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ./util/job_launching/run_simulations.py -B rodinia_2.0-ft -C QV100-SASS -T ./hw_run/traces/device-0/12.1/ -N regtest-2025-10-30-1538
+# ./util/job_launching/run_simulations.py -B rodinia_2.0-ft -C QV100-SASS -T ./hw_run/rodinia_2.0-ft/11.0/ -N regtest-2025-10-30-1538
 
 # 多个改动可以一起写在 --extra_sim_params 的同一对引号里，用空格分隔。例如：' -gpgpu_unified_l1d_size 64 -gpgpu_gmem_skip_L1D 1 '
 cd $ACCELSIM_ROOT/..
@@ -68,6 +68,7 @@ if [ "$1" = "single" ]; then
   # 解析可选参数，仅拦截 --config-file，其余原样并入 EXTRA_PARAMS
   CUSTOM_CFG_FILE="${CUSTOM_GPGPUSIM_CONFIG:-}"
   REM_ARGS=()
+  EXTRA_PARAMS=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --config-file|-g)
@@ -81,6 +82,10 @@ if [ "$1" = "single" ]; then
     shift || true
   done
   EXTRA_PARAMS="${REM_ARGS[*]}" # 其余参数作为额外 sim params（可为空）
+  EXTRA_ARGS=()
+  if [ -n "$EXTRA_PARAMS" ]; then
+    EXTRA_ARGS=(--extra_sim_params "$EXTRA_PARAMS")
+  fi
 
   # 如果指定了自定义 gpgpusim.config，则通过环境变量传递，供 run_simulations.py 追加覆盖
   if [ -n "$CUSTOM_CFG_FILE" ]; then
@@ -94,14 +99,17 @@ if [ "$1" = "single" ]; then
     echo "[ERROR] single 模式需要指定 benchmark 名称 (例如 backprop-rodinia-2.0-ft)"; exit 1
   fi
   echo "[INFO] 单条用例: $SINGLE_BENCH, variant_tag=$VARIANT_TAG"
-  python3 util/job_launching/run_simulations.py \
-    -B rodinia_2.0-ft \
-    -C ${RUN_CFG:-QV100-SASS} \
-    -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
-    --only_benchmark "$SINGLE_BENCH" \
-    --variant_tag "$VARIANT_TAG" \
-    --extra_sim_params "$EXTRA_PARAMS" \
-    -N "$VARIANT_TAG"
+  CMD=(
+    python3 util/job_launching/run_simulations.py
+    -B rodinia_2.0-ft
+    -C "${RUN_CFG:-QV100-SASS}"
+    -T ~/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0
+    --only_benchmark "$SINGLE_BENCH"
+    --variant_tag "$VARIANT_TAG"
+  )
+  CMD+=("${EXTRA_ARGS[@]}")
+  CMD+=(-N "$VARIANT_TAG")
+  "${CMD[@]}"
   exit $?
 fi
 
@@ -115,31 +123,38 @@ if [ -n "$SINGLE_BENCH" ]; then
     fi
     echo "[INFO] 使用自定义 gpgpusim.config (环境变量方式): $CUSTOM_GPGPUSIM_CONFIG"
   fi
-  python3 util/job_launching/run_simulations.py \
-    -B rodinia_2.0-ft \
-    -C ${RUN_CFG:-QV100-SASS} \
-    -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
-    --only_benchmark "$SINGLE_BENCH" \
-    --variant_tag "$VARIANT_TAG" \
-    --extra_sim_params "${EXTRA_PARAMS:-}" \
-    -N "$VARIANT_TAG"
+  EXTRA_ARGS=()
+  if [ -n "${EXTRA_PARAMS:-}" ]; then
+    EXTRA_ARGS=(--extra_sim_params "${EXTRA_PARAMS}")
+  fi
+  CMD=(
+    python3 util/job_launching/run_simulations.py
+    -B rodinia_2.0-ft
+    -C "${RUN_CFG:-QV100-SASS}"
+    -T ~/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0
+    --only_benchmark "$SINGLE_BENCH"
+    --variant_tag "$VARIANT_TAG"
+  )
+  CMD+=("${EXTRA_ARGS[@]}")
+  CMD+=(-N "$VARIANT_TAG")
+  "${CMD[@]}"
   exit $?
 fi
 
 ############################################################
 # Remove possible failed logs before regression to avoid a misleading message
-# rm -f /home/hjs/dev/accel-sim/accel-sim-framework/util/job_launching/logfiles/*
+# rm -f ~/dev/accel-sim/accel-sim-framework/util/job_launching/logfiles/*
 
 # Example: Rodinia SASS regression with specialized-unit-4 added to SM7_QV100/trace.config
 # ```
 # python3 ./util/job_launching/run_simulations.py \
 # -B rodinia_2.0-ft -C QV100-SASS \
-# -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0 \
-# -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1032
+# -T ~/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0 \
+# --variant_tag "$VARIANT_TAG" \
+# -N "$VARIANT_TAG"
 # ```
 # Verify above run:
-# ./util/job_launching/monitor_func_test.py -v -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1032
-# ./util/job_launching/monitor_func_test.py -v -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1104
+# ./util/job_launching/monitor_func_test.py -v -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1417
 ############################################################
 
 # 基线回归(base_config/baseline，无额外改动)
@@ -200,7 +215,6 @@ EOF
     esac
     shift || true
   done
-  EXTRA_PARAMS="${REM_ARGS[*]}"
   if [ -n "$CUSTOM_CFG_FILE" ]; then
     if [ ! -f "$CUSTOM_CFG_FILE" ]; then
       echo "[ERROR] --config-file 路径不存在: $CUSTOM_CFG_FILE"; exit 1
@@ -209,20 +223,24 @@ EOF
     echo "[INFO] Group 模式使用自定义 gpgpusim.config (环境变量方式): $CUSTOM_CFG_FILE"
   fi
   echo "[INFO] Group 回归: variant_tag=$VARIANT_TAG"
-  python3 util/job_launching/run_simulations.py \
-    -B rodinia_2.0-ft \
-    -C ${RUN_CFG:-QV100-SASS} \
-    -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
-    --variant_tag "$VARIANT_TAG" \
-    --extra_sim_params "${EXTRA_PARAMS:-}" \
-    -N "$VARIANT_TAG"
+  EXTRA_ARGS=("${REM_ARGS[@]}")
+  CMD=(
+    python3 util/job_launching/run_simulations.py
+    -B rodinia_2.0-ft
+    -C "${RUN_CFG:-QV100-SASS}"
+    -T ~/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0
+    --variant_tag "$VARIANT_TAG"
+  )
+  CMD+=("${EXTRA_ARGS[@]}")
+  CMD+=(-N "$VARIANT_TAG")
+  "${CMD[@]}"
 fi
 
 # # L1D 统一容量为 64KB（示例：l1d64）
 # python3 util/job_launching/run_simulations.py \
 #   -B rodinia_2.0-ft \
 #   -C QV100-SASS \
-#   -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+#   -T ~/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0 \
 #   --variant_tag l1d64 \
 #   --extra_sim_params '-gpgpu_unified_l1d_size 64' \
 #   -N reg-l1d64-2025-1031
@@ -231,7 +249,7 @@ fi
 # python3 util/job_launching/run_simulations.py \
 #   -B rodinia_2.0-ft \
 #   -C QV100-SASS \
-#   -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+#   -T ~/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0 \
 #   --variant_tag skipL1D \
 #   --extra_sim_params ' -gpgpu_unified_l1d_size 64 -gpgpu_gmem_skip_L1D 1' \
 #   -N reg-skipL1D-2025-1031

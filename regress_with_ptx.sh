@@ -194,7 +194,7 @@ python3 "$ACCEL_SIM_DIR/util/job_launching/run_simulations.py" \
 # python3 util/job_launching/run_simulations.py \
 #   -B rodinia_2.0-ft \
 #   -C QV100-SASS \
-#   -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+#   -T ~/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
 #   --variant_tag l1d64 \
 #   --extra_sim_params '-gpgpu_unified_l1d_size 64' \
 #   -N reg-l1d64-2025-1031
@@ -203,7 +203,7 @@ python3 "$ACCEL_SIM_DIR/util/job_launching/run_simulations.py" \
 # python3 util/job_launching/run_simulations.py \
 #   -B rodinia_2.0-ft \
 #   -C QV100-SASS \
-#   -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+#   -T ~/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
 #   --variant_tag skipL1D \
 #   --extra_sim_params ' -gpgpu_unified_l1d_size 64 -gpgpu_gmem_skip_L1D 1' \
 #   -N reg-skipL1D-2025-1031

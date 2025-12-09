@@ -9,7 +9,7 @@ Usage:
     python3 util/job_launching/plot_compare_policies.py \
             --baseline util/job_launching/ipc_reg-baseline.csv \
             --variant util/job_launching/ipc_reg-l1d64.csv \
-            --out-dir /home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws \
+            --out-dir ~/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws \
             [--horizontal] [--bench-only] [--max-label-len 48]
 
 Notes:
@@ -157,7 +157,7 @@ def main():
     ap.add_argument("--out-prefix", default="", help="Output prefix for generated PNGs (used only if --out-dir is empty)")
     ap.add_argument(
         "--out-dir",
-        default="/home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws",
+        default="~/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws",
         help="Directory to write grouped charts (default: sim_run_12.1/draws)",
     )
     ap.add_argument("--horizontal", action="store_true", help="Use horizontal bars")

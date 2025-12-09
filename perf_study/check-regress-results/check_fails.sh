@@ -1,4 +1,4 @@
-sim_root=/home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1
+sim_root=~/dev/accel-sim/accel-sim-framework/sim_run_12.1
 echo "sim_root = "$sim_root
 #!/usr/bin/env bash
 
@@ -26,7 +26,8 @@ shopt -s nullglob
 # regress_tag=perf-study-miss-q-ent-32-and-mshr-max-merge-32
 # regress_tag=perf-study-miss-q-ent-64-and-mshr-max-merge-32
 # regress_tag=regress-default-cfg-11-25-eve # baseline    
-regress_tag=rodinia-regress-again-after-add-specialized-unit-4
+# regress_tag=rodinia-regress-again-after-add-specialized-unit-4
+regress_tag=rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1412
 
 counter=0
 zero_count=0
