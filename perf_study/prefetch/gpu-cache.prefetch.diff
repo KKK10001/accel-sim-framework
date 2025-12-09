@@ -1,0 +1,28 @@
+This file intentionally captures a *conceptual* diff against
+`gpu-cache.h` showing the stride prefetch prototype. It is not meant to be
+applied directly with `patch`, but to preserve the modified fragments under the
+`perf_study/prefetch` sandbox.
+
+Key header-level changes proposed:
+
+1. **Additional STL headers**: introduce `<deque>`, `<string>`, `<unordered_map>`,
+   and `<unordered_set>` since the prototype relies on these containers for
+   tracking stride history and queued candidates.
+2. **`stride_prefetch_config`**: new struct providing tunables (enable flag,
+   degree, queue size, confidence threshold, lifetime, etc.). The
+   `cache_config` constructor now seeds this with safe defaults and exposes
+   `configure_stride_prefetch(...)`, `get_stride_prefetch_config()`, and
+   `stride_prefetch_enabled()` helpers.
+3. **`baseline_cache` hook**: add a virtual `service_prefetch(time)` method so
+   derived caches can inject prefetch traffic during the normal `cycle()`
+   cadence without rewriting the entire function.
+4. **`data_cache` state**: add configuration/state holders for stride tracking,
+   candidate queues, per-line bookkeeping, and lightweight statistics. The new
+   helpers (`record_prefetch_feedback`, `handle_prefetch_generation`,
+   `enqueue_prefetch_candidate`, `issue_prefetch_candidate`, `prune_prefetch_entries`,
+   etc.) encapsulate how demand misses train the simple stride predictor and
+   how speculative requests are launched.
+
+A fully expanded header with these adjustments is supplied in
+`gpu-cache.prefetch.h` for clarity alongside the matching `.cc` excerpts.
+*** End Patch

@@ -1,0 +1,53 @@
+Stride Prefetch Prototype for GPGPU-Sim
+=======================================
+
+Goal
+----
+Introduce a lightweight, stride-based data prefetcher for GPGPU-Sim without
+mutating the upstream tree yet. All edits are staged under
+`perf_study/prefetch/` for review.
+
+Key Artifacts
+-------------
+1. `gpu-cache.prefetch.h`
+   - Extracts the header-side amendments (new configuration structure, cache
+     hooks, and additional state inside `data_cache`).
+2. `gpu-cache.prefetch.cc`
+   - Provides the companion implementation snippets: helper methods to track
+     stride patterns, enqueue prefetch candidates, launch speculative misses,
+     and gather feedback.
+3. `gpu-cache.prefetch.diff`
+   - Narrative summary of the high-level header changes (acts as a map between
+     the sandbox copies and the original files).
+
+Integration Checklist
+---------------------
+1. **Configuration**
+   - Extend the real `cache_config` constructor with `stride_prefetch_config`
+     defaults and plumb a loader (`configure_stride_prefetch`) from the config
+     parser.
+   - Decide on config syntax (e.g., `prefetch=enable,degree=2,queue=32,...`).
+2. **Header wiring**
+   - Merge the new data structures and method declarations into
+     `gpu-cache.h`. Ensure `<deque>`, `<string>`, `<unordered_map>`, and
+     `<unordered_set>` are included.
+3. **Source wiring**
+   - Apply the helper implementations plus the updated `data_cache::access`
+     body and `baseline_cache::cycle()` hook. Remember to call
+     `service_prefetch()` at the end of the cycle.
+4. **Statistics**
+   - Surface the counters from `prefetch_stats_t` via `cache_stats` or new
+     simulator-level metrics to expose useful vs. useless prefetch ratio.
+5. **Validation**
+   - Unit smoke test with stride-friendly kernels (e.g., simple linear walk)
+     to ensure prefetches appear in the miss queue without starving demand.
+   - Stress irregular workloads to tune queue ceilings and confidence
+     thresholds.
+
+Open Questions & To-Dos
+-----------------------
+- Decide whether L1D should share the same prefetch config or a dedicated one.
+- Consider adding a software toggle per kernel if prefetching hurts certain
+  workloads.
+- Extend bookkeeping to capture "wasted but delivered" vs. "expired before
+  issue" cases more precisely once integrated with the actual fill path.
