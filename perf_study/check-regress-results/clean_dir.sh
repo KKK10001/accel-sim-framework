@@ -1,4 +1,4 @@
-sim_root=/home/kuanbba/dev/accel-sim/accel-sim-framework/sim_run_12.1
+sim_root=/home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1
 echo "sim_root = "$sim_root
 #!/usr/bin/env bash
 

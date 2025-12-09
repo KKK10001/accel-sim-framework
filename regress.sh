@@ -97,7 +97,7 @@ if [ "$1" = "single" ]; then
   python3 util/job_launching/run_simulations.py \
     -B rodinia_2.0-ft \
     -C ${RUN_CFG:-QV100-SASS} \
-    -T /home/kuanbba/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+    -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
     --only_benchmark "$SINGLE_BENCH" \
     --variant_tag "$VARIANT_TAG" \
     --extra_sim_params "$EXTRA_PARAMS" \
@@ -118,15 +118,33 @@ if [ -n "$SINGLE_BENCH" ]; then
   python3 util/job_launching/run_simulations.py \
     -B rodinia_2.0-ft \
     -C ${RUN_CFG:-QV100-SASS} \
-    -T /home/kuanbba/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+    -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
     --only_benchmark "$SINGLE_BENCH" \
     --variant_tag "$VARIANT_TAG" \
     --extra_sim_params "${EXTRA_PARAMS:-}" \
     -N "$VARIANT_TAG"
   exit $?
 fi
+
+############################################################
+# Remove possible failed logs before regression to avoid a misleading message
+# rm -f /home/hjs/dev/accel-sim/accel-sim-framework/util/job_launching/logfiles/*
+
+# Example: Rodinia SASS regression with specialized-unit-4 added to SM7_QV100/trace.config
+# ```
+# python3 ./util/job_launching/run_simulations.py \
+# -B rodinia_2.0-ft -C QV100-SASS \
+# -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/rodinia_2.0-ft/11.0 \
+# -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1032
+# ```
+# Verify above run:
+# ./util/job_launching/monitor_func_test.py -v -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1032
+# ./util/job_launching/monitor_func_test.py -v -N rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1104
+############################################################
+
 # 基线回归(base_config/baseline，无额外改动)
 ############################################################
+# 
 # Group (full Rodinia suite) mode with optional --config-file
 # Usage examples:
 #   ./regress.sh                         # default variant tag
@@ -194,7 +212,7 @@ EOF
   python3 util/job_launching/run_simulations.py \
     -B rodinia_2.0-ft \
     -C ${RUN_CFG:-QV100-SASS} \
-    -T /home/kuanbba/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+    -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
     --variant_tag "$VARIANT_TAG" \
     --extra_sim_params "${EXTRA_PARAMS:-}" \
     -N "$VARIANT_TAG"
@@ -204,7 +222,7 @@ fi
 # python3 util/job_launching/run_simulations.py \
 #   -B rodinia_2.0-ft \
 #   -C QV100-SASS \
-#   -T /home/kuanbba/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+#   -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
 #   --variant_tag l1d64 \
 #   --extra_sim_params '-gpgpu_unified_l1d_size 64' \
 #   -N reg-l1d64-2025-1031
@@ -213,7 +231,7 @@ fi
 # python3 util/job_launching/run_simulations.py \
 #   -B rodinia_2.0-ft \
 #   -C QV100-SASS \
-#   -T /home/kuanbba/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
+#   -T /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/traces/device-0 \
 #   --variant_tag skipL1D \
 #   --extra_sim_params ' -gpgpu_unified_l1d_size 64 -gpgpu_gmem_skip_L1D 1' \
 #   -N reg-skipL1D-2025-1031

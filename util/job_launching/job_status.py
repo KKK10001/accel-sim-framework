@@ -449,13 +449,20 @@ for logfile in parsed_logfiles:
             errfile = os.path.join(output_dir, common_name + "." + "e" + jobId)
             outfile = os.path.join(output_dir, common_name + "." + "o" + jobId)
 
-            # New layout support: if files are not found in the config dir, also look
-            # in one-level subdirectories (e.g., variant_tag layout) for simplified names
-            # like '<bench>-<args>.o<jobid>' / '.e<jobid>'.
+            # New layout support: the procman/slurm templates may now emit simplified
+            # basenames (without the commit suffix) directly inside the config directory
+            # or under a variant subdirectory. Probe both locations before declaring the
+            # logs missing.
+            simple_base = os.path.basename(app) + "-" + args
+            simplified_out = os.path.join(output_dir, f"{simple_base}.o{jobId}")
+            simplified_err = os.path.join(output_dir, f"{simple_base}.e{jobId}")
+            if not os.path.isfile(outfile) and os.path.isfile(simplified_out):
+                outfile = simplified_out
+            if not os.path.isfile(errfile) and os.path.isfile(simplified_err):
+                errfile = simplified_err
+
             if not os.path.isfile(outfile) or not os.path.isfile(errfile):
                 try:
-                    # expected simplified basename '<bench>-<args>'
-                    simple_base = os.path.basename(app) + "-" + args
                     found_out = None
                     found_err = None
                     for entry in os.listdir(output_dir):

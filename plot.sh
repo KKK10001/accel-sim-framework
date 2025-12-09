@@ -24,14 +24,14 @@ python3 util/job_launching/aggregate_ipc.py \
 python3 util/job_launching/plot_compare_policies.py \
   --baseline util/job_launching/ipc_reg-baseline-2025-1031.csv \
   --variant  util/job_launching/ipc_reg-l1d64-2025-1031.csv \
-  --out-dir /home/kuanbba/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws \
+  --out-dir /home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws \
   --bench-only
 
 # 基线 vs skipL1D:
 python3 util/job_launching/plot_compare_policies.py \
   --baseline util/job_launching/ipc_reg-baseline-2025-1031.csv \
   --variant  util/job_launching/ipc_reg-skipL1D-2025-1031.csv \
-  --out-dir /home/kuanbba/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws \
+  --out-dir /home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1/draws \
   --bench-only
 
 

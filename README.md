@@ -118,16 +118,16 @@ grep -iE 'error:|错误' /tmp/rodinia20ft.build.log
 # 检查是否生成了bin/lib
 # 1) List produced binaries:
 ls -al ./gpu-app-collection/bin/12.1/release
--rwxrwxr-x 1 kuanbba kuanbba  49144 10月 27 11:25 backprop-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  35344 10月 27 11:25 bfs-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba 333456 10月 27 11:25 heartwall-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  47992 10月 27 11:25 hotspot-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  98040 10月 27 11:25 lud-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  35352 10月 27 11:25 nn-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  99336 10月 27 11:25 nw-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  35792 10月 27 11:25 pathfinder-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  59880 10月 27 11:25 srad_v2-rodinia-2.0-ft
--rwxrwxr-x 1 kuanbba kuanbba  65040 10月 27 11:25 streamcluster-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  49144 10月 27 11:25 backprop-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  35344 10月 27 11:25 bfs-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs 333456 10月 27 11:25 heartwall-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  47992 10月 27 11:25 hotspot-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  98040 10月 27 11:25 lud-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  35352 10月 27 11:25 nn-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  99336 10月 27 11:25 nw-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  35792 10月 27 11:25 pathfinder-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  59880 10月 27 11:25 srad_v2-rodinia-2.0-ft
+-rwxrwxr-x 1 hjs hjs  65040 10月 27 11:25 streamcluster-rodinia-2.0-ft
 # 2) Verify all Rodinia 2.0-ft apps were built:
 cd ./gpu-app-collection/bin/12.1/release
 for a in backprop bfs heartwall hotspot lud nn nw pathfinder srad_v2 streamcluster; do
@@ -182,7 +182,7 @@ source ./gpu-simulator/setup_environment.sh
 
 # Build with make
 # 编译成功之后会生成./gpu-simulator/bin/release/accel-sim.out
-# -rwxrwxr-x 1 kuanbba kuanbba 7.7M 10月 27 17:35 accel-sim.out
+# -rwxrwxr-x 1 hjs hjs 7.7M 10月 27 17:35 accel-sim.out
 make -j -C ./gpu-simulator/ 2>&1 | tee /tmp/make_accel_sim_using_gpgpusim.log
 
 # Build with CMake
