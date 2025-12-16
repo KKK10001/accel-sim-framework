@@ -69,6 +69,17 @@ python3 compute_perf_gain.py \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    regress-default-cfg-11-25-eve \
+    l2_max_merge_zero \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
 """
 import argparse, os, re, sys, math
 from collections import defaultdict

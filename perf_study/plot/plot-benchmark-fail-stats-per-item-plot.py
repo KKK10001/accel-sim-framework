@@ -86,6 +86,15 @@ python plot-benchmark-fail-stats-per-item-plot.py \
         perf-study-miss-q-ent-384-and-mshr-max-merge-32 \
         perf-study-miss-q-ent-512-and-mshr-max-merge-32 \
     --geomean-metrics ipc global_acc_r global_acc_w
+
+python plot-benchmark-fail-stats-per-item-plot.py \
+    --sim-root $ACCELSIM_ROOT/../sim_run_12.1 \
+    --variants regress-default-cfg-11-25-eve \
+        l2_max_merge_zero \
+    --geomean-summary \
+    --geomean-target regress-default-cfg-11-25-eve \
+        l2_max_merge_zero \
+    --geomean-metrics ipc global_acc_r global_acc_w    
 """
 import argparse, math, os, re, sys
 from collections import defaultdict, OrderedDict
