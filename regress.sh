@@ -168,6 +168,11 @@ fi
 #   ./regress.sh                         # default variant tag
 #   ./regress.sh mytag                   # custom variant tag
 #   ./regress.sh mytag --config-file /abs/path/custom.config
+
+# ./regress.sh gather_mshr_stats_l1p5_remain_line_size_128B \
+# --config-file ./perf_study/configs/l1p5_remain_line_size.config
+
+#   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
 # Environment alternative:
 #   CUSTOM_GPGPUSIM_CONFIG=/abs/path/custom.config VARIANT_TAG=mytag ./regress.sh

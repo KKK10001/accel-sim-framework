@@ -76,6 +76,11 @@ void accel_sim_framework::simulation_loop() {
     // cleanup finished kernel
     if (finished_kernel_uid || m_gpgpu_sim->cycle_insn_cta_max_hit() ||
         !m_gpgpu_sim->active()) {
+      if (DTRACE(KERNEL_STATS)) { // 12-22
+        fprintf(Trace::out, "%llu cleanup(finished_kernel_uid:%u)\n", 
+          m_gpgpu_sim->gpu_tot_sim_cycle + m_gpgpu_sim->gpu_sim_cycle,
+          finished_kernel_uid);
+      }
       cleanup(finished_kernel_uid);
     }
 
@@ -147,7 +152,7 @@ void accel_sim_framework::cleanup(unsigned finished_kernel) {
     }
   }
   assert(k);
-  m_gpgpu_sim->print_stats(finished_kernel_cuda_stream_id);
+  m_gpgpu_sim->print_stats(finished_kernel_cuda_stream_id, finished_kernel);
 }
 
 unsigned accel_sim_framework::simulate() {
