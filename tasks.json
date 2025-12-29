@@ -1,0 +1,54 @@
+{
+  // "version": "2.0.0",
+  // "tasks": [
+  //   {
+  //     "label": "Accel-Sim: run this case (tee stdout)",
+  //     "type": "shell",
+  //     "command": "/bin/bash",
+  //     "args": ["-lc", "./justrun.sh"],
+  //     "options": {
+  //       "cwd": "~/dev/accel-sim/accel-sim-framework/sim_run_12.1/backprop-rodinia-2.0-ft/4096___data_result_4096_txt/QV100-SASS"
+  //     },
+  //     "problemMatcher": []
+  //   }
+  // ]
+
+
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Launch Valgrind",
+      "type": "shell",
+      "command": "valgrind",
+      "args": [
+          "--vgdb=yes",
+          "--vgdb-error=0",
+          "--leak-check=full",
+          "--show-leak-kinds=all",
+          "--track-origins=yes",
+          "-s",
+          "~/dev/accel-sim/accel-sim-framework/gpu-simulator/bin/debug/accel-sim.out",
+          "-config",
+          "./gpgpusim.config",
+          "-trace",
+          "./traces/kernelslist.g",
+          "-trace_enabled",
+          "1",
+          "-trace_components",
+          "MEM_STALL_GLOBAL,MEM_STALL_DETAIL,MEM_STALL_GLOBAL_END,L1D_ACCESS, CACHE_MISS",
+          "-trace_sampling_core",
+          "-1",
+          "-trace_output_file",
+          "./trace.out"
+      ],
+      "group": "build",
+      "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
