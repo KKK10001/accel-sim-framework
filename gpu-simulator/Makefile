@@ -46,6 +46,7 @@ endif
 CXXFLAGS+=-I./trace-driven -I./trace-parser -I$(GPGPUSIM_ROOT)/libcuda -I$(GPGPUSIM_ROOT)/src -I$(CUDA_INSTALL_PATH)/include -I$(BUILD_DIR)
 # CXXFLAGS += -DARISE2_L1P5
 CXXFLAGS += -DEXCLUDE_MEMCPY_CYCLES_FROM_CACHE_TIMING
+# CXXFLAGS += -DZERO_ROP_LATENCY
 $(warning Makfile path = $(CURDIR))
 $(warning CXXFLAGS = $(CXXFLAGS))
 
