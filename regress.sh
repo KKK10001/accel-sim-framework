@@ -171,8 +171,31 @@ fi
 # ./regress.sh xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx --config-file ./perf_study/configs/l1p5_remain_line_size.config
 # ./regress.sh exclude_memcpy_from_cache_timing --config-file ./perf_study/configs/l1p5_remain_line_size.config
 # ./regress.sh exclude_memcpy_from_cache_timing_again --config-file ./perf_study/configs/l1p5_remain_line_size.config
+
+# ./regress.sh reg_no_mshr_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_mshr_max_merge_0_l2_dram_queue_size_64.config
 # ok
 # ./regress.sh default_memcpy_offset_check_again --config-file ./perf_study/configs/l1p5_remain_line_size.config
+
+# 2026-1-2
+# ok (Use this as baseline of Arise2)
+# ./regress.sh regress_no_mshr_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_no_mshr_l2_dram_q_size_8.config
+# ok
+# ./regress.sh regress_no_mshr_l2_dram_q_size_64 --config-file ./perf_study/configs/l1p5_no_mshr_l2_dram_q_size_64.config
+
+# 2026-1-5
+# ./regress.sh reg_check_if_dram_byapss_l2_directly_to_icnt_path_exists --config-file ./perf_study/configs/l1p5_subs_1x2_mshr_max_merge_4_l2_dram_q_size_2.config
+# ./regress.sh reg_check_if_dram_byapss_l2_directly_to_icnt_path_exists_again --config-file ./perf_study/configs/l1p5_subs_1x2_mshr_max_merge_4_l2_dram_q_size_2.config
+
+# Contents of /home/kuanbba/dev/accel-sim/accel-sim-framework/util/job_launching/../../sim_run_12.1/heartwall-rodinia-2.0-ft/__data_test_avi_1___data_result_1_txt/QV100-SASS/regress_subs_2x2_no_mshr_l2_dram_q_size_8/heartwall-rodinia-2.0-ft-__data_test_avi_1___data_result_1_txt.e895
+# ------------------
+# accel-sim.out: delayqueue.h:69: void fifo_pipeline<T>::push(T*) [with T = mem_fetch]: Assertion `m_length < m_max_len' failed.
+
+# ./regress.sh regress_subs_2x2_no_mshr_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_subs_2x2_no_mshr_l2_dram_q_size_8.config
+
+# ok
+# ./regress.sh regress_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_l2_dram_q_size_8.config
+# ok
+# ./regress.sh regress_l2_dram_q_size_64 --config-file ./perf_study/configs/l1p5_l2_dram_q_size_64.config
 
 #   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'

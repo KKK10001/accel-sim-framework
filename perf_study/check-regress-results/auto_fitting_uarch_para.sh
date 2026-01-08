@@ -118,7 +118,7 @@ import re
 import sys
 from collections import defaultdict, OrderedDict
 
-TARGET_FAIL_CAUSE = 'MSHR_QUEUE_FULL'
+TARGET_FAIL_CAUSE = 'MISS_QUEUE_FULL'
 
 CACHE_LINE_RE = re.compile(r"-gpgpu_cache:dl1\s+(\S+)")
 GPU_IPC_RE = re.compile(r"gpu_ipc\s*=\s*([0-9]+\.?[0-9]*)")

@@ -80,6 +80,33 @@ python3 compute_perf_gain.py \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+########################################### Begin of L2 Perf. Study ###########################################
+python3 compute_perf_gain.py \
+  --variants \
+    reg_check_2026_1_1_again \
+    regress_no_conservative_reply_l1 \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    regress_no_mshr_l2_dram_q_size_8 \
+    regress_no_mshr_l2_dram_q_size_64 \
+    regress_l2_dram_q_size_8 \
+    regress_l2_dram_q_size_64 \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+########################################### End of L2 Perf. Study ###########################################
 """
 import argparse, os, re, sys, math
 from collections import defaultdict
