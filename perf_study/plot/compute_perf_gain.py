@@ -106,6 +106,38 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+  python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_mshr \
+    regress_enable_mshr \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+  python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_mshr_l2_correlation \
+    regress_disable_mshr_l1p5_correlation \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+
+  python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_mshr_l2_correlation \
+    regress_enable_mshr_l2_correlation \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx    
 ########################################### End of L2 Perf. Study ###########################################
 """
 import argparse, os, re, sys, math

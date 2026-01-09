@@ -1,7 +1,7 @@
 # Overall Performance Study
 
-|study|IPC|L2_BW|L2_total_cache_accesses|L2_GLOBAL_ACC_W_TOTAL_ACCESS|MISS_QUEUE_FULL|MSHR_MERGE_ENTRY_FAIL|
-|---|---:|---:|---:|---:|---:|---:|
-|base-config|60.960|15.843|14553.780|3671.740|1476.818|12.146|
-|default-cfg-11-25-eve|60.960 (+0.000%)|15.843 (+0.000%)|14553.780 (+0.000%)|3671.740 (+0.000%)|1476.818 (+0.000%)|12.146 (+0.000%)|
-|l2_max_merge_zero|60.342 (-1.013%)|15.683 (-1.013%)|14553.780 (+0.000%)|3671.740 (+0.000%)|1810.607 (+22.602%)|13.647 (+12.356%)|
+|study|IPC|L2_BW|L2_total_cache_accesses|L2_GLOBAL_ACC_W_TOTAL_ACCESS|MISS_QUEUE_FULL|MSHR_MERGE_ENTRY_FAIL|MSHR_ENTRY_FAIL|LINE_ALLOC_FAIL|
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+|base-config|29.871|5.756|12066.066|0.000|13170.246|0.000|0.000|0.864|
+|regress_disable_mshr_l2_correlation|29.871 (+0.000%)|5.756 (+0.000%)|12066.066 (+0.000%)|0.000 (+0.000%)|13170.246 (+0.000%)|0.000 (+0.000%)|0.000 (+0.000%)|0.864 (+0.000%)|
+|regress_enable_mshr_l2_correlation|34.293 (+14.801%)|4.628 (-19.594%)|8536.831 (-29.249%)|0.000|3577.276 (-72.838%)|146.261 (+inf%)|7.180 (+inf%)|1.647 (+90.605%)|

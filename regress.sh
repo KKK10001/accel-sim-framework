@@ -190,6 +190,23 @@ fi
 # ------------------
 # accel-sim.out: delayqueue.h:69: void fifo_pipeline<T>::push(T*) [with T = mem_fetch]: Assertion `m_length < m_max_len' failed.
 
+# 2026-1-8
+# ./regress.sh regress_disable_mshr__l1p5_subs_4x2_mshr_max_merge_4_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_subs_4x2_mshr_max_merge_4_l2_dram_q_size_8.config
+
+# ./regress.sh regress_disable_mshr__l1p5_subs_4x2_mshr_max_merge_4_l2_dram_q_size_8_again --config-file ./perf_study/configs/l1p5_subs_4x2_mshr_max_merge_4_l2_dram_q_size_8.config
+
+# 11:59-12:05 ALL PASS
+# ./regress.sh regress_disable_mshr_l1p5_correlation --config-file ./perf_study/configs/l1p5_correlation.config
+# 12:07-ALL PASS
+# ./regress.sh regress_disable_mshr_l2_correlation --config-file ./perf_study/configs/l1p5_correlation.config
+# ./regress.sh regress_enable_mshr_l2_correlation --config-file ./perf_study/configs/l1p5_correlation.config
+
+# ok. 10:25
+# ./regress.sh regress_disable_mshr --config-file ./perf_study/configs/l1p5_subs_4x2_mshr_max_merge_4_l2_dram_q_size_8.config
+
+# ./regress.sh regress_enable_mshr --config-file ./perf_study/configs/l1p5_subs_4x2_mshr_max_merge_4_l2_dram_q_size_8.config
+
+
 # ./regress.sh regress_subs_2x2_no_mshr_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_subs_2x2_no_mshr_l2_dram_q_size_8.config
 
 # ok

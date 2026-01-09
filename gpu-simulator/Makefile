@@ -48,6 +48,7 @@ CXXFLAGS+=-I./trace-driven -I./trace-parser -I$(GPGPUSIM_ROOT)/libcuda -I$(GPGPU
 ##################### L2 Performance Study Flags #####################
 CXXFLAGS += -DEXCLUDE_MEMCPY_CYCLES_FROM_CACHE_TIMING
 CXXFLAGS += -DCONSERVATIVE_REQUEST_L2_SUB
+# CXXFLAGS += -DDISABLE_MSHR
 ######################################################################
 # CXXFLAGS += -DZERO_ROP_LATENCY
 $(warning Makfile path = $(CURDIR))
