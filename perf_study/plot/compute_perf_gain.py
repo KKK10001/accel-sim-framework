@@ -138,6 +138,66 @@ python3 compute_perf_gain.py \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx    
+
+  python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_mshr \
+    regress_enable_mshr \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+
+# +14% IPC 
+python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_mshr_use_macro_again \
+    regress_enable_mshr_use_macro_again \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+
+# Just to check if diff existed even if MSHR be enabled (no diff)
+python3 compute_perf_gain.py \
+  --variants \
+    regress_enable_mshr \
+    regress_enable_mshr_use_macro_again \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+# Check if diff existed in between {config, macro} when MSHR being disabled
+python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_mshr \
+    regress_disable_mshr_use_macro_again \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+
+# Use config.
+python3 compute_perf_gain.py \
+  --variants \
+    regress_disable_all_mshr \
+    regress_enable_all_mshr \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+  
 ########################################### End of L2 Perf. Study ###########################################
 """
 import argparse, os, re, sys, math

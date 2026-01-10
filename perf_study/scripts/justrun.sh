@@ -1,0 +1,1 @@
+ /home/hjs/dev/accel-sim/accel-sim-framework/util/job_launching/../../sim_run_12.1/gpgpu-sim-builds/accelsim-commit-bdad209_modified_7.0_26-01-09-15-21-05gpgpu-sim_git-commit-6b35fc5_modified_5.0/accel-sim.out  -config ./gpgpusim.config -trace ./traces/kernelslist.g | tee gpgpu-sim-out_`date '+%b_%d_%H:%M.%S'`.txt
