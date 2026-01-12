@@ -191,6 +191,9 @@ python3 compute_perf_gain.py \
   --variants \
     regress_disable_all_mshr \
     regress_enable_all_mshr \
+    regress_en_all_mshr_l2_mshr_ent_192_slots_2 \
+    regress_en_all_mshr_l2_mshr_ent_192_slots_4 \
+    regress_en_all_mshr_l2_mshr_ent_192_slots_8 \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \
