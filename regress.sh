@@ -221,15 +221,8 @@ fi
 # 1-12
 # ./regress.sh regress_en_all_mshr_l2_mshr_ent_192_slots_4 --config-file ./perf_study/configs/l2_corr_mshr_enable.config
 
-
-# ./regress.sh regress_en_all_mshr_l2_mshr_ent_192_slots_8 --config-file ./perf_study/configs/l2_corr_mshr_enable_slots_8.config
-# ./regress.sh regress_en_all_mshr_l2_mshr_ent_192_slots_2 --config-file ./perf_study/configs/l2_corr_mshr_enable_slots_2.config
-
-
-# ok
-# ./regress.sh regress_l2_dram_q_size_8 --config-file ./perf_study/configs/l1p5_l2_dram_q_size_8.config
-# ok
-# ./regress.sh regress_l2_dram_q_size_64 --config-file ./perf_study/configs/l1p5_l2_dram_q_size_64.config
+# ./regress.sh regress_disable_all_mshr_1_13 --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+# ./regress.sh regress_enable_all_mshr_1_13 --config-file ./perf_study/configs/l2_corr_mshr_enable.config
 
 #   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
