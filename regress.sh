@@ -224,6 +224,30 @@ fi
 # ./regress.sh regress_disable_all_mshr_1_13 --config-file ./perf_study/configs/l2_corr_mshr_disable.config
 # ./regress.sh regress_enable_all_mshr_1_13 --config-file ./perf_study/configs/l2_corr_mshr_enable.config
 
+# 1-15
+# ./regress.sh regress_mshr_correlated_repl --config-file ./perf_study/configs/l2_corr_mshr_enable.config
+# ./regress.sh regress_mshr_correlated_repl_II --config-file ./perf_study/configs/l2_corr_mshr_enable.config
+# ./regress.sh regress_mshr_correlated_repl_fixed_bug --config-file ./perf_study/configs/l2_corr_mshr_enable.config
+# 14:23-:31 ok
+# ./regress.sh regress_mshr_corr_repl_pass_cfg_val --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
+# 14:32-42 ok
+# ./regress.sh regress_mshr_enable_default_repl --config-file ./perf_study/configs/l2_corr_mshr_enable_default_repl.config
+# 14:43
+# ./regress.sh regress_disable_mshr_baseline --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+# 16:32 
+# ./regress.sh regress_mshr_correlated_repl_3rd_time --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
+# 16:40
+# ./regress.sh regress_disable_mshr_baseline_3rd_time --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+# 16:53
+# ./regress.sh regress_mshr_correlated_repl_4th_time_remove_mshr_m_code --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
+# 17:03
+# ./regress.sh regress_mshr_correlated_repl_5th_time_remove_mshr_m_code --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
+# 17:23
+# ./regress.sh regress_mshr_correlated_repl_modify_final_rep_result_with_mshr_m_logic --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
+# 17:39 
+# ./regress.sh regress_mshr_correlated_repl_modify_only_use_mshr_m_logic --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
+
+
 #   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
 # Environment alternative:

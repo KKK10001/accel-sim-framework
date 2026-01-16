@@ -186,11 +186,18 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx  
 
+  regress_disable_all_mshr
+
 # Use config.
+# 2026-1-15
 python3 compute_perf_gain.py \
   --variants \
-    regress_disable_all_mshr_1_13 \
-    regress_enable_all_mshr_1_13 \
+    regress_disable_mshr_baseline \
+    regress_mshr_enable_default_repl \
+    regress_mshr_corr_repl_pass_cfg_val \
+    regress_mshr_correlated_repl_5th_time_remove_mshr_m_code \
+    regress_mshr_correlated_repl_modify_final_rep_result_with_mshr_m_logic \
+    regress_mshr_correlated_repl_modify_only_use_mshr_m_logic \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \
