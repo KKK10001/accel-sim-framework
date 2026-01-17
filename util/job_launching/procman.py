@@ -274,8 +274,18 @@ class ProcMan:
             os.path.join(os.path.dirname(self.pickleFile), "*pickle*")
         ):
             if pickleFile != self.pickleFile:
-                otherProcMan = pickle.load(open(pickleFile, "rb"))
-                othersCores += len(otherProcMan.activeJobs)
+                try:
+                    if os.path.getsize(pickleFile) == 0:
+                        continue
+                    with open(pickleFile, "rb") as pickleHandle:
+                        otherProcMan = pickle.load(pickleHandle)
+                    othersCores += len(getattr(otherProcMan, "activeJobs", {}))
+                except (EOFError, pickle.UnpicklingError, AttributeError, OSError) as err:
+                    print(
+                        "Warning: skipping procman state file {0}: {1}".format(
+                            pickleFile, err
+                        )
+                    )
         return othersCores
 
     def getState(self):

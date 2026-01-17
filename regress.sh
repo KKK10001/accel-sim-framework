@@ -247,6 +247,32 @@ fi
 # 17:39 
 # ./regress.sh regress_mshr_correlated_repl_modify_only_use_mshr_m_logic --config-file ./perf_study/configs/l2_corr_mshr_correlated_repl.config
 
+# 1-16 SRRIP
+# 11:54 one group seems hang
+# ./regress.sh regress_mshr_disable_rep_srrip --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 13:55
+# 13:59 streamcluster finished
+# 14:01 srad_v2 is still running
+# ./regress.sh regress_mshr_disable_rep_srrip_again --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 15:01 
+# ./regress.sh regress_mshr_disable_rep_srrip_bugfix_rrpv_2_when_fill --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 16:17
+# ./regress.sh regress_mshr_disable_rep_srrip_bugfix_continue_probe_tag_onlyif_miss --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 16:37-
+# ./regress.sh regress_mshr_disable_1_16_confirm_again --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+# 18:52
+# ./regress.sh regress_mshr_disable_rep_srrip_keep_reserve_fail_otherwise_hang --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 19:04
+# ./regress.sh regress_mshr_disable_1_16_eve_confirm_after_srrip_fix_reserve_issue --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+# 19:20
+# ./regress.sh regress_mshr_disable_rep_srrip_inc_rrpv_for_one_set_ok --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 1-17 
+# 8:49 (IPC: -0.189%) (a little drop compared with rrpv_2_when_allocate. Confusion)
+# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_when_allocate_when_inv --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip.config
+# 9:04 (IPC: -0.415%)
+# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_when_allocate_when_inv_wr_ratio_0 --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_wr_ratio_0.config
+# 13:02
+# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_3bits.config
 
 #   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
