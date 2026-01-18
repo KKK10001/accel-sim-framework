@@ -192,15 +192,12 @@ python3 compute_perf_gain.py \
 # 2026-1-15
 python3 compute_perf_gain.py \
   --variants \
-    regress_disable_mshr_baseline \
-    regress_mshr_disable_1_16_confirm_again \
-    regress_mshr_disable_rep_srrip_inc_rrpv_for_one_set_ok \
-    regress_mshr_disable_rep_srrip_rrpv_3_when_allocate_when_inv \
-    regress_mshr_disable_rep_srrip_rrpv_3_when_allocate_when_inv_wr_ratio_0 \
-    regress_mshr_enable_default_repl \
-    regress_mshr_corr_repl_pass_cfg_val \
-    regress_mshr_correlated_repl_modify_final_rep_result_with_mshr_m_logic \
-    regress_mshr_correlated_repl_modify_only_use_mshr_m_logic \
+    regress_mshr_disable \
+    regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck_again \
+    regress_mshr_disable_l2_srrip_other_lru_combined_srrip_lru_implement \
+    regress_mshr_disable_l2_combined_rep_other_lru \
+    regress_mshr_disable_l2_srrip_other_lru \
+    regress_mshr_disable_l2_srrip_rrpv_3bits_other_lru \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \

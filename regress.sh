@@ -273,6 +273,19 @@ fi
 # ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_when_allocate_when_inv_wr_ratio_0 --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_wr_ratio_0.config
 # 13:02
 # ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_3bits.config
+# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck_again --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_3bits.config
+# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_2_bits --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_2bits.config
+# ./regress.sh regress_mshr_disable_combined_srrip_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_2bits.config
+# ./regress.sh regress_mshr_disable_dcache_srrip_other_lru_combined_srrip_lru_implement --config-file ./perf_study/configs/l2_corr_mshr_disable_dcache_srrip_other_lru.config
+# ./regress.sh regress_mshr_disable_l2_srrip_other_lru_combined_srrip_lru_implement --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_other_lru.config
+# ./regress.sh regress_mshr_disable_l2_combined_rep_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_combined_rep_other_lru.config
+# ./regress.sh regress_mshr_disable_l2_srrip_rrpv_3bits_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_rrpv_3bits_other_lru.config
+# ./regress.sh regress_mshr_disable_l2_srrip_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_other_lru.config
+
+
+
+# # ./regress.sh regress_mshr_disable --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+
 
 #   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
