@@ -272,20 +272,103 @@ fi
 # 9:04 (IPC: -0.415%)
 # ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_when_allocate_when_inv_wr_ratio_0 --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_wr_ratio_0.config
 # 13:02
-# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_3bits.config
-# ./regress.sh regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck_again --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_3bits.config
 # ./regress.sh regress_mshr_disable_rep_srrip_rrpv_2_bits --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_2bits.config
 # ./regress.sh regress_mshr_disable_combined_srrip_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_rep_srrip_rrpv_2bits.config
 # ./regress.sh regress_mshr_disable_dcache_srrip_other_lru_combined_srrip_lru_implement --config-file ./perf_study/configs/l2_corr_mshr_disable_dcache_srrip_other_lru.config
 # ./regress.sh regress_mshr_disable_l2_srrip_other_lru_combined_srrip_lru_implement --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_other_lru.config
 # ./regress.sh regress_mshr_disable_l2_combined_rep_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_combined_rep_other_lru.config
 # ./regress.sh regress_mshr_disable_l2_srrip_rrpv_3bits_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_rrpv_3bits_other_lru.config
+
+# 1-19
+# ./regress.sh regress_mshr_disable --config-file ./perf_study/configs/l2_corr_mshr_disable.config
+# 29.721 (-0.548%)
+# ./regress.sh regress_mshr_disable_l1d_l2_srrip_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l1d_l2_srrip_other_lru.config
+# 29.970 (+0.285%)
 # ./regress.sh regress_mshr_disable_l2_srrip_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_other_lru.config
+# 29.970 (+0.285%)
+# ./regress.sh regress_mshr_disable_l2_srrip_lru_switch_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_lru_switch_other_lru.config
+# 29.943 (+0.197%) drops.  RRIP-FP (Frequency Policy)
+# ./regress.sh regress_mshr_disable_l2_srrip_fp_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_fp_other_lru.config
+# 29.970 (+0.285%) RRIP-HP
+# ./regress.sh regress_mshr_disable_l2_srrip_hp_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 29.854 (-0.103%) worse
+# ./regress.sh regress_mshr_disable_l2_srrip_hp_other_lru_again --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 29.970 (+0.285%) line->inc_rrpv() during each step of "SRRIP && force_using_lru"
+# ./regress.sh regress_mshr_disable_l2_srrip_hp_other_lru_3rd --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 29.721 (-0.548%) worse! It seems that SRRIP can only be used for L2
+# ./regress.sh regress_mshr_disable_l1d_l2_srrip_hp_other_lru_3rd --config-file ./perf_study/configs/l2_corr_mshr_disable_l1d_l2_srrip_hp_other_lru.config
+# 29.970 (+0.285%) no use of setting max rrpv after LRU's picking valid index
+# ./regress.sh regress_mshr_disable_l2_srrip_hp_set_max_rrpv_for_lru_picked_index --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 29.884 (+0.000%)
+# ./regress.sh regress_mshr_disable_all_cache_lru.o --config-file ./perf_study/configs/l2_corr_mshr_disable_all_cache_lru.config
+# 17:40
+# ./regress.sh regress_mshr_disable_modify_lru_picked_index_with_srrip_update_logic --config-file ./perf_study/configs/l2_corr_mshr_disable_all_cache_lru.config
+# 18:02 29.970 (+0.285%) the same as just using srrip
+# ./regress.sh regress_mshr_disable_l2_srrip_hp_lru_switch_other_lru --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_lru_switch_other_lru.config
+# 18:33 29.925 (+0.135%)
+# ./regress.sh reg_l1d_l2_srrip_hp_lru_switch_rrpv_half_max_when_allocate --config-file ./perf_study/configs/l2_corr_mshr_disable_l1d_l2_srrip_hp_lru_switch_other_lru.config
+# 29.963 (+0.264%) following should be renamed as "half_max + 1"
+# ./regress.sh reg_l2_srrip_hp_lru_switch_rrpv_half_max_when_allocate --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_lru_switch_other_lru.config
+# ./regress.sh reg_l2_srrip_hp_rrpv_half_max_when_allocate --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 29.886 (+0.007%)
+# ./regress.sh reg_l2_srrip_hp_rrpv_half_max_when_allocate_again --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 29.890 (+0.019%)
+# ./regress.sh reg_l2_srrip_hp_rrpv_half_max_plus_1_when_allocate --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# Compare with "reg_l2_srrip_hp_lru_switch_rrpv_half_max_when_allocate"
+# 29.963 (+0.264%) !!! srrip switch to lru do help perf!!!
+# ./regress.sh reg_l2_srrip_hp_lru_switch_rrpv_half_max_plus_1_when_allocate --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_lru_switch_other_lru.config
+# 29.929 (+0.148%) worse. When allocate, do not set rrpv too hot
+# ./regress.sh reg_l2_srrip_hp_lru_switch_rrpv_0_when_allocate --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_lru_switch_other_lru.config
+
+# ./regress.sh reg_en_l2_mshr_l2_srrip_hp_lru_switch_half_max_plus_1_when_allocate --config-file ./perf_study/configs/en_l2_mshr_l2_srrip_hp_lru_switch_other_lru.config
+
+# 1-19 20:56 34.293 (+14.751%)
+# ./regress.sh reg_en_all_mshr_all_cache_lru --config-file ./perf_study/configs/en_all_mshr_all_cache_lru.config
+# 21:06 34.439 (+15.242%)
+# ./regress.sh reg_en_all_mshr_all_cache_mshr_corr_rep --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep.config
+# 1-20 8:41 34.397 (+15.099%) drops ---> record more info. would be better
+# ./regress.sh reg_en_all_mshr__rep_pick_records_below_4_in_mshr --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep.config
+# 9:19 34.229 (+14.537%) worse
+# ./regress.sh reg_en_all_mshr_pick_max_interval_in_mshr --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep.config
+# 34.435 (+15.228%) min_records win
+# ./regress.sh reg_en_all_mshr_pick_min_records_in_mshr --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep.config
+# 9:39 34.435 (+15.228%) -> l2 mshr slots = 4 is already enough
+# ./regress.sh reg_en_all_mshr_pick_min_records_in_mshr_l2_mshr_merge_8 --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep_l2_mshr_merge_8.config
+# 13:58 34.440 (+15.245%) best until now. l2_assoc: 16->32 saved a lot of RESERVATION_FAILS
+# ./regress.sh reg_en_all_mshr_all_cache_mshr_corr_rep_l2_assoc_32 --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep_l2_assoc_32.config
+# 15:16 34.442 (+15.250%) Best! Really works!
+# ./regress.sh reg_mshr_aware_rep --config-file ./perf_study/configs/en_all_mshr_all_cache_mshr_corr_rep_l2_assoc_32.config
+
+# 17:15-:25 34.316 (+14.830%) drops. Guess: low-latency cache such as l1d should still use LRU.
+# ./regress.sh reg_mshr_aware_mixed_rep_l1d_l2_prime_srrip --config-file ./perf_study/configs/mshr_aware_mixed_rep_l1d_l2_prime_srrip.config
+# 17:27-:33 34.460 (+15.309%) Best! (MSHR-aware + LRU)
+# ./regress.sh reg_mshr_aware_mixed_rep_l2_prime_lru --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_lru.config
+# 17:35-:39 34.460 (+15.309%) Same
+# ./regress.sh reg_mshr_aware_mixed_rep_l2_prime_srrip --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
+
+# 1-21 8:47 regress after splitting stats of sector_misses and misses
+# 29.869 (+0.000%)
+# ./regress.sh reg_mshr_disable_all_cache_rep_lru --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+# 34.296 (+14.822%)
+# ./regress.sh reg_en_all_mshr_all_cache_lru --config-file ./perf_study/configs/en_all_mshr_all_cache_lru.config
+# 34.357 (+15.029%) Apply SRRIP only to L2 would help
+# ./regress.sh reg_en_all_mshr_l2_srrip --config-file ./perf_study/configs/en_all_mshr_l2_srrip.config
+# 34.290 (+14.803%) drops. Increasing l2_assoc would not necessarily improve IPC
+# ./regress.sh reg_en_all_mshr_l2_srrip_l2_assoc_32 --config-file ./perf_study/configs/en_all_mshr_l2_srrip_l2_assoc_32.config
+# 34.281 (+14.772%) drops L2_miss_rate: 0.116 (+44.843%)  L1D_miss_rate: 0.169 (+2.598%)
+# ./regress.sh reg_mshr_aware_mixed_rep_l1d_l2_prime_srrip --config-file ./perf_study/configs/mshr_aware_mixed_rep_l1d_l2_prime_srrip.config
+# 34.264 (+14.717%) do not use L1 SRRIP
+# ./regress.sh reg_mshr_aware_mixed_rep_l1d_l2_prime_srrip_l1d_assoc_64_l2_assoc_16 --config-file ./perf_study/configs/mshr_aware_mixed_rep_l1d_l2_prime_srrip_l1d_assoc_64_l2_assoc_16.config
 
 
+# 34.442 (+15.313%)
+# ./regress.sh reg_mshr_aware_mixed_rep_l2_prime_lru --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_lru.config
+# 34.460 (+15.372%) Better than LRU on L2
+# ./regress.sh reg_mshr_aware_mixed_rep_l2_prime_srrip --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
+# 34.424 drops. when l2_prime_lru/_srrip with l2_assoc_32. Larger assoc would make delay on evicting of cold lines
 
-# # ./regress.sh regress_mshr_disable --config-file ./perf_study/configs/l2_corr_mshr_disable.config
-
+# 1-19 16:18
+# ./regress.sh regress_mshr_disable_l2_srrip_hp_rrpv_inc_2_during_lru_picking --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
 
 #   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'

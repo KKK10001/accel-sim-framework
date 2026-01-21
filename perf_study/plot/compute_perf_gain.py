@@ -193,18 +193,63 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     regress_mshr_disable \
-    regress_mshr_disable_rep_srrip_rrpv_3_bits_fuck_again \
-    regress_mshr_disable_l2_srrip_other_lru_combined_srrip_lru_implement \
-    regress_mshr_disable_l2_combined_rep_other_lru \
-    regress_mshr_disable_l2_srrip_other_lru \
-    regress_mshr_disable_l2_srrip_rrpv_3bits_other_lru \
+    regress_mshr_disable_all_cache_lru.o \
+    regress_mshr_disable_l1d_l2_srrip_other_lru \
+    regress_mshr_disable_l2_srrip_lru_switch_other_lru \
+    regress_mshr_disable_l2_srrip_fp_other_lru \
+    regress_mshr_disable_l2_srrip_hp_other_lru \
+    regress_mshr_disable_l1d_l2_srrip_fp_lru_switch_other_lru \
+    regress_mshr_disable_l2_set_max_rrpv_for_lru_picked_index \
+    regress_mshr_disable_l2_srrip_hp_set_max_rrpv_for_lru_picked_index \
+    regress_mshr_disable_modify_lru_picked_index_with_srrip_update_logic \
+    regress_mshr_disable_l2_srrip_hp_lru_switch_other_lru \
+    reg_l1d_l2_srrip_hp_lru_switch_rrpv_half_max_when_allocate \
+    reg_l2_srrip_hp_lru_switch_rrpv_half_max_when_allocate \
+    reg_l2_srrip_hp_rrpv_half_max_when_allocate_again \
+    reg_l2_srrip_hp_rrpv_half_max_plus_1_when_allocate \
+    reg_l2_srrip_hp_lru_switch_rrpv_half_max_plus_1_when_allocate \
+    reg_l2_srrip_hp_lru_switch_rrpv_0_when_allocate \
+    reg_en_l2_mshr_l2_srrip_hp_lru_switch_half_max_plus_1_when_allocate \
+    reg_en_all_mshr_all_cache_lru \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx  
-  
+      
+python3 compute_perf_gain.py \
+  --variants \
+    regress_mshr_disable \
+    reg_en_all_mshr_all_cache_lru \
+    reg_en_all_mshr_all_cache_mshr_corr_rep \
+    reg_en_all_mshr_pick_min_records_in_mshr \
+    reg_en_all_mshr_all_cache_mshr_corr_rep_l2_assoc_32 \
+    reg_mshr_aware_mixed_rep_l1d_l2_prime_srrip \
+    reg_mshr_aware_mixed_rep_l2_prime_lru \
+    reg_mshr_aware_mixed_rep_l2_prime_srrip \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_mshr_disable_all_cache_rep_lru \
+    reg_en_all_mshr_all_cache_lru \
+    reg_en_all_mshr_l2_srrip \
+    reg_en_all_mshr_l2_srrip_l2_assoc_32 \
+    reg_mshr_aware_mixed_rep_l1d_l2_prime_srrip_l1d_assoc_64_l2_assoc_16 \
+    reg_mshr_aware_mixed_rep_l2_prime_lru \
+    reg_mshr_aware_mixed_rep_l2_prime_srrip \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx    
 ########################################### End of L2 Perf. Study ###########################################
 """
 import argparse, os, re, sys, math
@@ -223,8 +268,10 @@ KERNEL_UID_RE = re.compile(r"kernel_launch_uid\s*=\s*([0-9]+)")
 
 FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 L2_BW_RE = re.compile(rf"L2_BW\s*=\s*{FLOAT_CAPTURE}")
-L2_TOTAL_CACHE_ACCESSES_RE = re.compile(rf"L2_total_cache_accesses\s*=\s*{FLOAT_CAPTURE}")
-L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_cache_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
+L2_ACCESSES_RE = re.compile(rf"L2_(?:total_cache_)?accesses\s*=\s*{FLOAT_CAPTURE}")
+L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
+L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
+L1D_MISS_RATE_RE = re.compile(rf"L1D_(?:total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -251,12 +298,15 @@ def parse_o_file(path: str):
     pending_kernel_name=None
     pending_kernel_uid=None
     l2_bw=None
-    l2_total_cache_accesses=None
+    l2_accesses=None
     l2_global_acc_w_total_access=None
+    l2_miss_rate=None
+    l1d_miss_rate=None
 
     def reset_state():
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
-        nonlocal l2_bw, l2_total_cache_accesses, l2_global_acc_w_total_access
+        nonlocal l2_bw, l2_accesses, l2_global_acc_w_total_access
+        nonlocal l2_miss_rate, l1d_miss_rate
         r_total=0
         w_total=0
         r_reasons={}
@@ -264,8 +314,10 @@ def parse_o_file(path: str):
         r_driver_reasons={}
         w_driver_reasons={}
         l2_bw=None
-        l2_total_cache_accesses=None
+        l2_accesses=None
         l2_global_acc_w_total_access=None
+        l2_miss_rate=None
+        l1d_miss_rate=None
 
     def commit_current():
         nonlocal current
@@ -278,8 +330,10 @@ def parse_o_file(path: str):
         current['r_drivers']={cause: dict(drivers) for cause, drivers in r_driver_reasons.items()}
         current['w_drivers']={cause: dict(drivers) for cause, drivers in w_driver_reasons.items()}
         current['l2_bw']=l2_bw
-        current['l2_total_cache_accesses']=l2_total_cache_accesses
+        current['l2_accesses']=l2_accesses
         current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
+        current['l2_miss_rate']=l2_miss_rate
+        current['l1d_miss_rate']=l1d_miss_rate
         current['total_fail']=(r_total or 0)+(w_total or 0)
         kernels.append(current)
         current=None
@@ -376,10 +430,18 @@ def parse_o_file(path: str):
                 pass
             continue
 
-        l2_total_cache_accesses_match=L2_TOTAL_CACHE_ACCESSES_RE.search(line)
-        if l2_total_cache_accesses_match:
+        l2_accesses_match=L2_ACCESSES_RE.search(line)
+        if l2_accesses_match:
             try:
-                l2_total_cache_accesses=int(float(l2_total_cache_accesses_match.group(1)))
+                l2_accesses=int(float(l2_accesses_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l2_miss_rate_match=L2_MISS_RATE_RE.search(line)
+        if l2_miss_rate_match:
+            try:
+                l2_miss_rate=parse_float_value(l2_miss_rate_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -388,6 +450,14 @@ def parse_o_file(path: str):
         if l2_global_acc_w_total_access_match:
             try:
                 l2_global_acc_w_total_access=int(float(l2_global_acc_w_total_access_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l1d_miss_rate_match=L1D_MISS_RATE_RE.search(line)
+        if l1d_miss_rate_match:
+            try:
+                l1d_miss_rate=parse_float_value(l1d_miss_rate_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -406,8 +476,10 @@ def parse_o_file(path: str):
             'r_drivers': {cause: dict(drivers) for cause, drivers in r_driver_reasons.items()},
             'w_drivers': {cause: dict(drivers) for cause, drivers in w_driver_reasons.items()},
             'l2_bw': l2_bw,
-            'l2_total_cache_accesses': l2_total_cache_accesses,
+            'l2_accesses': l2_accesses,
             'l2_global_acc_w_total_access': l2_global_acc_w_total_access,
+            'l2_miss_rate': l2_miss_rate,
+            'l1d_miss_rate': l1d_miss_rate,
             'total_fail': (r_total or 0)+(w_total or 0),
         }]
     return kernels
@@ -554,14 +626,19 @@ METRIC_DEFINITIONS={
         'value_key': 'l2_bw',
         'higher_is_better': False,
     },
-    'l2_total_cache_accesses': {
-        'label': 'L2_total_cache_accesses',
-        'value_key': 'l2_total_cache_accesses',
+    'l2_accesses': {
+        'label': 'L2_accesses',
+        'value_key': 'l2_accesses',
         'higher_is_better': False,
     },
-    'l2_global_acc_w_total_access': {
-        'label': 'L2_GLOBAL_ACC_W_TOTAL_ACCESS',
-        'value_key': 'l2_global_acc_w_total_access',
+    'l2_miss_rate': {
+        'label': 'L2_miss_rate',
+        'value_key': 'l2_miss_rate',
+        'higher_is_better': False,
+    },
+    'l1d_miss_rate': {
+        'label': 'L1D_miss_rate',
+        'value_key': 'l1d_miss_rate',
         'higher_is_better': False,
     },
 }
@@ -582,10 +659,16 @@ METRIC_NAME_ALIASES={
     'global_acc_w': 'global_acc_w',
     'globalacc_w': 'global_acc_w',
     'l2_bw': 'l2_bw',
-    'l2totalcacheaccesses': 'l2_total_cache_accesses',
-    'l2_total_cache_accesses': 'l2_total_cache_accesses',
-    'l2_global_acc_w_total_access': 'l2_global_acc_w_total_access',
-    'l2_cache_stats_breakdown_global_acc_w_total_access': 'l2_global_acc_w_total_access',
+    'l2_accesses': 'l2_accesses',
+    'l2totalcacheaccesses': 'l2_accesses',
+    'l2_total_cache_accesses': 'l2_accesses',
+    'l2_miss_rate': 'l2_miss_rate',
+    'l2_total_cache_miss_rate': 'l2_miss_rate',
+    'l2totalcachemissrate': 'l2_miss_rate',
+    'l2_total_miss_rate': 'l2_miss_rate',
+    'l1d_miss_rate': 'l1d_miss_rate',
+    'l1d_total_miss_rate': 'l1d_miss_rate',
+    'l1dtotalmissrate': 'l1d_miss_rate',
 }
 
 def resolve_metric_key(name: str) -> str:
@@ -718,18 +801,20 @@ def main():
         nargs='*',
         default=[
             'L2_BW',
-            'L2_total_cache_accesses',
-            'L2_global_acc_w_total_access',
+            'L2_accesses',
+            'L2_miss_rate',
+            'L1D_miss_rate',
         ],
-        help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_total_cache_accesses, L2_global_acc_w_total_access.',
+        help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_miss_rate, L1D_miss_rate.',
     )
     ap.add_argument(
         '--fail-total-metrics',
         nargs='*',
         default=[
             'L2_BW',
-            'L2_total_cache_accesses',
-            'L2_global_acc_w_total_access',
+            'L2_accesses',
+            'L2_miss_rate',
+            'L1D_miss_rate',
         ],
         help='Metrics to display in Fail-total sheet (case-insensitive). Use NONE to skip defaults.',
     )
