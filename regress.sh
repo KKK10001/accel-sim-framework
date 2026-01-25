@@ -367,10 +367,96 @@ fi
 # ./regress.sh reg_mshr_aware_mixed_rep_l2_prime_srrip --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
 # 34.424 drops. when l2_prime_lru/_srrip with l2_assoc_32. Larger assoc would make delay on evicting of cold lines
 
-# 1-19 16:18
-# ./regress.sh regress_mshr_disable_l2_srrip_hp_rrpv_inc_2_during_lru_picking --config-file ./perf_study/configs/l2_corr_mshr_disable_l2_srrip_hp_other_lru.config
+# 1-21 Fight!!! 15:09 34.458 (+15.365%)
+# ./regress.sh reg_l1d_evict_aware_lru_mshr_aware_mixed_rep_l2_prime_srrip --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
+# 34.458 (+15.365%)
+# ./regress.sh reg_l1d_evict_aware_judge_since_30_percent --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
+# 34.458 (+15.365%)
+# ./regress.sh reg_l1d_evict_aware_reverse_judge_cond_evict_ratio_larger_than_lru_picked --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
 
-#   ./regress.sh mshr_stats --config-file ./perf_study/configs/write_back.config
+# ./regress.sh reg_l1d_evict_aware_judge_since_30_percent_disable_mshr_aware --config-file ./perf_study/configs/en_all_mshr_l2_srrip.config
+
+# 1-21 16:56
+# ./regress.sh reg_l1d_re_ref_interval_aware_lru --config-file ./perf_study/configs/en_all_mshr_l2_srrip.config
+# 17:20 34.318 (+14.896%) Improve!!!!!
+# ./regress.sh reg_re_ref_interval_aware_for_l2_srrip_again --config-file ./perf_study/configs/en_all_mshr_l2_srrip.config
+
+
+# ./regress.sh reg_re_ref_interval_aware_for_l2_srrip_mshr_aware_again --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_srrip.config
+
+# 1-22
+# 29.870 (+0.000%) 
+# ./regress.sh reg_mshr_disable_all_cache_rep_lru --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+# 29.989 (+0.398%) ok
+# ./regress.sh reg_mshr_disable_all_cache_rep_lru_line_recency --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+# 16:51
+# ./regress.sh reg_mshr_disable_all_cache_rep_lru_line_recency_bugfix --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+
+# 20:43
+# 29.947 (+0.210%) better (Evict smaller hits means to let totally least used lines go out)
+# ./regress.sh reg_mshr_disable_all_hybrid_rep_lru_smaller_hits --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+# 29.884 (+0.002%) worse
+# ./regress.sh reg_mshr_disable_all_hybrid_rep_lru_larger_avg_evict_interval --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+
+# 1-22 22:42
+# 34.256 (+14.632%)
+# ./regress.sh reg_mshr_independent_hybrid_rep --config-file ./perf_study/configs/mshr_independent_all_lru.config
+# 34.463 (+15.324%) +0.7%
+# ./regress.sh reg_mshr_en_hybrid_rep_and_mshr_aware_II --config-file ./perf_study/configs/mshr_aware_mixed_rep_l2_prime_lru.config
+
+# 1-23 11:46 
+# 34.323 (+14.845%) no help. But L1D/L2_avg_evict_interval both greatly drops. Should help but did not.
+# ./regress.sh reg_mshr_aware_all_lru_enhanced_with_timestamp_hits_icnt_l2_128 --config-file ./perf_study/configs/mshr_aware_all_lru_enhanced_with_timestamp_hits_icnt_l2_128.config
+# 34.323 (+14.845%)
+# ./regress.sh reg_mshr_aware_all_lru_enhanced_with_timestamp_hits --config-file ./perf_study/configs/mshr_aware_all_lru_enhanced_with_timestamp_hits.config
+# ./regress.sh reg_mshr_aware_all_lru --config-file ./perf_study/configs/mshr_aware_all_lru.config
+# ./regress.sh reg_mshr_aware_all_lru_enhanced_with_timestamp --config-file ./perf_study/configs/mshr_aware_all_lru_enhanced_with_timestamp.config
+
+# Modififed .config by adding rep_enhanced fields
+# ./regress.sh reg_mshr_disable_all_cache_rep_lru --config-file ./perf_study/configs/mshr_disable_all_cache_rep_lru.config
+
+################################################# regression list ##################################################
+# ok IPC:29.888
+# ./regress.sh reg_mshr_disable_all_lru --config-file ./perf_study/configs/mshr_disable_all_lru.config
+# ok
+# ./regress.sh reg_mshr_disable_l2_srrip --config-file ./perf_study/configs/mshr_disable_l2_srrip.config
+# ok
+# ./regress.sh reg_mshr_disable_l2_srrip_filltime_aware --config-file ./perf_study/configs/mshr_disable_l2_srrip_filltime_aware.config
+# xx
+# ./regress.sh reg_mshr_disable_l1d_lru_l2_srrip_both_aware_filltime --config-file ./perf_study/configs/mshr_disable_l1d_lru_l2_srrip_both_aware_filltime.config
+# ok
+# ./regress.sh reg_mshr_disable_l1d_l2_srrip_filltime_aware --config-file ./perf_study/configs/mshr_disable_l1d_l2_srrip_filltime_aware.config
+# xx
+# ./regress.sh reg_mshr_disable_all_lru_enhanced_with_total_hits --config-file ./perf_study/configs/mshr_disable_all_lru_enhanced_with_total_hits.config
+# ok re-run
+# ./regress.sh reg_mshr_disable_all_lru_l1d_enhanced_with_total_hits --config-file ./perf_study/configs/mshr_disable_all_lru_l1d_enhanced_with_total_hits.config
+# ok
+# ./regress.sh reg_mshr_en_but_no_aware_all_lru --config-file ./perf_study/configs/mshr_en_but_no_aware_all_lru.config
+# xx
+# ./regress.sh reg_mshr_en_and_aware_all_lru --config-file ./perf_study/configs/mshr_en_and_aware_all_lru.config
+# xx IPC eq above, but L1D/L2_avg_evict_interval greatly drops
+# ./regress.sh reg_mshr_en_and_aware_all_lru_icnt_l2_128 --config-file ./perf_study/configs/mshr_en_and_aware_all_lru_icnt_l2_128.config
+# xx
+# ./regress.sh reg_mshr_en_and_aware_all_lru_enhanced_with_total_hits --config-file ./perf_study/configs/mshr_en_and_aware_all_lru_enhanced_with_total_hits.config
+# xx
+# ./regress.sh reg_mshr_en_and_aware_l2_srrip --config-file ./perf_study/configs/mshr_en_and_aware_l2_srrip.config
+
+
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_all_lru
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_l2_srrip
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_l2_srrip_filltime_aware
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_l1d_lru_l2_srrip_both_aware_filltime
+
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_l1d_l2_srrip_filltime_aware
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_all_lru_enhanced_with_total_hits
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_disable_all_lru_l1d_enhanced_with_total_hits
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en_but_no_aware_all_lru
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en_and_aware_all_lru
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en_and_aware_all_lru_icnt_l2_128
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en_and_aware_all_lru_enhanced_with_total_hits
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en_and_aware_l2_srrip
+
+
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
 # Environment alternative:
 #   CUSTOM_GPGPUSIM_CONFIG=/abs/path/custom.config VARIANT_TAG=mytag ./regress.sh

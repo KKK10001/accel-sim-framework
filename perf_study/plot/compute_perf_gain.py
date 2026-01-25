@@ -238,18 +238,63 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_mshr_disable_all_cache_rep_lru \
+    reg_mshr_disable_all_hybrid_rep_lru_smaller_hits \
+    reg_mshr_independent_hybrid_rep \
+    reg_mshr_en_hybrid_rep_and_mshr_aware_II \
+    reg_mshr_aware_all_lru_enhanced_with_timestamp_hits \
+    reg_mshr_aware_all_lru_enhanced_with_timestamp_hits_icnt_l2_128 \
+    reg_mshr_aware_all_lru_enhanced_with_timestamp \
+    reg_mshr_aware_all_lru \
     reg_en_all_mshr_all_cache_lru \
     reg_en_all_mshr_l2_srrip \
     reg_en_all_mshr_l2_srrip_l2_assoc_32 \
     reg_mshr_aware_mixed_rep_l1d_l2_prime_srrip_l1d_assoc_64_l2_assoc_16 \
     reg_mshr_aware_mixed_rep_l2_prime_lru \
     reg_mshr_aware_mixed_rep_l2_prime_srrip \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_mshr_disable_all_lru \
+    reg_mshr_disable_all_lru_enhanced_with_total_hits \
+    reg_mshr_disable_all_lru_l1d_enhanced_with_total_hits \
+    reg_mshr_en_but_no_aware_all_lru \
+    reg_mshr_en_and_aware_all_lru \
+    reg_mshr_en_and_aware_all_lru_enhanced_with_total_hits \
+    reg_mshr_en_and_aware_all_lru_icnt_l2_128 \
+    reg_mshr_en_and_aware_l2_srrip \
+  --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
   --md-file perf_gain.md \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx    
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_mshr_disable_all_lru \
+    reg_mshr_disable_l2_srrip \
+    reg_mshr_disable_l2_srrip_filltime_aware \
+    reg_mshr_disable_l1d_l2_srrip_filltime_aware \
+    reg_mshr_disable_l1d_lru_l2_srrip_both_aware_filltime \
+    reg_mshr_disable_all_lru_enhanced_with_total_hits \
+    reg_mshr_disable_all_lru_l1d_enhanced_with_total_hits \
+    reg_mshr_en_and_aware_all_lru \
+    reg_mshr_en_and_aware_l2_srrip \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx 
 ########################################### End of L2 Perf. Study ###########################################
 """
 import argparse, os, re, sys, math
@@ -269,9 +314,18 @@ KERNEL_UID_RE = re.compile(r"kernel_launch_uid\s*=\s*([0-9]+)")
 FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 L2_BW_RE = re.compile(rf"L2_BW\s*=\s*{FLOAT_CAPTURE}")
 L2_ACCESSES_RE = re.compile(rf"L2_(?:total_cache_)?accesses\s*=\s*{FLOAT_CAPTURE}")
+L2_MISSES_RE = re.compile(rf"L2_misses\s*=\s*{FLOAT_CAPTURE}")
 L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
 L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
+L1D_MISSES_RE = re.compile(rf"L1D_misses\s*=\s*{FLOAT_CAPTURE}")
+L1D_ACCESSES_RE = re.compile(rf"L1D_accesses\s*=\s*{FLOAT_CAPTURE}")
 L1D_MISS_RATE_RE = re.compile(rf"L1D_(?:total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
+PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}"
+)
+L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
+L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
+GPU_STALL_DRAM_FULL_RE = re.compile(rf"gpu_stall_dramfull\s*=\s*{FLOAT_CAPTURE}")
+GPU_STALL_ICNT_TO_SHADER_RE = re.compile(rf"gpu_stall_icnt2sh\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -299,14 +353,25 @@ def parse_o_file(path: str):
     pending_kernel_uid=None
     l2_bw=None
     l2_accesses=None
+    l2_misses=None
     l2_global_acc_w_total_access=None
     l2_miss_rate=None
+    l1d_misses=None
     l1d_miss_rate=None
+    partition_level_parallelism=None
+    avg_l2_miss_served_cycles=None
+    avg_l1d_miss_served_cycles=None
+    gpu_stall_dramfull=None
+    gpu_stall_icnt2sh=None
 
     def reset_state():
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
-        nonlocal l2_bw, l2_accesses, l2_global_acc_w_total_access
-        nonlocal l2_miss_rate, l1d_miss_rate
+        nonlocal l2_bw, l2_global_acc_w_total_access
+        nonlocal l2_misses, l2_accesses, l2_miss_rate
+        nonlocal l1d_misses, l1d_accesses, l1d_miss_rate
+        nonlocal partition_level_parallelism
+        nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
+        nonlocal gpu_stall_dramfull, gpu_stall_icnt2sh
         r_total=0
         w_total=0
         r_reasons={}
@@ -315,9 +380,16 @@ def parse_o_file(path: str):
         w_driver_reasons={}
         l2_bw=None
         l2_accesses=None
+        l2_misses=None
         l2_global_acc_w_total_access=None
         l2_miss_rate=None
+        l1d_misses=None
         l1d_miss_rate=None
+        partition_level_parallelism=None
+        avg_l2_miss_served_cycles=None
+        avg_l1d_miss_served_cycles=None
+        gpu_stall_dramfull=None
+        gpu_stall_icnt2sh=None        
 
     def commit_current():
         nonlocal current
@@ -331,9 +403,17 @@ def parse_o_file(path: str):
         current['w_drivers']={cause: dict(drivers) for cause, drivers in w_driver_reasons.items()}
         current['l2_bw']=l2_bw
         current['l2_accesses']=l2_accesses
+        current['l2_misses']=l2_misses
         current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
         current['l2_miss_rate']=l2_miss_rate
+        current['l1d_misses']=l1d_misses
+        current['l1d_accesses']=l1d_accesses
         current['l1d_miss_rate']=l1d_miss_rate
+        current['partition_level_parallelism']=partition_level_parallelism
+        current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
+        current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
+        current['gpu_stall_dramfull']=gpu_stall_dramfull
+        current['gpu_stall_icnt2sh']=gpu_stall_icnt2sh
         current['total_fail']=(r_total or 0)+(w_total or 0)
         kernels.append(current)
         current=None
@@ -437,11 +517,54 @@ def parse_o_file(path: str):
             except (TypeError, ValueError):
                 pass
             continue
-
+        l2_misses_match=L2_MISSES_RE.search(line)
+        if l2_misses_match:
+            try:
+                l2_misses=int(float(l2_misses_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue
         l2_miss_rate_match=L2_MISS_RATE_RE.search(line)
         if l2_miss_rate_match:
             try:
                 l2_miss_rate=parse_float_value(l2_miss_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l2_partition_level_parallelism_match=PARTITION_LEVEL_PARALLELISM.search(line)
+        if l2_partition_level_parallelism_match:
+            try:
+                partition_level_parallelism=parse_float_value(l2_partition_level_parallelism_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        avg_l2_miss_served_cycles_match=L2_AVG_MISS_SERVED_TIME_RE.search(line)
+        if avg_l2_miss_served_cycles_match:
+            try:
+                avg_l2_miss_served_cycles=parse_float_value(avg_l2_miss_served_cycles_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        avg_l1d_miss_served_cycles_match=L1D_AVG_MISS_SERVED_TIME_RE.search(line)
+        if avg_l1d_miss_served_cycles_match:
+            try:
+                avg_l1d_miss_served_cycles=parse_float_value(avg_l1d_miss_served_cycles_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        gpu_stall_dramfull_match=GPU_STALL_DRAM_FULL_RE.search(line)
+        if gpu_stall_dramfull_match:
+            try:
+                gpu_stall_dramfull=parse_float_value(gpu_stall_dramfull_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        gpu_stall_icnt2sh_match=GPU_STALL_ICNT_TO_SHADER_RE.search(line)
+        if gpu_stall_icnt2sh_match:
+            try:
+                gpu_stall_icnt2sh=parse_float_value(gpu_stall_icnt2sh_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -454,6 +577,20 @@ def parse_o_file(path: str):
                 pass
             continue
 
+        l1d_misses_match=L1D_MISSES_RE.search(line)
+        if l1d_misses_match:
+            try:
+                l1d_misses=int(float(l1d_misses_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue
+        l1d_accesses_match=L1D_ACCESSES_RE.search(line)
+        if l1d_accesses_match:
+            try:
+                l1d_accesses=int(float(l1d_accesses_match.group(1)))
+            except (TypeError, ValueError):
+                pass
+            continue        
         l1d_miss_rate_match=L1D_MISS_RATE_RE.search(line)
         if l1d_miss_rate_match:
             try:
@@ -477,9 +614,18 @@ def parse_o_file(path: str):
             'w_drivers': {cause: dict(drivers) for cause, drivers in w_driver_reasons.items()},
             'l2_bw': l2_bw,
             'l2_accesses': l2_accesses,
+            'l2_misses': l2_misses,
             'l2_global_acc_w_total_access': l2_global_acc_w_total_access,
             'l2_miss_rate': l2_miss_rate,
-            'l1d_miss_rate': l1d_miss_rate,
+            'l1d_misses': l1d_misses,
+            'l1d_accesses': l1d_accesses,
+            'l1d_miss_rate': l1d_miss_rate,            
+            'l2_miss_rate': l2_miss_rate,
+            'partition_level_parallelism': partition_level_parallelism,
+            'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
+            'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
+            'gpu_stall_dramfull': gpu_stall_dramfull,
+            'gpu_stall_icnt2sh': gpu_stall_icnt2sh,
             'total_fail': (r_total or 0)+(w_total or 0),
         }]
     return kernels
@@ -631,16 +777,56 @@ METRIC_DEFINITIONS={
         'value_key': 'l2_accesses',
         'higher_is_better': False,
     },
+    'l2_misses': {
+        'label': 'L2_misses',
+        'value_key': 'l2_misses',
+        'higher_is_better': False,
+    },    
     'l2_miss_rate': {
         'label': 'L2_miss_rate',
         'value_key': 'l2_miss_rate',
         'higher_is_better': False,
     },
+    'l1d_accesses': {
+        'label': 'L1D_accesses',
+        'value_key': 'l1d_accesses',
+        'higher_is_better': False,
+    },  
+    'l1d_misses': {
+        'label': 'L1D_misses',
+        'value_key': 'l1d_misses',
+        'higher_is_better': False,
+    },            
     'l1d_miss_rate': {
         'label': 'L1D_miss_rate',
         'value_key': 'l1d_miss_rate',
         'higher_is_better': False,
     },
+    'partition_level_parallelism': {
+        'label': 'partition_level_parallelism',
+        'value_key': 'partition_level_parallelism',
+        'higher_is_better': True,
+    },
+    'avg_l2_miss_served_cycles': {
+        'label': 'avg_l2_miss_served_cycles',
+        'value_key': 'avg_l2_miss_served_cycles',
+        'higher_is_better': False,
+    },    
+    'avg_l1d_miss_served_cycles': {
+        'label': 'avg_l1d_miss_served_cycles',
+        'value_key': 'avg_l1d_miss_served_cycles',
+        'higher_is_better': False,
+    },
+    'gpu_stall_dramfull': {
+        'label': 'gpu_stall_dramfull',
+        'value_key': 'gpu_stall_dramfull',
+        'higher_is_better': False,
+    },        
+    'gpu_stall_icnt2sh': {
+        'label': 'gpu_stall_icnt2sh',
+        'value_key': 'gpu_stall_icnt2sh',
+        'higher_is_better': False,
+    },         
 }
 
 DEFAULT_METRIC_ORDER=['ipc','global_acc_r','global_acc_w']
@@ -660,15 +846,23 @@ METRIC_NAME_ALIASES={
     'globalacc_w': 'global_acc_w',
     'l2_bw': 'l2_bw',
     'l2_accesses': 'l2_accesses',
+    'l2_misses': 'l2_misses',
     'l2totalcacheaccesses': 'l2_accesses',
     'l2_total_cache_accesses': 'l2_accesses',
     'l2_miss_rate': 'l2_miss_rate',
     'l2_total_cache_miss_rate': 'l2_miss_rate',
     'l2totalcachemissrate': 'l2_miss_rate',
     'l2_total_miss_rate': 'l2_miss_rate',
+    'l1d_misses': 'l1d_misses',
+    'l1d_accesses': 'l1d_accesses',
     'l1d_miss_rate': 'l1d_miss_rate',
     'l1d_total_miss_rate': 'l1d_miss_rate',
     'l1dtotalmissrate': 'l1d_miss_rate',
+    'partition_level_parallelism': 'partition_level_parallelism',
+    'avg_l2_miss_served_cycles': 'avg_l2_miss_served_cycles',
+    'avg_l1d_miss_served_cycles': 'avg_l1d_miss_served_cycles',
+    'gpu_stall_dramfull': 'gpu_stall_dramfull',
+    'gpu_stall_icnt2sh': 'gpu_stall_icnt2sh',
 }
 
 def resolve_metric_key(name: str) -> str:
@@ -802,10 +996,18 @@ def main():
         default=[
             'L2_BW',
             'L2_accesses',
+            'L2_misses',
             'L2_miss_rate',
+            'L1D_accesses',
+            'L1D_misses',
             'L1D_miss_rate',
+            'partition_level_parallelism',
+            'avg_l2_miss_served_cycles',
+            'avg_l1d_miss_served_cycles',
+            'gpu_stall_dramfull',
+            'gpu_stall_icnt2sh',
         ],
-        help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_miss_rate, L1D_miss_rate.',
+        help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_misses, L2_miss_rate, L1D_accesses, L1D_misses, L1D_miss_rate, partition_level_parallelism, avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles.',
     )
     ap.add_argument(
         '--fail-total-metrics',
@@ -813,8 +1015,16 @@ def main():
         default=[
             'L2_BW',
             'L2_accesses',
-            'L2_miss_rate',
+            'L2_misses',
+            'L2_miss_rate',            
+            'L1D_accesses',
+            'L1D_misses',
             'L1D_miss_rate',
+            'partition_level_parallelism',
+            'avg_l2_miss_served_cycles',
+            'avg_l1d_miss_served_cycles',
+            'gpu_stall_dramfull',
+            'gpu_stall_icnt2sh',            
         ],
         help='Metrics to display in Fail-total sheet (case-insensitive). Use NONE to skip defaults.',
     )
@@ -844,6 +1054,17 @@ def main():
     overall_extra_requests=args.overall_extra_metrics or []
     fail_total_requests=args.fail_total_metrics or []
 
+    raw_fail_total_tokens=[]
+    for token in args.fail_total_metrics or []:
+        if token is None:
+            continue
+        token_str=str(token).strip()
+        raw_fail_total_tokens.append(token_str)
+    fail_total_disabled=bool(raw_fail_total_tokens) and all(
+        (not token) or token.lower() in ('none','null')
+        for token in raw_fail_total_tokens
+    )
+
     def _resolve_metric_tokens(tokens):
         resolved=[]
         unknown=[]
@@ -870,9 +1091,10 @@ def main():
         sys.exit(f"[ERROR] Unknown metrics requested via --overall-extra-metrics/--fail-total-metrics: {', '.join(unknown_metrics)}")
 
     fail_total_metric_keys=[]
-    for metric in fail_total_resolved:
-        if metric not in fail_total_metric_keys:
-            fail_total_metric_keys.append(metric)
+    if not fail_total_disabled:
+        for metric in fail_total_resolved:
+            if metric not in fail_total_metric_keys:
+                fail_total_metric_keys.append(metric)
 
     extra_metric_keys=[]
 
@@ -884,8 +1106,9 @@ def main():
 
     for metric in overall_extra_resolved:
         _maybe_add_extra(metric)
-    for metric in fail_total_metric_keys:
-        _maybe_add_extra(metric)
+    if not fail_total_disabled:
+        for metric in fail_total_metric_keys:
+            _maybe_add_extra(metric)
 
     extra_metric_keys=[metric for metric in extra_metric_keys if metric not in DEFAULT_METRIC_ORDER]
 
@@ -893,9 +1116,10 @@ def main():
     for metric in overall_extra_resolved:
         if metric in ('global_acc_r','global_acc_w'):
             optional_summary_metrics.add(metric)
-    for metric in fail_total_metric_keys:
-        if metric in ('global_acc_r','global_acc_w'):
-            optional_summary_metrics.add(metric)
+    if not fail_total_disabled:
+        for metric in fail_total_metric_keys:
+            if metric in ('global_acc_r','global_acc_w'):
+                optional_summary_metrics.add(metric)
 
     primary_overall_metrics=['ipc']
     for metric in ('global_acc_r','global_acc_w'):
@@ -1475,9 +1699,12 @@ def main():
             tracked_fail_causes=[cause for cause in DEFAULT_FAIL_CAUSE_TYPES if cause_totals_base.get(cause, 0)>0]
 
         if tracked_fail_causes:
-            fail_metric_keys=[f"fail::{cause}" for cause in tracked_fail_causes]
-            fail_metric_labels={f"fail::{cause}": cause for cause in tracked_fail_causes}
-            METRIC_LABELS.update(fail_metric_labels)
+            if fail_total_disabled:
+                fail_metric_keys=[]
+            else:
+                fail_metric_keys=[f"fail::{cause}" for cause in tracked_fail_causes]
+                fail_metric_labels={f"fail::{cause}": cause for cause in tracked_fail_causes}
+                METRIC_LABELS.update(fail_metric_labels)
 
             fail_cause_bench_order=sorted(base_cause_map.keys())
             fail_cause_bench_summary={label: {} for label in ordered_variant_labels}
@@ -1562,7 +1789,7 @@ def main():
     if missing_variants:
         print(f"[WARN] no benchmark data found for: {', '.join(missing_variants)}")
 
-    if tracked_fail_causes:
+    if tracked_fail_causes and not fail_total_disabled:
         for entry in overall_entries:
             fail_summary=fail_cause_overall_entries.get(entry['label'])
             if not fail_summary:
@@ -1603,15 +1830,16 @@ def main():
         if overall_entries:
             w.writerow([])
             overall_csv_header=['variant'] + [f"{METRIC_LABELS.get(metric, metric)}_geomean_pct" for metric in primary_overall_metrics]
-            for cause in tracked_fail_causes:
-                overall_csv_header.append(f"{cause}_geomean_pct")
+            if tracked_fail_causes and not fail_total_disabled:
+                for cause in tracked_fail_causes:
+                    overall_csv_header.append(f"{cause}_geomean_pct")
             w.writerow(overall_csv_header)
             for entry in overall_entries:
                 metric_geo_pct=entry['metric_geo_pct']
                 row=[entry['label']]
                 for metric in primary_overall_metrics:
                     row.append(format_pct(metric_geo_pct.get(metric)))
-                if tracked_fail_causes:
+                if tracked_fail_causes and not fail_total_disabled:
                     fail_summary=fail_cause_overall_entries.get(entry['label'], {})
                     for cause in tracked_fail_causes:
                         pct_val=(fail_summary.get(cause) or {}).get('pct')
@@ -1652,7 +1880,7 @@ def main():
                     continue
                 pct_val=entry['extra_metric_geo_pct'].get(metric)
                 md_lines.append(f"- {METRIC_LABELS.get(metric, metric)} geomean percent change: <b>{format_pct(pct_val)}%</b>")
-            if tracked_fail_causes:
+            if tracked_fail_causes and not fail_total_disabled:
                 fail_summary=fail_cause_overall_entries.get(entry['label'])
                 if fail_summary:
                     for cause in tracked_fail_causes:
@@ -1716,7 +1944,7 @@ def main():
                     continue
                 pct_val=entry['extra_metric_geo_pct'].get(metric)
                 html_lines.append(f"<li>{METRIC_LABELS.get(metric, metric)} geomean percent change: <b>{format_pct(pct_val)}%</b></li>")
-            if tracked_fail_causes:
+            if tracked_fail_causes and not fail_total_disabled:
                 fail_summary=fail_cause_overall_entries.get(entry['label'])
                 if fail_summary:
                     for cause in tracked_fail_causes:
