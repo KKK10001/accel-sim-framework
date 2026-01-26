@@ -279,15 +279,22 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_mshr_disable_all_lru \
     reg_mshr_disable_l2_srrip \
-    reg_mshr_disable_l2_srrip_filltime_aware \
-    reg_mshr_disable_l1d_l2_srrip_filltime_aware \
-    reg_mshr_disable_l1d_lru_l2_srrip_both_aware_filltime \
-    reg_mshr_disable_all_lru_enhanced_with_total_hits \
-    reg_mshr_disable_all_lru_l1d_enhanced_with_total_hits \
-    reg_mshr_en_and_aware_all_lru \
-    reg_mshr_en_and_aware_l2_srrip \
+    reg_mshr_en_l2_srrip \
+    reg_mshr_en__all_aware_mshr_l2_aware_filltime__l2_srrip \
+    reg_mshr_en__aware_mshr__l2_srrip \
+    reg_mshr_en__l1d_aware_filltime__l2_srrip \
+    reg_mshr_en__all_aware_mshr_l1d_aware_filltime__l2_srrip \
+    reg_mshr_en__aware_mshr_filltime__l2_srrip \
+    reg_mshr_en__l2_aware_filltime__l2_srrip \
+    reg_mshr_disable_all_lru \
+    reg_mshr_en__all_lru \
+    reg_mshr_en__aware_mshr__all_lru \
+    reg_mshr_en__all_aware_mshr_l2_aware_filltime__all_lru \
+    reg_mshr_en__l1d_aware_filltime__all_lru \
+    reg_mshr_en__all_aware_mshr_l1d_aware_filltime__all_lru \
+    reg_mshr_en__aware_mshr_filltime__all_lru \
+    reg_mshr_en__l2_aware_filltime__all_lru \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
