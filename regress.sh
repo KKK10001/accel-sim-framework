@@ -438,6 +438,7 @@ fi
 
 # 0) 
 # ./regress.sh reg_mshr_en_l2_srrip --config-file ./perf_study/configs/mshr_en_l2_srrip.config
+# ./regress.sh reg_mshr_en_l2_srrip_again --config-file ./perf_study/configs/mshr_en_l2_srrip.config
 # 1) 34.469 (+15.342%)
 # ./regress.sh reg_mshr_en__all_aware_mshr_l2_aware_filltime__l2_srrip --config-file ./perf_study/configs/mshr_en__all_aware_mshr_l2_aware_filltime__l2_srrip.config
 # 2) 34.441 (+15.248%)
@@ -452,30 +453,30 @@ fi
 # ./regress.sh reg_mshr_en__l2_aware_filltime__l2_srrip --config-file ./perf_study/configs/mshr_en__l2_aware_filltime__l2_srrip.config
 
 ##### all lru
-# 0) 34.291 (+14.747%)
+# 0) 34.291 (+14.747%) -> 34.296 
 # ./regress.sh reg_mshr_en__all_lru --config-file ./perf_study/configs/mshr_en__all_lru.config
-# 1) 34.469 (+15.342%)
+# 1) 34.469 (+15.342%) re-run ok -> 34.487
 # ./regress.sh reg_mshr_en__all_aware_mshr_l2_aware_filltime__all_lru --config-file ./perf_study/configs/mshr_en__all_aware_mshr_l2_aware_filltime__all_lru.config
-# 2) 34.484 (+15.392%)
+# 2) 34.339 (+14.908%) re-run ok -> 34.487
+# ./regress.sh reg_mshr_en__all_aware_mshr_l1d_aware_filltime__all_lru --config-file ./perf_study/configs/mshr_en__all_aware_mshr_l1d_aware_filltime__all_lru.config
+# 3) 34.484 (+15.392%) re-run -> 34.487 (+0.559%)	
 # ./regress.sh reg_mshr_en__aware_mshr__all_lru --config-file ./perf_study/configs/mshr_en__aware_mshr__all_lru.config
-# 3) 34.462 34.462 (+15.319%)
-# ./regress.sh reg_mshr_en__l1d_aware_filltime__all_lru --config-file ./perf_study/configs/mshr_en__l1d_aware_filltime__all_lru.config
-# 4) 34.339 (+14.908%)
-# ./regress.sh reg_mshr_en__all_aware_mshr_l1d_aware_filltime__all_lru --config-file ./perf_study/configs/mshr_en__all_aware_mshr_l1d_aware_filltime__l2_srrip.config
-# 5) 34.310 (+14.809%)
-# ./regress.sh reg_mshr_en__aware_mshr_filltime__all_lru --config-file ./perf_study/configs/mshr_en__aware_mshr_filltime__all_lru.config
-# 6) 34.292 (+14.751%)
+# 4) 34.292 (+14.751%) re-run ok -> 34.296
 # ./regress.sh reg_mshr_en__l2_aware_filltime__all_lru --config-file ./perf_study/configs/mshr_en__l2_aware_filltime__all_lru.config
+# 5) 34.462 34.462 (+15.319%) re-run ok -> 34.295
+# ./regress.sh reg_mshr_en__l1d_aware_filltime__all_lru --config-file ./perf_study/configs/mshr_en__l1d_aware_filltime__all_lru.config
+# 6) 34.310 (+14.809%) re-run ok -> 34.487
+# ./regress.sh reg_mshr_en__aware_mshr_filltime__all_lru --config-file ./perf_study/configs/mshr_en__aware_mshr_filltime__all_lru.config
 
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en_l2_srrip
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__all_lru
+# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__all_aware_mshr_l2_aware_filltime__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__aware_mshr_total_records__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__l2_aware_filltime__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__aware_mshr_filltime__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__all_aware_mshr_l1d_aware_filltime__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__l1d_aware_filltime__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__aware_mshr__all_lru
-# ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__all_aware_mshr_l2_aware_filltime__all_lru
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__aware_mshr__l2_srrip
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__aware_mshr_filltime__l2_srrip
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__all_aware_mshr_l2_aware_filltime__l2_srrip
