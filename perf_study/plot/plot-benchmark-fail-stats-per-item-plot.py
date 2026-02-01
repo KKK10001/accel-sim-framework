@@ -95,6 +95,20 @@ python plot-benchmark-fail-stats-per-item-plot.py \
     --geomean-target regress-default-cfg-11-25-eve \
         l2_max_merge_zero \
     --geomean-metrics ipc global_acc_r global_acc_w    
+
+########################################### SCB/CRF Regression Study ###################################
+python3 plot-benchmark-fail-stats-per-item-plot.py \
+  --sim-root /home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1 \
+  --variants reg_scb_crf_baseline
+# Outputs will be generated in ./per-item-plot/bank_conflicts/ 
+
+python3 plot-benchmark-fail-stats-per-item-plot.py \
+--sim-root /home/hjs/dev/accel-sim/accel-sim-framework/sim_run_12.1 \
+--variants reg_scb_crf_baseline \
+--bank-conflicts-mosaic # Plot all benchmarks in one big graph
+# Outputs:
+# per-item-plot/bank_conflicts/raw_conflicts_rate_mosaic.png
+# per-item-plot/bank_conflicts/wr_reg_bank_conflicts_rate_mosaic.png
 """
 import argparse, math, os, re, sys
 from collections import defaultdict, OrderedDict
@@ -108,6 +122,15 @@ TOTAL_R_RE=re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\s*
 TOTAL_W_RE=re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\s*=\s*([0-9]+)")
 CAUSE_R_RE=re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\[(.+?)\]\s*=\s*([0-9]+)")
 CAUSE_W_RE=re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\[(.+?)\]\s*=\s*([0-9]+)")
+FLOAT_CAPTURE=r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
+RAW_CONFLICTS_RATE_RE=re.compile(rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
+WR_REG_BANK_CONFLICTS_RATE_RE=re.compile(rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
+RAW_CONFLICTS_COUNTS_RE=re.compile(
+    rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}\s*\(conflicts:(\d+)\s*/\s*scb_chk_passes:(\d+)\s*\)"
+)
+WR_REG_BANK_CONFLICTS_COUNTS_RE=re.compile(
+    rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}\s*\(conflicts:(\d+)\s*/\s*allocates:(\d+)\s*\)"
+)
 
 def pick_latest(d):
     pat=re.compile(r".*\.o(\d+)?$")
@@ -120,18 +143,70 @@ def parse(of):
     try: lines=open(of).read().splitlines()
     except: return []
     out=[]; cur=None; rT=0; wT=0; rR={}; wR={}
+    raw_rates={}; wr_rates={}
+    raw_conflicts={}; raw_passes={}
+    wr_conflicts={}; wr_allocates={}
     def commit():
         if cur is not None:
-            cur['r_total']=rT; cur['w_total']=wT; cur['r_reasons']=dict(rR); cur['w_reasons']=dict(wR); out.append(cur)
+            cur['r_total']=rT; cur['w_total']=wT; cur['r_reasons']=dict(rR); cur['w_reasons']=dict(wR)
+            cur['raw_conflicts_rate_by_bank']=dict(raw_rates); cur['wr_reg_bank_conflicts_rate_by_bank']=dict(wr_rates)
+            cur['raw_conflicts_by_bank']=dict(raw_conflicts); cur['raw_passes_by_bank']=dict(raw_passes)
+            cur['wr_conflicts_by_bank']=dict(wr_conflicts); cur['wr_allocates_by_bank']=dict(wr_allocates)
+            out.append(cur)
     for ln in lines:
         m=GPU_IPC_RE.search(ln)
-        if m: commit(); cur={'ipc':float(m.group(1))}; continue
+        if m:
+            commit(); cur={'ipc':float(m.group(1))}
+            raw_rates={}; wr_rates={}
+            raw_conflicts={}; raw_passes={}
+            wr_conflicts={}; wr_allocates={}
+            continue
         m=TOTAL_R_RE.search(ln); m and (rT:=int(m.group(1)))
         m=TOTAL_W_RE.search(ln); m and (wT:=int(m.group(1)))
         m=CAUSE_R_RE.search(ln); m and (rR.__setitem__(m.group(1),int(m.group(2))))
         m=CAUSE_W_RE.search(ln); m and (wR.__setitem__(m.group(1),int(m.group(2))))
+        m=RAW_CONFLICTS_COUNTS_RE.search(ln)
+        if m:
+            try:
+                bank=int(m.group(1))
+                raw_rates[bank]=float(m.group(2))
+                raw_conflicts[bank]=int(m.group(3))
+                raw_passes[bank]=int(m.group(4))
+            except (TypeError, ValueError):
+                pass
+            continue
+        m=WR_REG_BANK_CONFLICTS_COUNTS_RE.search(ln)
+        if m:
+            try:
+                bank=int(m.group(1))
+                wr_rates[bank]=float(m.group(2))
+                wr_conflicts[bank]=int(m.group(3))
+                wr_allocates[bank]=int(m.group(4))
+            except (TypeError, ValueError):
+                pass
+            continue
+        m=RAW_CONFLICTS_RATE_RE.search(ln)
+        if m:
+            try: raw_rates[int(m.group(1))]=float(m.group(2))
+            except: pass
+        m=WR_REG_BANK_CONFLICTS_RATE_RE.search(ln)
+        if m:
+            try: wr_rates[int(m.group(1))]=float(m.group(2))
+            except: pass
     commit()
-    if not out and (rT or wT): out=[{'ipc':None,'r_total':rT,'w_total':wT,'r_reasons':dict(rR),'w_reasons':dict(wR)}]
+    if not out and (rT or wT or raw_rates or wr_rates or raw_conflicts or wr_conflicts): out=[{
+        'ipc':None,
+        'r_total':rT,
+        'w_total':wT,
+        'r_reasons':dict(rR),
+        'w_reasons':dict(wR),
+        'raw_conflicts_rate_by_bank':dict(raw_rates),
+        'wr_reg_bank_conflicts_rate_by_bank':dict(wr_rates),
+        'raw_conflicts_by_bank':dict(raw_conflicts),
+        'raw_passes_by_bank':dict(raw_passes),
+        'wr_conflicts_by_bank':dict(wr_conflicts),
+        'wr_allocates_by_bank':dict(wr_allocates),
+    }]
     return out
 
 def collect(root,bench,variants)->Dict[str,List[Dict]]:
@@ -397,6 +472,20 @@ METRIC_AXIS_LABELS: Dict[str, str] = {
 
 
 def geometric_mean_from_records(records: List[Dict], value_key: str) -> Optional[float]:
+
+
+    def aggregate_bank_rates(records: List[Dict], key: str) -> Dict[int, float]:
+        bank_values: defaultdict = defaultdict(list)
+        for rec in records:
+            rate_map = rec.get(key) or {}
+            for bank, value in rate_map.items():
+                if value is None:
+                    continue
+                try:
+                    bank_values[int(bank)].append(float(value))
+                except (TypeError, ValueError):
+                    continue
+        return {bank: (sum(vals) / len(vals)) for bank, vals in bank_values.items()}
     if not records:
         return None
     values: List[float] = []
@@ -639,6 +728,130 @@ def plot_fail(bench,data,variants,kc,out_root_dir,kind:str):
     fig.tight_layout(rect=[0, 0, 0.86, 1]); fname=f'{bench}_l1d_fail_global_acc_{"r" if kind=="r" else "w"}.png'
     fig.savefig(os.path.join(out_dir,fname),dpi=150); plt.close(fig)
 
+def _mean(values: List[float]) -> float:
+    cleaned=[v for v in values if v is not None]
+    if not cleaned:
+        return 0.0
+    return float(sum(cleaned)/len(cleaned))
+
+def _aggregate_bank_rate(records: List[Dict], rate_key: str, conflicts_key: str, denom_key: str) -> Dict[int, float]:
+    total_conflicts=defaultdict(int)
+    total_denoms=defaultdict(int)
+    for rec in records:
+        conflicts_map=rec.get(conflicts_key) or {}
+        denom_map=rec.get(denom_key) or {}
+        for bank, conflicts in conflicts_map.items():
+            try:
+                total_conflicts[int(bank)]+=int(conflicts)
+            except (TypeError, ValueError):
+                continue
+        for bank, denom in denom_map.items():
+            try:
+                total_denoms[int(bank)]+=int(denom)
+            except (TypeError, ValueError):
+                continue
+    if total_denoms:
+        rates={}
+        for bank in set(total_denoms.keys()) | set(total_conflicts.keys()):
+            denom=total_denoms.get(bank, 0)
+            if denom > 0:
+                rates[bank]=total_conflicts.get(bank, 0) / denom
+            else:
+                rates[bank]=0.0
+        return rates
+    rate_map=defaultdict(list)
+    for rec in records:
+        rates=rec.get(rate_key) or {}
+        for bank, val in rates.items():
+            rate_map[int(bank)].append(val)
+    return {bank: _mean(vals) for bank, vals in rate_map.items()}
+
+def _plot_bank_metric(short_bench: str, metric_label: str, values: List[float], labels: List[str], out_dir: str, filename_suffix: str) -> None:
+    x=np.arange(len(values))
+    fig, ax=plt.subplots(figsize=(max(8, len(values)*0.6), 3.6), constrained_layout=True)
+    ax.bar(x, values, width=0.6, color='#1f77b4')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=0)
+    ax.set_xlabel('bank')
+    ax.set_ylabel(metric_label)
+    ax.set_title(f'{short_bench}')
+    if values:
+        avg_idx=len(values)-1
+        avg_val=values[avg_idx]
+        offset=max(max(values)*0.01, 0.002)
+        ax.text(avg_idx, avg_val + offset, f"{avg_val:.3f}", ha='center', va='bottom', fontsize=8)
+    out_path=os.path.join(out_dir, f'{sanitize_label_for_path(short_bench)}_{filename_suffix}.png')
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+
+def plot_bank_conflicts(bench: str, data: Dict[str, List[Dict]], variants: List[str], out_root_dir: str) -> None:
+    out_dir=os.path.join(out_root_dir,'bank_conflicts'); os.makedirs(out_dir,exist_ok=True)
+    short_bench=bench.split('-rodinia-2.0-ft', 1)[0]
+    banks=list(range(16))
+    labels=[f'b{b}' for b in banks] + ['avg']
+    for variant in variants:
+        records=data.get(variant, [])
+        raw_rate_map=_aggregate_bank_rate(records, 'raw_conflicts_rate_by_bank', 'raw_conflicts_by_bank', 'raw_passes_by_bank')
+        wr_rate_map=_aggregate_bank_rate(records, 'wr_reg_bank_conflicts_rate_by_bank', 'wr_conflicts_by_bank', 'wr_allocates_by_bank')
+        raw_means=[raw_rate_map.get(bank, 0.0) for bank in banks]
+        wr_means=[wr_rate_map.get(bank, 0.0) for bank in banks]
+        raw_avg=_mean(raw_means)
+        wr_avg=_mean(wr_means)
+        raw_values=raw_means + [raw_avg]
+        wr_values=wr_means + [wr_avg]
+        _plot_bank_metric(short_bench, 'raw_conflicts_rate', raw_values, labels, out_dir, 'raw_conflicts_rate')
+        _plot_bank_metric(short_bench, 'wr_reg_bank_conflicts_rate', wr_values, labels, out_dir, 'wr_reg_bank_conflicts_rate')
+
+
+def render_bank_conflicts_mosaic(benches: List[str], data_by_bench: Dict[str, Dict[str, List[Dict]]], variants: List[str], out_root_dir: str) -> None:
+    if not benches:
+        return
+    out_dir=os.path.join(out_root_dir, 'bank_conflicts'); os.makedirs(out_dir, exist_ok=True)
+    banks=list(range(16))
+    labels=[f'b{b}' for b in banks] + ['avg']
+    rows, cols = 2, 5
+    fig_w = cols * 3.8
+    fig_h = rows * 2.8
+    variant=variants[0]
+    mosaic_configs=[
+        ('raw_conflicts_rate', 'raw_conflicts_rate_mosaic.png', 'raw'),
+        ('wr_reg_bank_conflicts_rate', 'wr_reg_bank_conflicts_rate_mosaic.png', 'wr'),
+    ]
+    for metric_label, filename, mode in mosaic_configs:
+        fig, axes = plt.subplots(rows, cols, figsize=(fig_w, fig_h))
+        axes_flat = list(np.array(axes).reshape(-1))
+        for idx, ax in enumerate(axes_flat):
+            if idx >= len(benches):
+                ax.axis('off')
+                continue
+            bench = benches[idx]
+            bench_data = data_by_bench.get(bench, {})
+            records = bench_data.get(variant, [])
+            if mode == 'raw':
+                rate_map=_aggregate_bank_rate(records, 'raw_conflicts_rate_by_bank', 'raw_conflicts_by_bank', 'raw_passes_by_bank')
+            else:
+                rate_map=_aggregate_bank_rate(records, 'wr_reg_bank_conflicts_rate_by_bank', 'wr_conflicts_by_bank', 'wr_allocates_by_bank')
+            values=[rate_map.get(bank, 0.0) for bank in banks]
+            avg_val=_mean(values)
+            values.append(avg_val)
+            x=np.arange(len(values))
+            ax.bar(x, values, width=0.6, color='#1f77b4')
+            ax.set_xticks(x)
+            ax.set_xticklabels([str(b) for b in banks] + ['avg'], rotation=0, fontsize=7)
+            ax.set_xlabel('bank', fontsize=8)
+            ax.set_title(bench.split('-rodinia-2.0-ft', 1)[0], fontsize=9)
+            ax.tick_params(axis='y', labelsize=7)
+            if values:
+                avg_idx=len(values)-1
+                offset=max(max(values)*0.01, 0.002)
+                ax.text(avg_idx, values[avg_idx] + offset, f"{values[avg_idx]:.3f}", ha='center', va='bottom', fontsize=6)
+        fig.suptitle(metric_label, fontsize=12)
+        fig.subplots_adjust(left=0.05, right=0.98, top=0.9, bottom=0.08, wspace=0.25, hspace=0.35)
+        out_path=os.path.join(out_dir, filename)
+        fig.savefig(out_path, dpi=150)
+        plt.close(fig)
+
+
 def main():
     ap=argparse.ArgumentParser(description='Separate plots per benchmark (IPC, read fails, write fails).')
     ap.add_argument('--sim-root',help='Path to sim_run_<ver> (default $ACCELSIM_ROOT/../sim_run_12.1)')
@@ -648,6 +861,7 @@ def main():
     ap.add_argument('--geomean-summary', action='store_true', help='Also render geomean comparison plots across benchmarks.')
     ap.add_argument('--geomean-target', dest='geomean_targets', nargs='+', default=['mshr-entries-32'], help='Normalized names of the tuned variant(s) to compare against base-config (default: mshr-entries-32).')
     ap.add_argument('--geomean-metrics', nargs='*', default=['global_acc_r'], choices=['ipc','global_acc_r','global_acc_w'], help='Metric list for geomean summary (default: global_acc_r).')
+    ap.add_argument('--bank-conflicts-mosaic', action='store_true', help='Render 2x5 mosaic plots for raw/wr bank conflict rates (first 10 benchmarks).')
     args=ap.parse_args()
     env=os.getenv('ACCELSIM_ROOT'); root=os.path.expanduser(os.path.expandvars(args.sim_root)) if args.sim_root else (os.path.abspath(os.path.join(env,'..','sim_run_12.1')) if env else '')
     if not root: sys.exit('[ERROR] sim-root unresolved')
@@ -656,7 +870,7 @@ def main():
     out_dir = args.output_dir or './per-item-plot'
     os.makedirs(out_dir,exist_ok=True)
     # create subfolders if not exist
-    for sf in ['ipc','global_acc_r','global_acc_w']:
+    for sf in ['ipc','global_acc_r','global_acc_w','bank_conflicts']:
         os.makedirs(os.path.join(out_dir,sf),exist_ok=True)
 
     base_variant = find_variant_by_normalized(args.variants, 'base-config')
@@ -688,9 +902,11 @@ def main():
     if args.geomean_summary:
         geomean_results={label: {metric: [] for metric in args.geomean_metrics} for label, _ in geomean_target_pairs}
     aggregated_fail_summary: Dict[str, Dict[str, Dict[str, object]]] = {}
+    bank_conflicts_data: Dict[str, Dict[str, List[Dict]]] = {}
 
     for b in benches:
         data=collect(root,b,args.variants)
+        bank_conflicts_data[b]=data
         raw_data={variant: list(records) for variant, records in data.items()}
         bench_summary: Dict[str, Dict[str, object]] = {}
         for variant in args.variants:
@@ -723,7 +939,11 @@ def main():
         plot_ipc(b,data,args.variants,kc,out_dir)
         plot_fail(b,data,args.variants,kc,out_dir,'r')
         plot_fail(b,data,args.variants,kc,out_dir,'w')
-        print(f'[INFO] wrote separate plots for {b} into {out_dir}/ipc, {out_dir}/global_acc_r, {out_dir}/global_acc_w')
+        plot_bank_conflicts(b,data,args.variants,out_dir)
+        print(f'[INFO] wrote separate plots for {b} into {out_dir}/ipc, {out_dir}/global_acc_r, {out_dir}/global_acc_w, {out_dir}/bank_conflicts')
+
+    if args.bank_conflicts_mosaic:
+        render_bank_conflicts_mosaic(benches[:10], bank_conflicts_data, args.variants, out_dir)
 
     if args.geomean_summary and geomean_results:
         base_label = norm_variant(base_variant) if base_variant else 'base-config'

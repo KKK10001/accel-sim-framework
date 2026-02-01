@@ -1,4 +1,5 @@
 sim_root=~/dev/accel-sim/accel-sim-framework/sim_run_12.1
+log_files_dir=~/dev/accel-sim/accel-sim-framework/util/job_launching/logfiles
 echo "sim_root = "$sim_root
 #!/usr/bin/env bash
 
@@ -21,8 +22,11 @@ shopt -s nullglob
 # regress_tag=regress-miss-q-entries-32-11-25-eve-debug # Congratulations! All Tests Pass!
 # regress_tag=regress-mshr-max-merge-32-11-25-eve-specify-relative-cfg-file-path #Passed:0/10, No error:1/10, Failed/Error:9/10, Running:0/10, Waiting:0/10
 
-regress_tag=perf-study-mshr-max-merge-32 # removed
+# regress_tag=perf-study-mshr-max-merge-32 # removed
+regress_tag=reg_scb_crf_baseline
 # regress_tag=perf-study-miss-q-entries-32
+
+rm -f -- $log_files_dir/*$regress_tag*
 
 counter=0
 zero_count=0

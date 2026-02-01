@@ -279,13 +279,14 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_mshr_en__all_lru \
-    reg_mshr_en__aware_mshr__all_lru \
-    reg_mshr_en__all_aware_mshr_l2_aware_filltime__all_lru \
-    reg_mshr_en__l1d_aware_filltime__all_lru \
-    reg_mshr_en__all_aware_mshr_l1d_aware_filltime__all_lru \
-    reg_mshr_en__aware_mshr_filltime__all_lru \
-    reg_mshr_en__l2_aware_filltime__all_lru \
+    reg_mshr_disable_l2_srrip \
+    reg_mshr_en_l2_srrip \
+    reg_mshr_en__all_aware_mshr_l2_aware_filltime__l2_srrip \
+    reg_mshr_en__aware_mshr__l2_srrip \
+    reg_mshr_en__l1d_aware_filltime__l2_srrip \
+    reg_mshr_en__all_aware_mshr_l1d_aware_filltime__l2_srrip \
+    reg_mshr_en__aware_mshr_filltime__l2_srrip \
+    reg_mshr_en__l2_aware_filltime__l2_srrip \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
   --csv-file perf_gain.csv \
@@ -294,8 +295,25 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx 
 ########################################### End of L2 Perf. Study ###########################################
+
+########################################### SCB/CRF Regression Study ###################################
+# "--clean-old-o" option is used to clear old .o files before picking latest .o file
+# You can also use $ACCELSIM_ROOT/../perf_study/check-regress-results/clean_dir.sh by specifying $tag_name to clear old *.o
+python3 compute_perf_gain.py \
+  --variants \
+    reg_scb_crf_baseline \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
 """
 import argparse, os, re, sys, math
+from typing import List
 from collections import defaultdict
 from copy import copy
 
@@ -322,8 +340,8 @@ PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{F
 )
 L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
-GPU_STALL_DRAM_FULL_RE = re.compile(rf"gpu_stall_dramfull\s*=\s*{FLOAT_CAPTURE}")
-GPU_STALL_ICNT_TO_SHADER_RE = re.compile(rf"gpu_stall_icnt2sh\s*=\s*{FLOAT_CAPTURE}")
+RAW_CONFLICTS_RATE_RE = re.compile(rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
+WR_REG_BANK_CONFLICTS_RATE_RE = re.compile(rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -359,8 +377,8 @@ def parse_o_file(path: str):
     partition_level_parallelism=None
     avg_l2_miss_served_cycles=None
     avg_l1d_miss_served_cycles=None
-    gpu_stall_dramfull=None
-    gpu_stall_icnt2sh=None
+    raw_conflicts_rate_by_bank={}
+    wr_reg_bank_conflicts_rate_by_bank={}
 
     def reset_state():
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
@@ -369,7 +387,7 @@ def parse_o_file(path: str):
         nonlocal l1d_misses, l1d_accesses, l1d_miss_rate
         nonlocal partition_level_parallelism
         nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
-        nonlocal gpu_stall_dramfull, gpu_stall_icnt2sh
+        nonlocal raw_conflicts_rate_by_bank, wr_reg_bank_conflicts_rate_by_bank
         r_total=0
         w_total=0
         r_reasons={}
@@ -386,8 +404,8 @@ def parse_o_file(path: str):
         partition_level_parallelism=None
         avg_l2_miss_served_cycles=None
         avg_l1d_miss_served_cycles=None
-        gpu_stall_dramfull=None
-        gpu_stall_icnt2sh=None        
+        raw_conflicts_rate_by_bank={}
+        wr_reg_bank_conflicts_rate_by_bank={}
 
     def commit_current():
         nonlocal current
@@ -410,8 +428,10 @@ def parse_o_file(path: str):
         current['partition_level_parallelism']=partition_level_parallelism
         current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
         current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
-        current['gpu_stall_dramfull']=gpu_stall_dramfull
-        current['gpu_stall_icnt2sh']=gpu_stall_icnt2sh
+        current['raw_conflicts_rate_by_bank']=dict(raw_conflicts_rate_by_bank)
+        current['wr_reg_bank_conflicts_rate_by_bank']=dict(wr_reg_bank_conflicts_rate_by_bank)
+        current['raw_conflicts_rate_avg']=average_bank_rate(raw_conflicts_rate_by_bank)
+        current['wr_reg_bank_conflicts_rate_avg']=average_bank_rate(wr_reg_bank_conflicts_rate_by_bank)
         current['total_fail']=(r_total or 0)+(w_total or 0)
         kernels.append(current)
         current=None
@@ -552,19 +572,27 @@ def parse_o_file(path: str):
             except (TypeError, ValueError):
                 pass
             continue
-        gpu_stall_dramfull_match=GPU_STALL_DRAM_FULL_RE.search(line)
-        if gpu_stall_dramfull_match:
+
+        raw_conflicts_rate_match=RAW_CONFLICTS_RATE_RE.search(line)
+        if raw_conflicts_rate_match:
             try:
-                gpu_stall_dramfull=parse_float_value(gpu_stall_dramfull_match.group(1))
+                bank=int(raw_conflicts_rate_match.group(1))
+                rate=parse_float_value(raw_conflicts_rate_match.group(2))
             except (TypeError, ValueError):
                 pass
+            else:
+                raw_conflicts_rate_by_bank[bank]=rate
             continue
-        gpu_stall_icnt2sh_match=GPU_STALL_ICNT_TO_SHADER_RE.search(line)
-        if gpu_stall_icnt2sh_match:
+
+        wr_reg_bank_conflicts_rate_match=WR_REG_BANK_CONFLICTS_RATE_RE.search(line)
+        if wr_reg_bank_conflicts_rate_match:
             try:
-                gpu_stall_icnt2sh=parse_float_value(gpu_stall_icnt2sh_match.group(1))
+                bank=int(wr_reg_bank_conflicts_rate_match.group(1))
+                rate=parse_float_value(wr_reg_bank_conflicts_rate_match.group(2))
             except (TypeError, ValueError):
                 pass
+            else:
+                wr_reg_bank_conflicts_rate_by_bank[bank]=rate
             continue
 
         l2_global_acc_w_total_access_match=L2_GLOB_ACC_W_TOTAL_ACCESS_RE.search(line)
@@ -622,8 +650,10 @@ def parse_o_file(path: str):
             'partition_level_parallelism': partition_level_parallelism,
             'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
-            'gpu_stall_dramfull': gpu_stall_dramfull,
-            'gpu_stall_icnt2sh': gpu_stall_icnt2sh,
+            'raw_conflicts_rate_by_bank': dict(raw_conflicts_rate_by_bank),
+            'wr_reg_bank_conflicts_rate_by_bank': dict(wr_reg_bank_conflicts_rate_by_bank),
+            'raw_conflicts_rate_avg': average_bank_rate(raw_conflicts_rate_by_bank),
+            'wr_reg_bank_conflicts_rate_avg': average_bank_rate(wr_reg_bank_conflicts_rate_by_bank),
             'total_fail': (r_total or 0)+(w_total or 0),
         }]
     return kernels
@@ -815,16 +845,16 @@ METRIC_DEFINITIONS={
         'value_key': 'avg_l1d_miss_served_cycles',
         'higher_is_better': False,
     },
-    'gpu_stall_dramfull': {
-        'label': 'gpu_stall_dramfull',
-        'value_key': 'gpu_stall_dramfull',
+    'raw_conflicts_rate_avg': {
+        'label': 'raw_conflicts_rate_avg',
+        'value_key': 'raw_conflicts_rate_avg',
         'higher_is_better': False,
-    },        
-    'gpu_stall_icnt2sh': {
-        'label': 'gpu_stall_icnt2sh',
-        'value_key': 'gpu_stall_icnt2sh',
+    },
+    'wr_reg_bank_conflicts_rate_avg': {
+        'label': 'wr_reg_bank_conflicts_rate_avg',
+        'value_key': 'wr_reg_bank_conflicts_rate_avg',
         'higher_is_better': False,
-    },         
+    },
 }
 
 DEFAULT_METRIC_ORDER=['ipc','global_acc_r','global_acc_w']
@@ -859,8 +889,10 @@ METRIC_NAME_ALIASES={
     'partition_level_parallelism': 'partition_level_parallelism',
     'avg_l2_miss_served_cycles': 'avg_l2_miss_served_cycles',
     'avg_l1d_miss_served_cycles': 'avg_l1d_miss_served_cycles',
-    'gpu_stall_dramfull': 'gpu_stall_dramfull',
-    'gpu_stall_icnt2sh': 'gpu_stall_icnt2sh',
+    'raw_conflicts_rate': 'raw_conflicts_rate_avg',
+    'raw_conflicts_rate_avg': 'raw_conflicts_rate_avg',
+    'wr_reg_bank_conflicts_rate': 'wr_reg_bank_conflicts_rate_avg',
+    'wr_reg_bank_conflicts_rate_avg': 'wr_reg_bank_conflicts_rate_avg',
 }
 
 def resolve_metric_key(name: str) -> str:
@@ -934,6 +966,24 @@ def parse_float_value(text):
         return None
 
 
+def average_bank_rate(rate_map, bank_count=16):
+    if not rate_map:
+        return None
+    values=[]
+    for bank in range(bank_count):
+        val=rate_map.get(bank)
+        if val is None:
+            continue
+        try:
+            fval=float(val)
+        except (TypeError, ValueError):
+            continue
+        values.append(fval)
+    if not values:
+        return None
+    return sum(values)/len(values)
+
+
 def parse_overall_cell(cell):
     if cell is None:
         return {'actual': None, 'pct': None}
@@ -976,6 +1026,7 @@ def main():
     ap.add_argument('--sim-root',help='Path to sim_run dir (default $ACCELSIM_ROOT/../sim_run_12.1)')
     ap.add_argument('--benchmarks',nargs='*',help='Benchmarks to include (auto-discover if omitted).')
     ap.add_argument('--variants',nargs='+',required=True,help='Variants list containing base and tuned.')
+    ap.add_argument('--clean-old-o', action='store_true', help='Before processing, delete old *.o* files for each variant under QV100-SASS, keeping only the newest per directory.')
     ap.add_argument('--txt-file',default='perf_gain.txt',help='Legacy TXT output file.')
     ap.add_argument('--csv-file',default='perf_gain.csv',help='CSV output file.')
     ap.add_argument('--md-file',default='perf_gain.md',help='Markdown output file.')
@@ -1002,8 +1053,8 @@ def main():
             'partition_level_parallelism',
             'avg_l2_miss_served_cycles',
             'avg_l1d_miss_served_cycles',
-            'gpu_stall_dramfull',
-            'gpu_stall_icnt2sh',
+            'raw_conflicts_rate_avg',
+            'wr_reg_bank_conflicts_rate_avg',
         ],
         help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_misses, L2_miss_rate, L1D_accesses, L1D_misses, L1D_miss_rate, partition_level_parallelism, avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles.',
     )
@@ -1021,8 +1072,6 @@ def main():
             'partition_level_parallelism',
             'avg_l2_miss_served_cycles',
             'avg_l1d_miss_served_cycles',
-            'gpu_stall_dramfull',
-            'gpu_stall_icnt2sh',            
         ],
         help='Metrics to display in Fail-total sheet (case-insensitive). Use NONE to skip defaults.',
     )
@@ -1034,6 +1083,35 @@ def main():
     requested_variants=list(args.variants)
     if not requested_variants:
         sys.exit('[ERROR] --variants is required.')
+
+    def _clean_old_o_files(root_dir: str, variants: List[str]) -> None:
+        deleted=0
+        scanned=0
+        for dirpath, _dirnames, filenames in os.walk(root_dir):
+            base=os.path.basename(dirpath)
+            parent=os.path.basename(os.path.dirname(dirpath))
+            if parent != 'QV100-SASS' or base not in variants:
+                continue
+            o_files=[f for f in filenames if re.match(r".*\.o(\d+)?$", f)]
+            if len(o_files) <= 1:
+                continue
+            scanned+=1
+            paths=[os.path.join(dirpath, f) for f in o_files]
+            paths.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+            keep=paths[0]
+            for path in paths[1:]:
+                try:
+                    os.remove(path)
+                    deleted+=1
+                except OSError:
+                    pass
+        if scanned:
+            print(f"[INFO] clean-old-o: scanned {scanned} variant dirs, deleted {deleted} old .o files (kept newest per dir).")
+        else:
+            print("[INFO] clean-old-o: no matching variant dirs found.")
+
+    if args.clean_old_o:
+        _clean_old_o_files(sim_root, requested_variants)
     base_variant, _default_tuned = find_base_and_tuned(requested_variants)
     if not base_variant:
         base_variant=requested_variants[0]
@@ -1175,6 +1253,7 @@ def main():
 
     per_kernel_cause_records=defaultdict(list)
     per_kernel_driver_records=defaultdict(list)
+    per_kernel_bank_conflict_records=defaultdict(list)
 
     base_fail_causes={
         'global_acc_r': defaultdict(int),
@@ -1278,6 +1357,23 @@ def main():
                             'pct': driver_pct,
                             'cause_total': cause_total,
                         })
+            raw_rates=rec.get('raw_conflicts_rate_by_bank') or {}
+            wr_rates=rec.get('wr_reg_bank_conflicts_rate_by_bank') or {}
+            if raw_rates or wr_rates:
+                all_banks=set(raw_rates.keys()) | set(wr_rates.keys())
+                for bank in sorted(all_banks):
+                    raw_val=raw_rates.get(bank)
+                    wr_val=wr_rates.get(bank)
+                    if raw_val is None and wr_val is None:
+                        continue
+                    per_kernel_bank_conflict_records[variant_label].append({
+                        'benchmark': bench_name,
+                        'kernel': kernel_label,
+                        'kernel_index': idx,
+                        'bank': bank,
+                        'raw_conflicts_rate': raw_val,
+                        'wr_reg_bank_conflicts_rate': wr_val,
+                    })
 
     def sanitize_sheet_name(name: str) -> str:
         invalid=set('[]:*?/\\')
@@ -2201,7 +2297,7 @@ def main():
                     register_variant_label(variant_labels.get(variant, variant))
                 for label in ordered_variant_labels:
                     register_variant_label(label)
-                for source in (per_kernel_cause_records, per_kernel_driver_records):
+                for source in (per_kernel_cause_records, per_kernel_driver_records, per_kernel_bank_conflict_records):
                     for label in source.keys():
                         register_variant_label(label)
 
@@ -2284,6 +2380,38 @@ def main():
                             ])
                 if not driver_data_written:
                     driver_sheet.append(['No per-kernel driver data'])
+
+                bank_sheet=wb.create_sheet(unique_sheet_name('PerKernel-bank-conflicts'))
+                bank_headers=['benchmark','kernel','bank','raw_conflicts_rate','wr_reg_bank_conflicts_rate']
+                bank_sheet.append(bank_headers)
+                bank_data_written=False
+                for label in variant_label_order:
+                    records=per_kernel_bank_conflict_records.get(label, [])
+                    if not records:
+                        continue
+                    bank_data_written=True
+                    bank_sheet.append([])
+                    bank_sheet.append(['Variant', label, '', '', ''])
+                    grouped=defaultdict(list)
+                    for rec in records:
+                        key=(rec['benchmark'], rec['kernel_index'], rec['kernel'])
+                        grouped[key].append(rec)
+                    for key in sorted(
+                        grouped.keys(),
+                        key=lambda k: (k[0], k[1], k[2]),
+                    ):
+                        rows=grouped[key]
+                        rows.sort(key=lambda entry: entry['bank'])
+                        for entry in rows:
+                            bank_sheet.append([
+                                entry['benchmark'],
+                                entry['kernel'],
+                                entry['bank'],
+                                round(entry['raw_conflicts_rate'], 6) if entry['raw_conflicts_rate'] is not None else None,
+                                round(entry['wr_reg_bank_conflicts_rate'], 6) if entry['wr_reg_bank_conflicts_rate'] is not None else None,
+                            ])
+                if not bank_data_written:
+                    bank_sheet.append(['No per-kernel bank conflict data'])
 
                 kernel_weight_sheet=wb.create_sheet(unique_sheet_name('PerBenchmark-kernel-avg'))
                 kernel_weight_headers=['variant','benchmark','access_type','cause','fails','avg_pct','kernel_count','nonzero_kernel_count']
