@@ -1,0 +1,80 @@
+smsp__average_warp_latency_issue_stalled_barrier                              Ratio           inst/warp       average # of warp cycles spent waiting for sibling warps at a CTA     
+smsp__average_warp_latency_issue_stalled_branch_resolving                     Ratio           inst/warp       average # of warp cycles spent waiting for a branch target address to 
+smsp__average_warp_latency_issue_stalled_dispatch_stall                       Ratio           inst/warp       average # of warp cycles spent waiting on a dispatch stall            
+smsp__average_warp_latency_issue_stalled_drain                                Ratio           inst/warp       average # of warp cycles spent waiting after EXIT for all memory      
+smsp__average_warp_latency_issue_stalled_imc_miss                             Ratio           inst/warp       average # of warp cycles spent waiting for an immediate constant      
+smsp__average_warp_latency_issue_stalled_lg_throttle                          Ratio           inst/warp       average # of warp cycles spent waiting for a free entry in the LSU    
+smsp__average_warp_latency_issue_stalled_long_scoreboard                      Ratio           inst/warp       average # of warp cycles spent waiting for a scoreboard dependency on 
+smsp__average_warp_latency_issue_stalled_long_scoreboard_pipe_l1tex           Ratio           inst/warp       average # of warp cycles spent waiting for a scoreboard dependency on 
+smsp__average_warp_latency_issue_stalled_math_pipe_throttle                   Ratio           inst/warp       average # of warp cycles spent waiting for an execution pipe to be    
+smsp__average_warp_latency_issue_stalled_membar                               Ratio           inst/warp       average # of warp cycles spent waiting on a memory barrier            
+smsp__average_warp_latency_issue_stalled_mio_throttle                         Ratio           inst/warp       average # of warp cycles spent waiting for a free entry in the MIO    
+smsp__average_warp_latency_issue_stalled_mio_throttle_pipe_mio                Ratio           inst/warp       average # of warp cycles spent waiting for a free entry in the        
+smsp__average_warp_latency_issue_stalled_misc                                 Ratio           inst/warp       average # of warp cycles spent waiting on a miscellaneous hardware    
+smsp__average_warp_latency_issue_stalled_no_instruction                       Ratio           inst/warp       average # of warp cycles spent waiting to be selected for instruction 
+smsp__average_warp_latency_issue_stalled_not_selected                         Ratio           inst/warp       average # of warp cycles spent waiting for the microscheduler to      
+smsp__average_warp_latency_issue_stalled_selected                             Ratio           inst/warp       average # of warp cycles spent selected by the microscheduler to      
+smsp__average_warp_latency_issue_stalled_short_scoreboard                     Ratio           inst/warp       average # of warp cycles spent waiting for a scoreboard dependency on 
+smsp__average_warp_latency_issue_stalled_sleeping                             Ratio           inst/warp       average # of warp cycles spent waiting for a nanosleep to expire      
+smsp__average_warp_latency_issue_stalled_tex_throttle                         Ratio           inst/warp       average # of warp cycles spent waiting for a free entry in the TEX    
+smsp__average_warp_latency_issue_stalled_wait                                 Ratio           inst/warp       average # of warp cycles spent waiting on a fixed latency execution   
+smsp__average_warps_issue_stalled_barrier_per_issue_active                    Ratio           inst            average # of warps resident per issue cycle, waiting for sibling      
+smsp__average_warps_issue_stalled_branch_resolving_per_issue_active           Ratio           inst            average # of warps resident per issue cycle, waiting for a branch     
+smsp__average_warps_issue_stalled_dispatch_stall_per_issue_active             Ratio           inst            average # of warps resident per issue cycle, waiting on a dispatch    
+smsp__average_warps_issue_stalled_drain_per_issue_active                      Ratio           inst            average # of warps resident per issue cycle, waiting after EXIT for   
+smsp__average_warps_issue_stalled_imc_miss_per_issue_active                   Ratio           inst            average # of warps resident per issue cycle, waiting for an immediate 
+smsp__average_warps_issue_stalled_lg_throttle_per_issue_active                Ratio           inst            average # of warps resident per issue cycle, waiting for a free entry 
+smsp__average_warps_issue_stalled_long_scoreboard_per_issue_active            Ratio           inst            average # of warps resident per issue cycle, waiting for a scoreboard 
+smsp__average_warps_issue_stalled_long_scoreboard_pipe_l1tex_per_issue_active Ratio           inst            average # of warps resident per issue cycle, waiting for a scoreboard 
+smsp__average_warps_issue_stalled_math_pipe_throttle_per_issue_active         Ratio           inst            average # of warps resident per issue cycle, waiting for an execution 
+smsp__average_warps_issue_stalled_membar_per_issue_active                     Ratio           inst            average # of warps resident per issue cycle, waiting on a memory      
+smsp__average_warps_issue_stalled_mio_throttle_per_issue_active               Ratio           inst            average # of warps resident per issue cycle, waiting for a free entry 
+smsp__average_warps_issue_stalled_mio_throttle_pipe_mio_per_issue_active      Ratio           inst            average # of warps resident per issue cycle, waiting for a free entry 
+smsp__average_warps_issue_stalled_misc_per_issue_active                       Ratio           inst            average # of warps resident per issue cycle, waiting on a             
+smsp__average_warps_issue_stalled_no_instruction_per_issue_active             Ratio           inst            average # of warps resident per issue cycle, waiting to be selected   
+smsp__average_warps_issue_stalled_not_selected_per_issue_active               Ratio           inst            average # of warps resident per issue cycle, waiting for the          
+smsp__average_warps_issue_stalled_selected_per_issue_active                   Ratio           inst            average # of warps resident per issue cycle, selected by the          
+smsp__average_warps_issue_stalled_short_scoreboard_per_issue_active           Ratio           inst            average # of warps resident per issue cycle, waiting for a scoreboard 
+smsp__average_warps_issue_stalled_sleeping_per_issue_active                   Ratio           inst            average # of warps resident per issue cycle, waiting for a nanosleep  
+smsp__average_warps_issue_stalled_tex_throttle_per_issue_active               Ratio           inst            average # of warps resident per issue cycle, waiting for a free entry 
+smsp__average_warps_issue_stalled_wait_per_issue_active                       Ratio           inst            average # of warps resident per issue cycle, waiting on a fixed       
+smsp__warp_issue_stalled_barrier_per_warp_active                            Ratio                           proportion of warps per cycle, waiting for sibling warps at a CTA     
+smsp__warp_issue_stalled_branch_resolving_per_warp_active                   Ratio                           proportion of warps per cycle, waiting for a branch target address to 
+smsp__warp_issue_stalled_dispatch_stall_per_warp_active                     Ratio                           proportion of warps per cycle, waiting on a dispatch stall            
+smsp__warp_issue_stalled_drain_per_warp_active                              Ratio                           proportion of warps per cycle, waiting after EXIT for all memory      
+smsp__warp_issue_stalled_imc_miss_per_warp_active                           Ratio                           proportion of warps per cycle, waiting for an immediate constant      
+smsp__warp_issue_stalled_lg_throttle_per_warp_active                        Ratio                           proportion of warps per cycle, waiting for a free entry in the LSU    
+smsp__warp_issue_stalled_long_scoreboard_per_warp_active                    Ratio                           proportion of warps per cycle, waiting for a scoreboard dependency on 
+smsp__warp_issue_stalled_long_scoreboard_pipe_l1tex_per_warp_active         Ratio                           proportion of warps per cycle, waiting for a scoreboard dependency on 
+smsp__warp_issue_stalled_math_pipe_throttle_per_warp_active                 Ratio                           proportion of warps per cycle, waiting for an execution pipe to be    
+smsp__warp_issue_stalled_membar_per_warp_active                             Ratio                           proportion of warps per cycle, waiting on a memory barrier            
+smsp__warp_issue_stalled_mio_throttle_per_warp_active                       Ratio                           proportion of warps per cycle, waiting for a free entry in the MIO    
+smsp__warp_issue_stalled_mio_throttle_pipe_mio_per_warp_active              Ratio                           proportion of warps per cycle, waiting for a free entry in the        
+smsp__warp_issue_stalled_misc_per_warp_active                               Ratio                           proportion of warps per cycle, waiting on a miscellaneous hardware    
+smsp__warp_issue_stalled_no_instruction_per_warp_active                     Ratio                           proportion of warps per cycle, waiting to be selected for instruction 
+smsp__warp_issue_stalled_not_selected_per_warp_active                       Ratio                           proportion of warps per cycle, waiting for the microscheduler to      
+smsp__warp_issue_stalled_selected_per_warp_active                           Ratio                           proportion of warps per cycle, selected by the microscheduler to      
+smsp__warp_issue_stalled_short_scoreboard_per_warp_active                   Ratio                           proportion of warps per cycle, waiting for a scoreboard dependency on 
+smsp__warp_issue_stalled_sleeping_per_warp_active                           Ratio                           proportion of warps per cycle, waiting for a nanosleep to expire      
+smsp__warp_issue_stalled_tex_throttle_per_warp_active                       Ratio                           proportion of warps per cycle, waiting for a free entry in the TEX    
+smsp__warp_issue_stalled_wait_per_warp_active                               Ratio                           proportion of warps per cycle, waiting on a fixed latency execution   
+smsp__warps_issue_stalled_barrier                                           Counter         warp            cumulative # of warps waiting for sibling warps at a CTA barrier      
+smsp__warps_issue_stalled_branch_resolving                                  Counter         warp            cumulative # of warps waiting for a branch target address to be       
+smsp__warps_issue_stalled_dispatch_stall                                    Counter         warp            cumulative # of warps waiting on a dispatch stall                     
+smsp__warps_issue_stalled_drain                                             Counter         warp            cumulative # of warps waiting after EXIT for all memory instructions  
+smsp__warps_issue_stalled_imc_miss                                          Counter         warp            cumulative # of warps waiting for an immediate constant cache (IMC)   
+smsp__warps_issue_stalled_lg_throttle                                       Counter         warp            cumulative # of warps waiting for a free entry in the LSU instruction 
+smsp__warps_issue_stalled_long_scoreboard                                   Counter         warp            cumulative # of warps waiting for a scoreboard dependency on L1TEX    
+smsp__warps_issue_stalled_long_scoreboard_pipe_l1tex                        Counter         warp            cumulative # of warps waiting for a scoreboard dependency on          
+smsp__warps_issue_stalled_math_pipe_throttle                                Counter         warp            cumulative # of warps waiting for an execution pipe to be available   
+smsp__warps_issue_stalled_membar                                            Counter         warp            cumulative # of warps waiting on a memory barrier                     
+smsp__warps_issue_stalled_mio_throttle                                      Counter         warp            cumulative # of warps waiting for a free entry in the MIO instruction 
+smsp__warps_issue_stalled_mio_throttle_pipe_mio                             Counter         warp            cumulative # of warps waiting for a free entry in the non-RTCORE pipe 
+smsp__warps_issue_stalled_misc                                              Counter         warp            cumulative # of warps waiting on a miscellaneous hardware reason      
+smsp__warps_issue_stalled_no_instruction                                    Counter         warp            cumulative # of warps waiting to be selected for instruction fetch,   
+smsp__warps_issue_stalled_not_selected                                      Counter         warp            cumulative # of warps waiting for the microscheduler to select the    
+smsp__warps_issue_stalled_selected                                          Counter         warp            cumulative # of warps selected by the microscheduler to issue an      
+smsp__warps_issue_stalled_short_scoreboard                                  Counter         warp            cumulative # of warps waiting for a scoreboard dependency on MIO      
+smsp__warps_issue_stalled_sleeping                                          Counter         warp            cumulative # of warps waiting for a nanosleep to expire               
+smsp__warps_issue_stalled_tex_throttle                                      Counter         warp            cumulative # of warps waiting for a free entry in the TEX instruction 
+smsp__warps_issue_stalled_wait                                              Counter         warp            cumulative # of warps waiting on a fixed latency execution dependency 

@@ -1,0 +1,8 @@
+smsp__average_warp_latency_issue_stalled_not_selected                         Ratio           inst/warp       average # of warp cycles spent waiting for the microscheduler to      
+smsp__average_warp_latency_issue_stalled_selected                             Ratio           inst/warp       average # of warp cycles spent selected by the microscheduler to      
+                                                                                                              microscheduler to select the warp to issue                            
+                                                                                                              microscheduler to issue an instruction                                
+smsp__warp_issue_stalled_not_selected_per_warp_active                       Ratio                           proportion of warps per cycle, waiting for the microscheduler to      
+smsp__warp_issue_stalled_selected_per_warp_active                           Ratio                           proportion of warps per cycle, selected by the microscheduler to      
+smsp__warps_issue_stalled_not_selected                                      Counter         warp            cumulative # of warps waiting for the microscheduler to select the    
+smsp__warps_issue_stalled_selected                                          Counter         warp            cumulative # of warps selected by the microscheduler to issue an      

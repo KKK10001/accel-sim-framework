@@ -28,7 +28,8 @@ shopt -s nullglob
 # regress_tag=regress-default-cfg-11-25-eve # baseline    
 # regress_tag=rodinia-regress-again-after-add-specialized-unit-4
 # regress_tag=rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1412
-regress_tag=reg_scb_crf_baseline
+# regress_tag=reg_scb_crf_baseline
+regress_tag=reg_max_insn_issue_per_warp_2
 
 counter=0
 zero_count=0

@@ -34,6 +34,7 @@ from optparse import OptionParser
 import os
 import subprocess
 import os
+from pathlib import Path
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 import sys
@@ -48,6 +49,85 @@ import yaml
 import common
 import re
 import datetime
+
+############################# Example for running using True GPU #############################
+# cd /home/hjs/dev/accel-sim/accel-sim-framework
+# sudo ./util/hw_stats/run_hw.py -B rodinia_2.0-ft |& tee run_hw.log
+
+# 1. Checking if still running
+# ps -eo pid,etimes,cmd | egrep 'run_hw.py|ncu |ncu$|run\.sh|rodinia' | egrep -v egrep
+# 2. Checking if log size is still growing
+# tail -f /home/hjs/dev/accel-sim/accel-sim-framework/run_hw.log
+# 3. Check the last generated report time
+# find /home/hjs/dev/accel-sim/accel-sim-framework/hw_run/device-0/12.1 -name 'ncu_stats.ncu-rep' -printf '%TY-%Tm-%Td %TH:%TM:%TS %p\n' | sort | tail
+##############################################################################################
+
+####################### Checking available perf counters for GTX_3060 ######################
+# ncu --query-metrics --chip ga106 > GTX_3060_avail_perf_cnt
+# grep 'issue' GTX_3060_avail_perf_cnt > GTX_3060_issue_perf_cnt
+# grep 'register file' GTX_3060_avail_perf_cnt > GTX_3060_crf_perf_cnt
+##############################################################
+
+
+def _find_executable(exe_name, override_env=None, extra_search_dirs=None):
+    if override_env:
+        override_path = os.environ.get(override_env)
+        if override_path and os.path.isfile(override_path) and os.access(override_path, os.X_OK):
+            return override_path
+
+    found = shutil.which(exe_name)
+    if found:
+        return found
+
+    if extra_search_dirs:
+        for d in extra_search_dirs:
+            if not d:
+                continue
+            candidate = os.path.join(d, exe_name)
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                return candidate
+
+    return None
+
+
+def _candidate_cuda_bin_dirs():
+    dirs = []
+    for env_var in ["CUDA_INSTALL_PATH", "CUDA_HOME", "CUDA_PATH"]:
+        base = os.environ.get(env_var)
+        if base:
+            dirs.append(os.path.join(base, "bin"))
+
+    # Common CUDA install prefixes
+    dirs.append("/usr/local/cuda/bin")
+    for p in sorted(glob.glob("/usr/local/cuda-*/bin")):
+        dirs.append(p)
+    return dirs
+
+
+def _ensure_gpuapps_root() -> None:
+    """Ensure GPUAPPS_ROOT is set, even under sudo.
+
+    Many app definitions reference paths like "$GPUAPPS_ROOT/data_dirs/...".
+    When run via sudo, the environment may be sanitized and expandvars() will
+    leave "$GPUAPPS_ROOT" intact, causing path resolution failures.
+    """
+
+    if os.environ.get("GPUAPPS_ROOT"):
+        return
+
+    # this_directory points to <accel-sim-framework>/util/hw_stats/
+    framework_root = Path(this_directory).resolve().parents[1]
+    repo_root = framework_root.parent
+
+    candidates = [
+        repo_root / "gpu-app-collection",
+        repo_root / "gpu-app-collection-public",
+    ]
+
+    for c in candidates:
+        if (c / "data_dirs").is_dir():
+            os.environ["GPUAPPS_ROOT"] = str(c)
+            return
 
 # We will look for the benchmarks
 parser = OptionParser()
@@ -117,6 +197,8 @@ parser.add_option(
 
 (options, args) = parser.parse_args()
 
+_ensure_gpuapps_root()
+
 if not options.disable_nvprof:
     if not any(
         [
@@ -125,19 +207,22 @@ if not options.disable_nvprof:
         ]
     ):
         exit(
-            "ERROR - Cannot find ncu PATH... Is CUDA_INSTALL_PATH/bin in the system PATH?"
+            "ERROR - Cannot find nvprof in PATH... Is CUDA_INSTALL_PATH/bin in the system PATH?"
         )
 
 if options.nsight_profiler:
-    if not any(
-        [
-            os.path.isfile(os.path.join(p, "ncu"))
-            for p in os.getenv("PATH").split(os.pathsep)
-        ]
-    ):
+    ncu_path = _find_executable(
+        "ncu", override_env="NCU_PATH", extra_search_dirs=_candidate_cuda_bin_dirs()
+    )
+    if not ncu_path:
         exit(
-            "ERROR - Cannot find ncu PATH... Is CUDA_INSTALL_PATH/bin in the system PATH?"
+            "ERROR - Cannot find ncu. Set NCU_PATH=/abs/path/to/ncu or add CUDA bin dir to PATH."
         )
+
+    # Ensure child processes (bash/run.sh) can resolve `ncu` even under sudo secure_path.
+    ncu_dir = os.path.dirname(ncu_path)
+    if ncu_dir and ncu_dir not in os.getenv("PATH", "").split(os.pathsep):
+        os.environ["PATH"] = ncu_dir + os.pathsep + os.getenv("PATH", "")
 
 common.load_defined_yamls()
 
@@ -189,7 +274,37 @@ for bench in benchmarks:
             args = ""
 
         exec_path = common.file_option_test(os.path.join(edir, exe), "", this_directory)
-        sh_contents = ""
+        sh_contents = "set -e\nset -o pipefail\n"
+        if options.nsight_profiler:
+            # Make sure `ncu` is found at runtime even if sudo sets a restrictive PATH.
+            sh_contents += (
+                "\n# Ensure Nsight Compute CLI is in PATH\n"
+                'export PATH="' + os.path.dirname(ncu_path) + ':${PATH}"\n'
+            )
+        # NOTE: This script is for profiling on real hardware. Users commonly have Accel-Sim/GPGPU-Sim
+        # environment variables set in their shell (e.g., PTX_SIM_USE_PTX_FILE) which can cause CUDA
+        # apps to run under the simulator interposer and fail (e.g., missing gpgpusim.config) and
+        # prevent Nsight Compute from producing a report.
+        sh_contents += (
+            "\n# --- HW profiling env sanitize (avoid GPGPU-Sim interposer) ---\n"
+            "unset PTX_SIM_USE_PTX_FILE PTX_SIM_MODE_FUNC PTX_SIM_KERNEL_LIMIT PTX_SIM_USE_PTX_FILE\n"
+            "unset GPGPUSIM_CONFIG GPGPUSIM_CONFIG_FILE GPGPU_SIM_CONFIG GPGPU_SIM_CONFIG_FILE\n"
+            "unset CUDA_INJECTION64_PATH CUDA_PROFILE CUDA_PROFILE_LOG\n"
+            "export LD_PRELOAD=\"\"\n"
+            "if [ -n \"${LD_LIBRARY_PATH-}\" ]; then\n"
+            "  _new_ld=\"\"\n"
+            "  IFS=':' read -r -a _ld_parts <<< \"$LD_LIBRARY_PATH\"\n"
+            "  for _d in \"${_ld_parts[@]}\"; do\n"
+            "    case \"$_d\" in\n"
+            "      *gpgpu*|*GPGPU*|*gpu-simulator*|*accel-sim* ) ;;\n"
+            "      * ) _new_ld=\"${_new_ld:+${_new_ld}:}$_d\" ;;\n"
+            "    esac\n"
+            "  done\n"
+            "  export LD_LIBRARY_PATH=\"$_new_ld\"\n"
+            "  unset _new_ld _ld_parts _d\n"
+            "fi\n"
+            "# -----------------------------------------------------------\n"
+        )
         kernel_number = ""
         if "mlperf" in exec_path:
             exec_path = "sh " + exec_path
@@ -225,7 +340,7 @@ for bench in benchmarks:
                     " --csv --page raw   " 
                 )
                 profile_command = (
-                    "ncu --metrics gpc__cycles_elapsed.avg,sm__cycles_elapsed.sum,smsp__inst_executed.sum,"
+                    "ncu -f --metrics gpc__cycles_elapsed.avg,sm__cycles_elapsed.sum,smsp__inst_executed.sum,"
                     "sm__warps_active.avg.pct_of_peak_sustained_active,l1tex__t_sectors_pipe_lsu_mem_global_op_ld_lookup_hit.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_ld.sum,"
                     "l1tex__t_sectors_pipe_lsu_mem_global_op_st_lookup_hit.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_st.sum,lts__t_sectors_srcunit_tex_op_read.sum,"
                     "lts__t_sectors_srcunit_tex_op_write.sum,lts__t_sectors_srcunit_tex_op_read_lookup_hit.sum,lts__t_sectors_srcunit_tex_op_write_lookup_hit.sum,"
@@ -233,7 +348,12 @@ for bench in benchmarks:
                     "sm__inst_executed.sum,smsp__cycles_active.avg.pct_of_peak_sustained_elapsed,l1tex__t_sectors_pipe_lsu_mem_global_op_ld_lookup_hit.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_ld_lookup_miss.sum,"
                     "l1tex__t_sectors_pipe_lsu_mem_global_op_st_lookup_miss.sum,idc__requests.sum,idc__requests_lookup_hit.sum,"
                     "sm__sass_inst_executed_op_shared_ld.sum,sm__sass_inst_executed_op_shared_st.sum,lts__t_sectors_srcunit_tex_op_read_lookup_miss.sum,lts__t_sectors_srcunit_tex_op_write_lookup_miss.sum,sm__pipe_alu_cycles_active.sum,sm__pipe_fma_cycles_active.sum,sm__pipe_fp64_cycles_active.sum,sm__pipe_shared_cycles_active.sum,sm__pipe_tensor_cycles_active.sum,sm__pipe_tensor_op_hmma_cycles_active.sum,sm__cycles_active.sum,sm__cycles_active.avg,sm__cycles_elapsed.avg,sm__sass_thread_inst_executed_op_integer_pred_on.sum,sm__sass_thread_inst_executed_ops_dadd_dmul_dfma_pred_on.sum,sm__sass_thread_inst_executed_ops_fadd_fmul_ffma_pred_on.sum,sm__sass_thread_inst_executed_ops_hadd_hmul_hfma_pred_on.sum,sm__inst_executed_pipe_alu.sum,sm__inst_executed_pipe_fma.sum,sm__inst_executed_pipe_fp16.sum,sm__inst_executed_pipe_fp64.sum,sm__inst_executed_pipe_tensor.sum,sm__inst_executed_pipe_tex.sum,sm__inst_executed_pipe_xu.sum,sm__inst_executed_pipe_lsu.sum,"
-                    "sm__sass_thread_inst_executed_op_fp16_pred_on.sum,sm__sass_thread_inst_executed_op_fp32_pred_on.sum,sm__sass_thread_inst_executed_op_fp64_pred_on.sum,sm__sass_thread_inst_executed_op_dmul_pred_on.sum,sm__sass_thread_inst_executed_op_dfma_pred_on.sum,sm__sass_inst_executed_op_memory_128b.sum,sm__sass_inst_executed_op_memory_64b.sum,sm__sass_inst_executed_op_memory_32b.sum,sm__sass_inst_executed_op_memory_16b.sum,sm__sass_inst_executed_op_memory_8b.sum,smsp__thread_inst_executed_per_inst_executed.ratio,sm__sass_thread_inst_executed.sum"
+                    "sm__sass_thread_inst_executed_op_fp16_pred_on.sum,sm__sass_thread_inst_executed_op_fp32_pred_on.sum,sm__sass_thread_inst_executed_op_fp64_pred_on.sum,sm__sass_thread_inst_executed_op_dmul_pred_on.sum,sm__sass_thread_inst_executed_op_dfma_pred_on.sum,sm__sass_inst_executed_op_memory_128b.sum,sm__sass_inst_executed_op_memory_64b.sum,sm__sass_inst_executed_op_memory_32b.sum,sm__sass_inst_executed_op_memory_16b.sum,sm__sass_inst_executed_op_memory_8b.sum,smsp__thread_inst_executed_per_inst_executed.ratio,sm__sass_thread_inst_executed.sum,"
+                    "tpc__cycles_elapsed.sum,tpc__warp_launch_cycles_stalled_shader_cs_reason_register_allocation.sum,"
+                    "smsp__inst_issued.sum,smsp__cycles_elapsed.sum,"
+                    "smsp__warp_issue_stalled_not_selected_per_warp_active.ratio,smsp__warp_issue_stalled_selected_per_warp_active.ratio,"
+                    "smsp__warp_issue_stalled_short_scoreboard_per_warp_active.ratio,smsp__warp_issue_stalled_long_scoreboard_per_warp_active.ratio,"
+                    "smsp__inst_issued_per_issue_active.ratio"
                     " --csv --page raw --target-processes all "
                     + kernel_number
                     + " -o "
@@ -306,7 +426,7 @@ for bench in benchmarks:
                 )
             elif options.nsight_profiler:
                 profile_command = (
-                    "ncu --target-processes all --metrics gpc__cycles_elapsed.avg --csv "
+                    "ncu -f --target-processes all --metrics gpc__cycles_elapsed.avg --csv "
                     + kernel_number
                     + " -o "
                     + os.path.join(this_run_dir, "ncu_cycles.{0}".format(i))

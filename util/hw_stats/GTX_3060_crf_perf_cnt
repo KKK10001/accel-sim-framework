@@ -1,0 +1,8 @@
+sm__mio2rf_writeback_active                                                   Counter         cycle           # of cycles where the MIO to register file writeback interface was    
+sm__mio_pq_write_cycles_active                                                Counter         cycle           # of cycles where register operands from the register file were       
+sm__mio_pq_write_cycles_active_pipe_lsu                                       Counter         cycle           # of cycles where register operands from the register file were       
+sm__mio_pq_write_cycles_active_pipe_tex                                       Counter         cycle           # of cycles where register operands from the register file were       
+smsp__mio2rf_writeback_active                                                 Counter         cycle           # of cycles where the MIO to register file writeback interface was    
+smsp__mio2rf_writeback_active_pipe_adu                                        Counter         cycle           # of cycles where the MIO to register file writeback interface was    
+smsp__mio2rf_writeback_active_pipe_lsu                                        Counter         cycle           # of cycles where the MIO to register file writeback interface was    
+smsp__mio2rf_writeback_active_pipe_tex                                        Counter         cycle           # of cycles where the MIO to register file writeback interface was    

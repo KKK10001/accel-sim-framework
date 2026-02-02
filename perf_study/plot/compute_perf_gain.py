@@ -301,7 +301,8 @@ python3 compute_perf_gain.py \
 # You can also use $ACCELSIM_ROOT/../perf_study/check-regress-results/clean_dir.sh by specifying $tag_name to clear old *.o
 python3 compute_perf_gain.py \
   --variants \
-    reg_scb_crf_baseline \
+    reg_warp_schedule_base \
+    reg_max_insn_issue_per_warp_2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -342,6 +343,7 @@ L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOA
 L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 RAW_CONFLICTS_RATE_RE = re.compile(rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 WR_REG_BANK_CONFLICTS_RATE_RE = re.compile(rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
+AVG_ISSUED_WARP_INSTS_RE = re.compile(rf"avg_issued_warp_insts\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -377,6 +379,7 @@ def parse_o_file(path: str):
     partition_level_parallelism=None
     avg_l2_miss_served_cycles=None
     avg_l1d_miss_served_cycles=None
+    avg_issued_warp_insts=None
     raw_conflicts_rate_by_bank={}
     wr_reg_bank_conflicts_rate_by_bank={}
 
@@ -387,6 +390,7 @@ def parse_o_file(path: str):
         nonlocal l1d_misses, l1d_accesses, l1d_miss_rate
         nonlocal partition_level_parallelism
         nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
+        nonlocal avg_issued_warp_insts
         nonlocal raw_conflicts_rate_by_bank, wr_reg_bank_conflicts_rate_by_bank
         r_total=0
         w_total=0
@@ -404,6 +408,7 @@ def parse_o_file(path: str):
         partition_level_parallelism=None
         avg_l2_miss_served_cycles=None
         avg_l1d_miss_served_cycles=None
+        avg_issued_warp_insts=None
         raw_conflicts_rate_by_bank={}
         wr_reg_bank_conflicts_rate_by_bank={}
 
@@ -428,6 +433,7 @@ def parse_o_file(path: str):
         current['partition_level_parallelism']=partition_level_parallelism
         current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
         current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
+        current['avg_issued_warp_insts']=avg_issued_warp_insts
         current['raw_conflicts_rate_by_bank']=dict(raw_conflicts_rate_by_bank)
         current['wr_reg_bank_conflicts_rate_by_bank']=dict(wr_reg_bank_conflicts_rate_by_bank)
         current['raw_conflicts_rate_avg']=average_bank_rate(raw_conflicts_rate_by_bank)
@@ -573,6 +579,14 @@ def parse_o_file(path: str):
                 pass
             continue
 
+        avg_issued_warp_insts_match=AVG_ISSUED_WARP_INSTS_RE.search(line)
+        if avg_issued_warp_insts_match:
+            try:
+                avg_issued_warp_insts=parse_float_value(avg_issued_warp_insts_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
         raw_conflicts_rate_match=RAW_CONFLICTS_RATE_RE.search(line)
         if raw_conflicts_rate_match:
             try:
@@ -650,6 +664,7 @@ def parse_o_file(path: str):
             'partition_level_parallelism': partition_level_parallelism,
             'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
+            'avg_issued_warp_insts': avg_issued_warp_insts,
             'raw_conflicts_rate_by_bank': dict(raw_conflicts_rate_by_bank),
             'wr_reg_bank_conflicts_rate_by_bank': dict(wr_reg_bank_conflicts_rate_by_bank),
             'raw_conflicts_rate_avg': average_bank_rate(raw_conflicts_rate_by_bank),
@@ -855,6 +870,11 @@ METRIC_DEFINITIONS={
         'value_key': 'wr_reg_bank_conflicts_rate_avg',
         'higher_is_better': False,
     },
+    'avg_issued_warp_insts': {
+        'label': 'avg_issued_warp_insts',
+        'value_key': 'avg_issued_warp_insts',
+        'higher_is_better': True,
+    },
 }
 
 DEFAULT_METRIC_ORDER=['ipc','global_acc_r','global_acc_w']
@@ -893,6 +913,7 @@ METRIC_NAME_ALIASES={
     'raw_conflicts_rate_avg': 'raw_conflicts_rate_avg',
     'wr_reg_bank_conflicts_rate': 'wr_reg_bank_conflicts_rate_avg',
     'wr_reg_bank_conflicts_rate_avg': 'wr_reg_bank_conflicts_rate_avg',
+    'avg_issued_warp_insts': 'avg_issued_warp_insts',
 }
 
 def resolve_metric_key(name: str) -> str:
@@ -1055,6 +1076,7 @@ def main():
             'avg_l1d_miss_served_cycles',
             'raw_conflicts_rate_avg',
             'wr_reg_bank_conflicts_rate_avg',
+            'avg_issued_warp_insts',
         ],
         help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_misses, L2_miss_rate, L1D_accesses, L1D_misses, L1D_miss_rate, partition_level_parallelism, avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles.',
     )
@@ -2063,6 +2085,10 @@ def main():
             _append_metric(metric)
         for metric in fail_metric_keys:
             _append_metric(metric)
+
+        # User preference: keep avg_issued_warp_insts as the last overall column.
+        if 'avg_issued_warp_insts' in combined_metric_keys:
+            combined_metric_keys=[m for m in combined_metric_keys if m!='avg_issued_warp_insts'] + ['avg_issued_warp_insts']
         overall_header_labels=['study'] + [METRIC_LABELS.get(metric, metric) for metric in combined_metric_keys]
 
         def ensure_metric_map(entry=None):
