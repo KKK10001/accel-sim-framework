@@ -24,6 +24,7 @@ shopt -s nullglob
 
 # regress_tag=perf-study-mshr-max-merge-32 # removed
 # regress_tag=reg_scb_crf_baseline
+# regress_tag=reg_warp_schedule_base
 regress_tag=reg_max_insn_issue_per_warp_2
 # regress_tag=perf-study-miss-q-entries-32
 

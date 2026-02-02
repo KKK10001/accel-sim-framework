@@ -485,9 +485,6 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__l1d_aware_filltime__l2_srrip
 
 ########################################### SCB/CRF Regression Script ###################################
-# ./regress.sh reg_scb_crf_baseline --config-file ./perf_study/configs/mshr_en__all_lru.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_scb_crf_baseline
-
 # ./regress.sh reg_warp_schedule_base --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_schedule_base
 
