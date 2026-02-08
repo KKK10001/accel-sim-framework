@@ -491,6 +491,12 @@ fi
 # ./regress.sh reg_max_insn_issue_per_warp_2 --config-file ./perf_study/configs/max_insn_issue_per_warp_2.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_max_insn_issue_per_warp_2
 
+# ./regress.sh reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1 --config-file ./perf_study/configs/num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1
+
+# ./regress.sh reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_2 --config-file ./perf_study/configs/num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_2.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_2
+
 #   ./regress.sh --config-file /abs/path/custom.config --extra_sim_params '-gpgpu_unified_l1d_size 64'
 # Environment alternative:
 #   CUSTOM_GPGPUSIM_CONFIG=/abs/path/custom.config VARIANT_TAG=mytag ./regress.sh

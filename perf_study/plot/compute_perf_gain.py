@@ -302,7 +302,7 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_warp_schedule_base \
-    reg_max_insn_issue_per_warp_2 \
+    reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -343,8 +343,11 @@ L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOA
 L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 RAW_CONFLICTS_RATE_RE = re.compile(rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 WR_REG_BANK_CONFLICTS_RATE_RE = re.compile(rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
-ISSUED_WARP_INSTS_PER_CYCLE = re.compile(rf"issued_warp_insts_per_cycle\s*=\s*{FLOAT_CAPTURE}")
+TOTAL_ISSUE_RATE = re.compile(rf"total_issue_rate\s*=\s*{FLOAT_CAPTURE}")
 ISSUE_BW_UTILIZATION = re.compile(rf"issue_bw_utilization\s*=\s*{FLOAT_CAPTURE}")
+TOTAL_ISSUE_FAILS = re.compile(rf"total_issue_fails\s*=\s*{FLOAT_CAPTURE}")
+# ISSUE_FAILES_FROM_MEM_RESOURCE = re.compile(rf"issue_fails[mem_resource]\s*=\s*{FLOAT_CAPTURE}")
+ISSUE_FAILES_FROM_MEM_RESOURCE = re.compile(rf"issue_fails\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -380,8 +383,10 @@ def parse_o_file(path: str):
     partition_level_parallelism=None
     avg_l2_miss_served_cycles=None
     avg_l1d_miss_served_cycles=None
-    issued_warp_insts_per_cycle=None
+    total_issue_rate=None
     issue_bw_utilization=None
+    total_issue_fails=None
+    issue_fails_from_mem_resource=None
     raw_conflicts_rate_by_bank={}
     wr_reg_bank_conflicts_rate_by_bank={}
 
@@ -392,7 +397,8 @@ def parse_o_file(path: str):
         nonlocal l1d_misses, l1d_accesses, l1d_miss_rate
         nonlocal partition_level_parallelism
         nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
-        nonlocal issued_warp_insts_per_cycle, issue_bw_utilization
+        nonlocal total_issue_rate, issue_bw_utilization, total_issue_fails
+        nonlocal issue_fails_from_mem_resource
         nonlocal raw_conflicts_rate_by_bank, wr_reg_bank_conflicts_rate_by_bank
         r_total=0
         w_total=0
@@ -410,8 +416,10 @@ def parse_o_file(path: str):
         partition_level_parallelism=None
         avg_l2_miss_served_cycles=None
         avg_l1d_miss_served_cycles=None
-        issued_warp_insts_per_cycle=None
+        total_issue_rate=None
         issue_bw_utilization=None
+        total_issue_fails=None
+        issue_fails_from_mem_resource=None
         raw_conflicts_rate_by_bank={}
         wr_reg_bank_conflicts_rate_by_bank={}
 
@@ -436,8 +444,10 @@ def parse_o_file(path: str):
         current['partition_level_parallelism']=partition_level_parallelism
         current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
         current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
-        current['issued_warp_insts_per_cycle']=issued_warp_insts_per_cycle
+        current['total_issue_rate']=total_issue_rate
         current['issue_bw_utilization']=issue_bw_utilization
+        current['total_issue_fails']=total_issue_fails
+        current['issue_fails_from_mem_resource']=issue_fails_from_mem_resource
         current['raw_conflicts_rate_by_bank']=dict(raw_conflicts_rate_by_bank)
         current['wr_reg_bank_conflicts_rate_by_bank']=dict(wr_reg_bank_conflicts_rate_by_bank)
         current['raw_conflicts_rate_avg']=average_bank_rate(raw_conflicts_rate_by_bank)
@@ -583,10 +593,10 @@ def parse_o_file(path: str):
                 pass
             continue
 
-        issued_warp_insts_per_cycle_match=ISSUED_WARP_INSTS_PER_CYCLE.search(line)
-        if issued_warp_insts_per_cycle_match:
+        total_issue_rate_match=TOTAL_ISSUE_RATE.search(line)
+        if total_issue_rate_match:
             try:
-                issued_warp_insts_per_cycle=parse_float_value(issued_warp_insts_per_cycle_match.group(1))
+                total_issue_rate=parse_float_value(total_issue_rate_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -594,6 +604,21 @@ def parse_o_file(path: str):
         if issue_bw_utilization_match:
             try:
                 issue_bw_utilization=parse_float_value(issue_bw_utilization_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        total_issue_fails_match=TOTAL_ISSUE_FAILS.search(line)
+        if total_issue_fails_match:
+            try:
+                total_issue_fails=parse_float_value(total_issue_fails_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        issue_fails_from_mem_resource_match=ISSUE_FAILES_FROM_MEM_RESOURCE.search(line)
+        if issue_fails_from_mem_resource_match:
+            try:
+                issue_fails_from_mem_resource=parse_float_value(issue_fails_from_mem_resource_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -675,8 +700,10 @@ def parse_o_file(path: str):
             'partition_level_parallelism': partition_level_parallelism,
             'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
-            'issued_warp_insts_per_cycle': issued_warp_insts_per_cycle,
+            'total_issue_rate': total_issue_rate,
             'issue_bw_utilization': issue_bw_utilization,
+            'total_issue_fails': total_issue_fails,
+            'issue_fails_from_mem_resource': issue_fails_from_mem_resource,
             'raw_conflicts_rate_by_bank': dict(raw_conflicts_rate_by_bank),
             'wr_reg_bank_conflicts_rate_by_bank': dict(wr_reg_bank_conflicts_rate_by_bank),
             'raw_conflicts_rate_avg': average_bank_rate(raw_conflicts_rate_by_bank),
@@ -882,14 +909,24 @@ METRIC_DEFINITIONS={
         'value_key': 'wr_reg_bank_conflicts_rate_avg',
         'higher_is_better': False,
     },
-    'issued_warp_insts_per_cycle': {
-        'label': 'issued_warp_insts_per_cycle',
-        'value_key': 'issued_warp_insts_per_cycle',
+    'total_issue_rate': {
+        'label': 'total_issue_rate',
+        'value_key': 'total_issue_rate',
         'higher_is_better': True,
     },
     'issue_bw_utilization': {
         'label': 'issue_bw_utilization',
         'value_key': 'issue_bw_utilization',
+        'higher_is_better': True,
+    },    
+    'total_issue_fails': {
+        'label': 'total_issue_fails',
+        'value_key': 'total_issue_fails',
+        'higher_is_better': True,
+    },
+    'issue_fails_from_mem_resource': {
+        'label': 'issue_fails_from_mem_resource',
+        'value_key': 'issue_fails_from_mem_resource',
         'higher_is_better': True,
     },    
 }
@@ -930,8 +967,10 @@ METRIC_NAME_ALIASES={
     'raw_conflicts_rate_avg': 'raw_conflicts_rate_avg',
     'wr_reg_bank_conflicts_rate': 'wr_reg_bank_conflicts_rate_avg',
     'wr_reg_bank_conflicts_rate_avg': 'wr_reg_bank_conflicts_rate_avg',
-    'issued_warp_insts_per_cycle': 'issued_warp_insts_per_cycle',
+    'total_issue_rate': 'total_issue_rate',
     'issue_bw_utilization': 'issue_bw_utilization',
+    'total_issue_fails': 'total_issue_fails',
+    'issue_fails_from_mem_resource': 'issue_fails_from_mem_resource',
 }
 
 def resolve_metric_key(name: str) -> str:
@@ -1094,8 +1133,10 @@ def main():
             'avg_l1d_miss_served_cycles',
             'raw_conflicts_rate_avg',
             'wr_reg_bank_conflicts_rate_avg',
-            'issued_warp_insts_per_cycle',
+            'total_issue_rate',
             'issue_bw_utilization',
+            'total_issue_fails',
+            'issue_fails_from_mem_resource',
         ],
         help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_misses, L2_miss_rate, L1D_accesses, L1D_misses, L1D_miss_rate, partition_level_parallelism, avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles.',
     )

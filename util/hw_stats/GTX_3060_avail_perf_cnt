@@ -4066,7 +4066,7 @@ smsp__inst_executed_pipe_uniform                                              Co
 smsp__inst_executed_pipe_xu                                                   Counter         inst            # of warp instructions executed by xu pipe                            
 smsp__inst_executed_shader_cs                                                 Counter         inst            # of warp instructions executed by CS                                 
 smsp__inst_issued                                                             Counter         inst            # of warp instructions issued                                         
-smsp__inst_issued_per_issue_active                                            Ratio           inst/cycle      # of warp instructions per issue cycle                                
+smsp__inst_issued_per_issue_active                                            Ratio           inst/cycle      # of warp instructions per issue cycle
 smsp__issue_active                                                            Counter         cycle           # of cycles where 1 instruction was issued                            
 smsp__issue_inst0                                                             Counter         cycle           # of active cycles where 0 instructions were issued                   
 smsp__issue_inst1                                                             Counter         cycle           # of active cycles where 1 instruction was issued                     

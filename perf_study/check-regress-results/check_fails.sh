@@ -29,7 +29,10 @@ shopt -s nullglob
 # regress_tag=rodinia-regress-again-after-add-specialized-unit-4
 # regress_tag=rodinia-sass-regress-after-add-specialized-unit-4-2025-12-9-1412
 # regress_tag=reg_scb_crf_baseline
-regress_tag=reg_max_insn_issue_per_warp_2
+# regress_tag=reg_max_insn_issue_per_warp_2
+# regress_tag=reg_warp_schedule_base
+regress_tag=reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1
+# regress_tag=reg_num_int_units_8_num_sched_per_core_8
 
 counter=0
 zero_count=0
