@@ -485,14 +485,27 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_mshr_en__l1d_aware_filltime__l2_srrip
 
 ########################################### SCB/CRF Regression Script ###################################
+# ::dispatch_ready_cu() for() { assert(0); }
+# ./regress.sh reg_check_never_reached_branch_during_dispatch_cu --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_check_never_reached_branch_during_dispatch_cu
+
 # ./regress.sh reg_warp_schedule_base --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_schedule_base
 
 # ./regress.sh reg_max_insn_issue_per_warp_2 --config-file ./perf_study/configs/max_insn_issue_per_warp_2.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_max_insn_issue_per_warp_2
 
+# ./regress.sh reg_expand_int_resource --config-file ./perf_study/configs/expand_int_resource.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_expand_int_resource
+
 # ./regress.sh reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1 --config-file ./perf_study/configs/num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1
+
+# ./regress.sh reg_num_eu_16__num_sched_per_core_16__opc_16__max_insn_issue_per_warp_1 --config-file ./perf_study/configs/num_eu_16__num_sched_per_core_16__opc_16__max_insn_issue_per_warp_1.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_num_eu_16__num_sched_per_core_16__opc_16__max_insn_issue_per_warp_1
+
+# ./regress.sh reg_num_eu_64__num_sched_per_core_64__opc_64__max_insn_issue_per_warp_1 --config-file ./perf_study/configs/num_eu_64__num_sched_per_core_64__opc_64__max_insn_issue_per_warp_1.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_num_eu_64__num_sched_per_core_64__opc_64__max_insn_issue_per_warp_1
 
 # ./regress.sh reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_2 --config-file ./perf_study/configs/num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_2.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_2
