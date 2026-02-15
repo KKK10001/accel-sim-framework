@@ -489,8 +489,41 @@ fi
 # ./regress.sh reg_check_never_reached_branch_during_dispatch_cu --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_check_never_reached_branch_during_dispatch_cu
 
-# ./regress.sh reg_warp_schedule_base --config-file ./perf_study/configs/warp_schedule_base.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_warp_schedule_base
+# 2/13 34.315 (+0.000%)
+# ./regress.sh reg_baseline_default_sched --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched
+# 2/15 34.177 (-0.401%) -> re-run
+# ./regress.sh reg_warp_interfere_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule
+# 34.422 (+0.313%)
+# ./regress.sh reg_warp_interfere_mid_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_mid_awared_schedule
+# 34.381 (+0.194%)
+# ./regress.sh reg_warp_interfere_awared_schedule_075_picker --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule_075_picker
+
+# ./regress.sh reg_warp_interfere_awared_schedule_050_picker --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule_050_picker
+
+# 34.205 (-0.320%)
+# ./regress.sh reg_warp_interfere_awared_schedule_025_picker --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule_025_picker
+
+# ./regress.sh reg_sched_warp_when_interference_below_3 --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_sched_warp_when_interference_below_3
+
+# 29.465 (+2.826%)
+# ./regress.sh reg_sched_warp_when_interference_below_5 --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_sched_warp_when_interference_below_5
+# 34.455 (+0.410%) higher than "below_20"
+# ./regress.sh reg_sched_warp_when_interference_below_10 --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_sched_warp_when_interference_below_10
+# 34.436 (+0.353%)
+# ./regress.sh reg_sched_warp_when_interference_below_20 --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_sched_warp_when_interference_below_20
+
+# ./regress.sh reg_profile_warp_interference --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_profile_warp_interference
 
 # ./regress.sh reg_max_insn_issue_per_warp_2 --config-file ./perf_study/configs/max_insn_issue_per_warp_2.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_max_insn_issue_per_warp_2

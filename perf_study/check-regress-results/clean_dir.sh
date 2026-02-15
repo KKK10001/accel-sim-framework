@@ -27,10 +27,19 @@ shopt -s nullglob
 # regress_tag=reg_warp_schedule_base
 # regress_tag=reg_num_eu_64__num_sched_per_core_64__opc_64__max_insn_issue_per_warp_1
 # regress_tag=reg_num_eu_16__num_sched_per_core_16__opc_16__max_insn_issue_per_warp_1
-regress_tag=reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1
+# regress_tag=reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1
+# regress_tag=reg_sched_warp_when_interference_below_20
+# regress_tag=reg_sched_warp_when_interference_below_5
+# regress_tag=reg_sched_warp_when_interference_below_10
+regress_tag=reg_warp_interfere_awared_schedule
+# regress_tag=reg_baseline_default_sched
 # regress_tag=reg_max_insn_issue_per_warp_2
 # regress_tag=reg_num_int_units_8_num_sched_per_core_8
 # regress_tag=perf-study-miss-q-entries-32
+# regress_tag=reg_warp_interfere_awared_schedule_l1d_l2
+# regress_tag=reg_warp_interfere_awared_schedule_050_picker
+# regress_tag=reg_warp_interfere_mid_awared_schedule
+# regress_tag=reg_re_ref_interval_aware_for_l2_srrip_mshr_aware
 
 rm -f -- $log_files_dir/*$regress_tag*
 

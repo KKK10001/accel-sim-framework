@@ -301,7 +301,14 @@ python3 compute_perf_gain.py \
 # You can also use $ACCELSIM_ROOT/../perf_study/check-regress-results/clean_dir.sh by specifying $tag_name to clear old *.o
 python3 compute_perf_gain.py \
   --variants \
-    reg_warp_schedule_base \
+    reg_baseline_default_sched \
+    reg_warp_interfere_awared_schedule \
+    reg_warp_interfere_awared_schedule_075_picker \
+    reg_warp_interfere_awared_schedule_050_picker \
+    reg_warp_interfere_awared_schedule_025_picker \
+    reg_sched_warp_when_interference_below_5 \
+    reg_sched_warp_when_interference_below_10 \
+    reg_sched_warp_when_interference_below_20 \
     reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1 \
     reg_num_eu_64__num_sched_per_core_64__opc_64__max_insn_issue_per_warp_1 \
   --clean-old-o \
