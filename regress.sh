@@ -489,12 +489,16 @@ fi
 # ./regress.sh reg_check_never_reached_branch_during_dispatch_cu --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_check_never_reached_branch_during_dispatch_cu
 
-# 2/13 34.315 (+0.000%)
+# 2/13 34.315 (+0.000%) -> re-run 34.246 (+0.000%)
 # ./regress.sh reg_baseline_default_sched --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched
 # 2/15 34.177 (-0.401%) -> re-run
 # ./regress.sh reg_warp_interfere_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule
+# 34.416 (+0.498%) -> re-run 34.393 (+0.431%)
+# ./regress.sh reg_warp_interfere_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace
+
 # 34.422 (+0.313%)
 # ./regress.sh reg_warp_interfere_mid_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_mid_awared_schedule
