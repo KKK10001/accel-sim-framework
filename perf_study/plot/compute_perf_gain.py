@@ -316,9 +316,12 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_baseline_default_sched \
-    reg_warp_interfere_awared_schedule \
+    reg_baseline_fixed_mshr_corr_repl \
     reg_warp_interfere_awared_cache_replace \
+    reg_warp_interfere_awared_cache_replace_fixed_mshr_corr_repl \
+    reg_warp_interfere_and_filltime_awared_cache_replace \
+    reg_warp_corr_set_indexing_fuck \
+    reg_warp_corr_set_indexing_fuck_II \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \

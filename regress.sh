@@ -489,15 +489,98 @@ fi
 # ./regress.sh reg_check_never_reached_branch_during_dispatch_cu --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_check_never_reached_branch_during_dispatch_cu
 
-# 2/13 34.315 (+0.000%) -> re-run 34.246 (+0.000%)
+# 2/13 34.315 (+0.000%) -> re-run 34.246 (+0.000%) -> 3rd run 34.246 (+0.000%)
 # ./regress.sh reg_baseline_default_sched --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched
 # 2/15 34.177 (-0.401%) -> re-run
 # ./regress.sh reg_warp_interfere_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule
-# 34.416 (+0.498%) -> re-run 34.393 (+0.431%)
+# 34.416 (+0.498%) -> re-run 34.393 (+0.431%) -> 3rd run 34.393 (+0.431%)
 # ./regress.sh reg_warp_interfere_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace
+# 34.435 (+0.551%)	-> re-run 34.435 (+0.551%)
+# ./regress.sh reg_warp_interfere_and_filltime_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_and_filltime_awared_cache_replace.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_and_filltime_awared_cache_replace
+
+# ./regress.sh reg_l1d_sets_16_assoc_16 --config-file ./perf_study/configs/l1d_sets_16_assoc_16.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_sets_16_assoc_16
+
+# ./regress.sh reg_warp_corr_set_indexing --config-file ./perf_study/configs/warp_corr_set_indexing.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_corr_set_indexing
+
+# ./regress.sh reg_warp_corr_set_indexing_fuck --config-file ./perf_study/configs/warp_corr_set_indexing.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_corr_set_indexing_fuck
+
+# 34.185 (-0.229%)? drop? The same code as last submission.
+# ./regress.sh reg_baseline_default_sched_II --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched_II
+
+# src/gpgpu-sim/gpu-cache.cc
+# src/gpgpu-sim/gpu-cache.h
+# src/gpgpu-sim/gpu-sim.cc
+# src/gpgpu-sim/shader.cc
+# src/gpgpu-sim/shader.h
+# 34.147 (-0.340%)	
+
+# src/gpgpu-sim/gpu-cache.h (part)
+# src/gpgpu-sim/gpu-sim.cc
+# src/gpgpu-sim/shader.h
+# 34.150 (-0.332%)	
+# ./regress.sh reg_baseline_default_sched_II --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched_II
+
+# src/gpgpu-sim/gpu-cache.cc
+# src/gpgpu-sim/gpu-cache.h
+# src/gpgpu-sim/gpu-sim.cc
+# src/gpgpu-sim/shader.cc
+# src/gpgpu-sim/shader.h
+# 34.147 (-0.340%)
+# ./regress.sh reg_baseline_default_sched_II --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched_II
+
+# 34.166 (-0.285%)	
+# ./regress.sh reg_baseline_default_sched_III --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched_III
+
+# ./regress.sh reg_baseline_default_sched_IV --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_default_sched_IV
+
+# 34.179 (-0.247%)
+# ./regress.sh reg_warp_interfere_awared_schedule_II --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule_II
+# 34.179 (-0.247%)
+# ./regress.sh reg_warp_interfere_awared_cache_replace_II --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace_II
+# 34.295 (+0.092%)
+# ./regress.sh reg_warp_interfere_awared_cache_replace_bugfix --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace_bugfix
+
+# 34.261 (-0.007%) almost the same as original reg_baseline_default_sched (IPC: 34.264)
+# ./regress.sh reg_baseline_2_24 --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_2_24
+
+# 2/24 BugFix for MSHR-awared cache replacement
+# ./regress.sh reg_l1d_mshr_awared_repl --config-file ./perf_study/configs/l1d_mshr_awared_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mshr_awared_repl
+
+# ./regress.sh reg_baseline_fixed_mshr_corr_repl --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_fixed_mshr_corr_repl
+
+# Running now (BugFix: Excluded "warp_id == -1" from stats for inter-warp interferences)
+# 34.315 (+0.150%) 
+# ./regress.sh reg_warp_interfere_awared_cache_replace_2_24 --config-file ./perf_study/configs/warp_interfere_awared_cache_replace.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace_2_24
+# 2/24 eve 34.489 (+0.659%)	highest till now
+# ./regress.sh reg_warp_interfere_awared_cache_replace_fixed_mshr_corr_repl --config-file ./perf_study/configs/warp_interfere_awared_cache_replace.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace_fixed_mshr_corr_repl
+
+# dead lock (It seems that smaller assoc would more likely cause LINE_ALLOC failures)
+# ./regress.sh reg_warp_interfere_awared_sched_l1_sets_16_assoc_16 --config-file ./perf_study/configs/warp_interfere_awared_sched_l1_sets_16_assoc_16.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_sched_l1_sets_16_assoc_16
+
+# 34.124 (-0.407%)
+# ./regress.sh reg_warp_corr_set_indexing_fuck_II --config-file ./perf_study/configs/warp_corr_set_indexing.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_corr_set_indexing_fuck_II
 
 # 34.422 (+0.313%)
 # ./regress.sh reg_warp_interfere_mid_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config

@@ -219,6 +219,10 @@ gpgpu_sim *accel_sim_framework::gpgpu_trace_sim_init_perf_model(
   option_parser_cmdline(opp, argc, argv);  // parse configuration options
   fprintf(stdout, "GPGPU-Sim: Configuration options:\n\n");
   option_parser_print(opp, stdout);
+  // ROLLBACK_MARKER(leak-fix-2026-02-21): destroy parser after options are
+  // parsed/printed to avoid leaking OptionParser and registered option objects.
+  // Remove this call to restore previous lifetime behavior.
+  option_parser_destroy(opp);
   // Initialize Trace streams and optional output redirection after parsing
   // configuration. Without this, -trace_enabled/-trace_components won't emit.
   if (Trace::enabled) {

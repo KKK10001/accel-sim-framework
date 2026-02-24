@@ -1,0 +1,4 @@
+Put gen_separate_dump_files_for_no_mshr_mode.sh, gen_separate_dump_files_for_mshr_mode.sh, and filter_mshr_perf_study.sh in dump dir, e.g., /home/kuanbba/dev/accel-sim/accel-sim-framework/sim_run_12.1/backprop-rodinia-2.0-ft/4096___data_result_4096_txt/QV100-SASS. 
+Run gen_separate_dump_files_for_no_mshr_mode.sh when MSHR is disabled.
+Run gen_separate_dump_files_for_mshr_mode.sh when MSHR is enabled.
+Then, run filter_mshr_perf_study.sh

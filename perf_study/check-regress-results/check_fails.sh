@@ -32,7 +32,8 @@ shopt -s nullglob
 # regress_tag=reg_max_insn_issue_per_warp_2
 # regress_tag=reg_warp_schedule_base
 # regress_tag=reg_num_eu_8__num_sched_per_core_8__max_insn_issue_per_warp_1
-regress_tag=reg_num_eu_16__num_sched_per_core_16__opc_16__max_insn_issue_per_warp_1
+# regress_tag=reg_num_eu_16__num_sched_per_core_16__opc_16__max_insn_issue_per_warp_1
+regress_tag=reg_warp_corr_set_indexing
 # regress_tag=reg_num_int_units_8_num_sched_per_core_8
 
 counter=0
