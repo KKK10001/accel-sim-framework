@@ -563,8 +563,29 @@ fi
 # ./regress.sh reg_l1d_mshr_awared_repl --config-file ./perf_study/configs/l1d_mshr_awared_repl.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mshr_awared_repl
 
+##########################################
+# 2/25 done
 # ./regress.sh reg_baseline_fixed_mshr_corr_repl --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_baseline_fixed_mshr_corr_repl
+
+# 34.486 (+0.564%)
+# ./regress.sh reg_l1d_mshr_awared_repl --config-file ./perf_study/configs/l1d_mshr_awared_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mshr_awared_repl
+# 34.309 (+0.048%) ---> so many records were removed at once. 
+# That is, so many same reqs were sent by SMs in near future.
+# ./regress.sh reg_l1d_reset_mshr_record_after_eviction --config-file ./perf_study/configs/l1d_mshr_awared_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_reset_mshr_record_after_eviction
+
+# 34.466 (+0.506%)
+# ./regress.sh reg_l1d_l2_mshr_awared_repl --config-file ./perf_study/configs/l1d_l2_mshr_awared_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_mshr_awared_repl
+
+# 34.382 (+0.260%)
+# ./regress.sh reg_warp_interfere_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_awared_cache_replace.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace
+
+##########################################
+
 
 # Running now (BugFix: Excluded "warp_id == -1" from stats for inter-warp interferences)
 # 34.315 (+0.150%) 

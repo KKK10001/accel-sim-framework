@@ -39,8 +39,8 @@ shopt -s nullglob
 # regress_tag=reg_warp_corr_set_indexing
 # regress_tag=reg_baseline_default_sched_II
 # regress_tag=reg_warp_interfere_awared_cache_replace_fixed
-# regress_tag=reg_l1d_mshr_awared_repl
-regress_tag=reg_baseline_fixed_mshr_corr_repl
+regress_tag=reg_l1d_mshr_awared_repl
+# regress_tag=reg_baseline_fixed_mshr_corr_repl
 # regress_tag=reg_warp_interfere_awared_cache_replace_fixed_mshr_awared_repl
 # regress_tag=reg_max_insn_issue_per_warp_2
 # regress_tag=reg_num_int_units_8_num_sched_per_core_8
