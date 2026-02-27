@@ -495,9 +495,7 @@ fi
 # 2/15 34.177 (-0.401%) -> re-run
 # ./regress.sh reg_warp_interfere_awared_schedule --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_schedule
-# 34.416 (+0.498%) -> re-run 34.393 (+0.431%) -> 3rd run 34.393 (+0.431%)
-# ./regress.sh reg_warp_interfere_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_awared_schedule.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace
+
 # 34.435 (+0.551%)	-> re-run 34.435 (+0.551%)
 # ./regress.sh reg_warp_interfere_and_filltime_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_and_filltime_awared_cache_replace.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_and_filltime_awared_cache_replace
@@ -564,28 +562,22 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mshr_awared_repl
 
 ##########################################
-# 2/25 done
-# ./regress.sh reg_baseline_fixed_mshr_corr_repl --config-file ./perf_study/configs/warp_schedule_base.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_baseline_fixed_mshr_corr_repl
+# ./regress.sh reg_warp_id_hashed_indexing --config-file ./perf_study/configs/warp_id_hashed_indexing.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_id_hashed_indexing
 
 # 34.486 (+0.564%)
 # ./regress.sh reg_l1d_mshr_awared_repl --config-file ./perf_study/configs/l1d_mshr_awared_repl.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mshr_awared_repl
-# 34.309 (+0.048%) ---> so many records were removed at once. 
-# That is, so many same reqs were sent by SMs in near future.
-# ./regress.sh reg_l1d_reset_mshr_record_after_eviction --config-file ./perf_study/configs/l1d_mshr_awared_repl.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_reset_mshr_record_after_eviction
 
 # 34.466 (+0.506%)
 # ./regress.sh reg_l1d_l2_mshr_awared_repl --config-file ./perf_study/configs/l1d_l2_mshr_awared_repl.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_mshr_awared_repl
 
-# 34.382 (+0.260%)
-# ./regress.sh reg_warp_interfere_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_awared_cache_replace.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace
-
-##########################################
-
+################################ Inter-Warp Interference-Aware Cache Replace ################################
+# IPC: 34.328 (+0.000%) total_issue_fails: 196939.132 (+0.000%) g_acc_r_mq_full: 4892.951 (+0.000%)
+# again: 
+# ./regress.sh reg_wia_cache_repl_base --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_cache_repl_base
 
 # Running now (BugFix: Excluded "warp_id == -1" from stats for inter-warp interferences)
 # 34.315 (+0.150%) 
@@ -594,6 +586,61 @@ fi
 # 2/24 eve 34.489 (+0.659%)	highest till now
 # ./regress.sh reg_warp_interfere_awared_cache_replace_fixed_mshr_corr_repl --config-file ./perf_study/configs/warp_interfere_awared_cache_replace.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_awared_cache_replace_fixed_mshr_corr_repl
+
+# 34.344 (+0.150%) -> 15:06 Re-run: 
+# ./regress.sh reg_wia_cache_repl_l1d_mq_16 --config-file ./perf_study/configs/wia_repl_l1d_mq_16.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_cache_repl_l1d_mq_16
+
+# 2/27 Test if L2 WIA worked
+# ./regress.sh reg_test_l2_wia_worked --config-file ./perf_study/configs/l1d_l2_wia_repl_l1d_mq_16.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_test_l2_wia_worked
+
+# 34.532 (+0.698%) highest with wia only
+# total_issue_fails 195002.099 (-0.962%)
+# ./regress.sh reg_wia_cache_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_cache_repl_l1d_mq_32
+
+# ./regress.sh reg_wia_two_level_active_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_two_level_active_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_two_level_active_repl_l1d_mq_32
+# accel-sim.out: shader.h:602: 
+# two_level_active_scheduler::two_level_active_scheduler Assertion `3 == ret' failed.
+
+# IPC: 35.213 (+2.684%)   total_issue_ratio: 3.908 (+2.920%)
+# ./regress.sh reg_wia_gto_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_gto_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_gto_repl_l1d_mq_32
+
+# IPC: 35.213 (+2.684%)  total_issue_ratio: 3.908 (+2.920%)
+# ./regress.sh reg_wia_rrr_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_rrr_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_rrr_repl_l1d_mq_32
+
+# IPC: 35.328 (+3.019%) total_warp_interferences:  5.022 (-99.743%) total_issue_ratio: 3.928 (+3.454%)
+# ./regress.sh reg_wia_old_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_old_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_old_repl_l1d_mq_32
+
+# IPC: 35.332 (+3.030%) total_warp_interferences: 2141.575 (+9.711%)
+# Guess: the majoriy of L1D trashing were saved by L2
+# Try appling wia to L2 as well
+# ./regress.sh reg_old_repl_l1d_mq_32 --config-file ./perf_study/configs/old_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_old_repl_l1d_mq_32
+
+# ./regress.sh reg_wia_warp_limiting_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_warp_limiting_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_warp_limiting_repl_l1d_mq_32
+# accel-sim.out: shader.cc:2112: swl_scheduler::swl_scheduler Assertion `2 == ret' failed.
+
+# 34.395 (+0.298%)
+# ./regress.sh reg_wia_cache_repl_l1d_mq_64 --config-file ./perf_study/configs/warp_interfere_awared_cache_replace_l1d_mq_64.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_cache_repl_l1d_mq_64
+# 34.378 (+0.249%) Even worse than wia only 
+# total_warp_interferences 4.579 (-99.765%)->4.460 (-99.772%), but
+# avg_l1d_miss_served_cycles 194792.347 180384.164 (-1.845%)->325158.812 (+76.934%)
+# ./regress.sh reg_wia_mshr_aware_replace_l1d_mq_32 --config-file ./perf_study/configs/wia_mshr_aware_replace_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_mshr_aware_replace_l1d_mq_32
+
+
+# 34.379 (+0.251%)
+# ./regress.sh reg_warp_interfere_mshr_awared_cache_replace --config-file ./perf_study/configs/warp_interfere_mshr_awared_cache_replace.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_warp_interfere_mshr_awared_cache_replace
+
 
 # dead lock (It seems that smaller assoc would more likely cause LINE_ALLOC failures)
 # ./regress.sh reg_warp_interfere_awared_sched_l1_sets_16_assoc_16 --config-file ./perf_study/configs/warp_interfere_awared_sched_l1_sets_16_assoc_16.config

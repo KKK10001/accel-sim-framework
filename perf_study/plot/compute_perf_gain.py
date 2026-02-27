@@ -316,14 +316,18 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_baseline_fixed_mshr_corr_repl \
+    reg_wia_cache_repl_base \
     reg_l1d_mshr_awared_repl \
-    reg_l1d_reset_mshr_record_after_eviction \
     reg_l1d_l2_mshr_awared_repl \
-    reg_warp_interfere_awared_cache_replace \
-    reg_warp_interfere_and_filltime_awared_cache_replace \
-    reg_warp_corr_set_indexing_fuck \
-    reg_warp_corr_set_indexing_fuck_II \
+    reg_wia_cache_repl_l1d_mq_16 \
+    reg_wia_cache_repl_l1d_mq_64 \
+    reg_wia_cache_repl_l1d_mq_32 \
+    reg_wia_mshr_aware_replace_l1d_mq_32 \
+    reg_wia_gto_repl_l1d_mq_32 \
+    reg_wia_rrr_repl_l1d_mq_32 \
+    reg_wia_old_repl_l1d_mq_32 \
+    reg_old_repl_l1d_mq_32 \
+    reg_l1d_l2_wia_old_repl_l1d_mq_32 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -339,7 +343,7 @@ from typing import List
 from collections import defaultdict
 from copy import copy
 
-GPU_IPC_RE = re.compile(r"gpu_ipc\s*=\s*([0-9]+\.?[0-9]*)")
+GPU_IPC_RE = re.compile(r"gpu_tot_ipc\s*=\s*([0-9]+\.?[0-9]*)")
 TOTAL_R_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\s*=\s*([0-9]+)")
 TOTAL_W_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_W\]\s*=\s*([0-9]+)")
 CAUSE_R_RE = re.compile(r"Total_core_cache_fail_stats_breakdown\[GLOBAL_ACC_R\]\[([^\]]+)\]\s*=\s*([0-9]+)")
@@ -350,23 +354,26 @@ KERNEL_NAME_RE = re.compile(r"(?:-kernel name|kernel_name)\s*=\s*(.+)")
 KERNEL_UID_RE = re.compile(r"kernel_launch_uid\s*=\s*([0-9]+)")
 
 FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
-L2_BW_RE = re.compile(rf"L2_BW\s*=\s*{FLOAT_CAPTURE}")
-L2_ACCESSES_RE = re.compile(rf"L2_(?:total_cache_)?accesses\s*=\s*{FLOAT_CAPTURE}")
-L2_MISSES_RE = re.compile(rf"L2_misses\s*=\s*{FLOAT_CAPTURE}")
-L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
-L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
+# L2_BW_RE = re.compile(rf"L2_BW\s*=\s*{FLOAT_CAPTURE}")
+# L2_ACCESSES_RE = re.compile(rf"L2_(?:total_cache_)?accesses\s*=\s*{FLOAT_CAPTURE}")
+# L2_MISSES_RE = re.compile(rf"L2_misses\s*=\s*{FLOAT_CAPTURE}")
+# L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
+# L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
+# L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 L1D_MISSES_RE = re.compile(rf"L1D_misses\s*=\s*{FLOAT_CAPTURE}")
 L1D_ACCESSES_RE = re.compile(rf"L1D_accesses\s*=\s*{FLOAT_CAPTURE}")
 L1D_MISS_RATE_RE = re.compile(rf"L1D_(?:total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
-PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}"
-)
-L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
+# PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
+TOTAL_WARP_INTERFERENCES = re.compile(rf"total_warp_interferences\s*=\s*{FLOAT_CAPTURE}")
+TOTAL_WI_ON_L1D = re.compile(rf"total_wi_on_l1d\s*=\s*{FLOAT_CAPTURE}")
+TOTAL_WI_ON_L2  = re.compile(rf"total_wi_on_l2\s*=\s*{FLOAT_CAPTURE}")
 RAW_CONFLICTS_RATE_RE = re.compile(rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 WR_REG_BANK_CONFLICTS_RATE_RE = re.compile(rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 TOTAL_ISSUE_RATIO = re.compile(rf"total_issue_ratio\s*=\s*{FLOAT_CAPTURE}")
 ISSUE_BW_UTILIZATION = re.compile(rf"issue_bw_utilization\s*=\s*{FLOAT_CAPTURE}")
 TOTAL_ISSUE_FAILS = re.compile(rf"total_issue_fails\s*=\s*{FLOAT_CAPTURE}")
+G_ACC_R_MQ_FULL = re.compile(rf"breakdown\[GLOBAL_ACC_R\]\[MISS_QUEUE_FULL\]\s*=\s*{FLOAT_CAPTURE}")
 
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
@@ -399,12 +406,16 @@ def parse_o_file(path: str):
     l2_miss_rate=None
     l1d_misses=None
     l1d_miss_rate=None
+    total_warp_interferences=None
+    total_wi_on_l1d=None
+    total_wi_on_l2=None
     partition_level_parallelism=None
     avg_l2_miss_served_cycles=None
     avg_l1d_miss_served_cycles=None
     total_issue_ratio=None
     issue_bw_utilization=None
     total_issue_fails=None
+    g_acc_r_mq_full=None
     raw_conflicts_rate_by_bank={}
     wr_reg_bank_conflicts_rate_by_bank={}
 
@@ -413,9 +424,11 @@ def parse_o_file(path: str):
         nonlocal l2_bw, l2_global_acc_w_total_access
         nonlocal l2_misses, l2_accesses, l2_miss_rate
         nonlocal l1d_misses, l1d_accesses, l1d_miss_rate
+        nonlocal total_warp_interferences, total_wi_on_l1d, total_wi_on_l2
         nonlocal partition_level_parallelism
         nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
         nonlocal total_issue_ratio, issue_bw_utilization, total_issue_fails
+        nonlocal g_acc_r_mq_full
         nonlocal raw_conflicts_rate_by_bank, wr_reg_bank_conflicts_rate_by_bank
         r_total=0
         w_total=0
@@ -430,12 +443,16 @@ def parse_o_file(path: str):
         l2_miss_rate=None
         l1d_misses=None
         l1d_miss_rate=None
+        total_warp_interferences=None
+        total_wi_on_l1d=None
+        total_wi_on_l2=None
         partition_level_parallelism=None
         avg_l2_miss_served_cycles=None
         avg_l1d_miss_served_cycles=None
         total_issue_ratio=None
         issue_bw_utilization=None
         total_issue_fails=None
+        g_acc_r_mq_full=None
         raw_conflicts_rate_by_bank={}
         wr_reg_bank_conflicts_rate_by_bank={}
 
@@ -457,12 +474,16 @@ def parse_o_file(path: str):
         current['l1d_misses']=l1d_misses
         current['l1d_accesses']=l1d_accesses
         current['l1d_miss_rate']=l1d_miss_rate
+        current['total_warp_interferences']=total_warp_interferences
+        current['total_wi_on_l1d']=total_wi_on_l1d
+        current['total_wi_on_l2']=total_wi_on_l2
         current['partition_level_parallelism']=partition_level_parallelism
         current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
         current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
         current['total_issue_ratio']=total_issue_ratio
         current['issue_bw_utilization']=issue_bw_utilization
         current['total_issue_fails']=total_issue_fails
+        current['g_acc_r_mq_full']=g_acc_r_mq_full
         current['raw_conflicts_rate_by_bank']=dict(raw_conflicts_rate_by_bank)
         current['wr_reg_bank_conflicts_rate_by_bank']=dict(wr_reg_bank_conflicts_rate_by_bank)
         current['raw_conflicts_rate_avg']=average_bank_rate(raw_conflicts_rate_by_bank)
@@ -555,51 +576,56 @@ def parse_o_file(path: str):
                 w_driver_reasons.setdefault(cause, {})[driver]=amt
             continue
 
-        l2_bw_match=L2_BW_RE.search(line)
-        if l2_bw_match:
-            try:
-                l2_bw=parse_float_value(l2_bw_match.group(1))
-            except (TypeError, ValueError):
-                pass
-            continue
+        # l2_bw_match=L2_BW_RE.search(line)
+        # if l2_bw_match:
+        #     try:
+        #         l2_bw=parse_float_value(l2_bw_match.group(1))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
+        # l2_accesses_match=L2_ACCESSES_RE.search(line)
+        # if l2_accesses_match:
+        #     try:
+        #         l2_accesses=int(float(l2_accesses_match.group(1)))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
+        # l2_misses_match=L2_MISSES_RE.search(line)
+        # if l2_misses_match:
+        #     try:
+        #         l2_misses=int(float(l2_misses_match.group(1)))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
+        # l2_miss_rate_match=L2_MISS_RATE_RE.search(line)
+        # if l2_miss_rate_match:
+        #     try:
+        #         l2_miss_rate=parse_float_value(l2_miss_rate_match.group(1))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
+        # l2_global_acc_w_total_access_match=L2_GLOB_ACC_W_TOTAL_ACCESS_RE.search(line)
+        # if l2_global_acc_w_total_access_match:
+        #     try:
+        #         l2_global_acc_w_total_access=int(float(l2_global_acc_w_total_access_match.group(1)))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
+        # l2_partition_level_parallelism_match=PARTITION_LEVEL_PARALLELISM.search(line)
+        # if l2_partition_level_parallelism_match:
+        #     try:
+        #         partition_level_parallelism=parse_float_value(l2_partition_level_parallelism_match.group(1))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
+        # avg_l2_miss_served_cycles_match=L2_AVG_MISS_SERVED_TIME_RE.search(line)
+        # if avg_l2_miss_served_cycles_match:
+        #     try:
+        #         avg_l2_miss_served_cycles=parse_float_value(avg_l2_miss_served_cycles_match.group(1))
+        #     except (TypeError, ValueError):
+        #         pass
+        #     continue
 
-        l2_accesses_match=L2_ACCESSES_RE.search(line)
-        if l2_accesses_match:
-            try:
-                l2_accesses=int(float(l2_accesses_match.group(1)))
-            except (TypeError, ValueError):
-                pass
-            continue
-        l2_misses_match=L2_MISSES_RE.search(line)
-        if l2_misses_match:
-            try:
-                l2_misses=int(float(l2_misses_match.group(1)))
-            except (TypeError, ValueError):
-                pass
-            continue
-        l2_miss_rate_match=L2_MISS_RATE_RE.search(line)
-        if l2_miss_rate_match:
-            try:
-                l2_miss_rate=parse_float_value(l2_miss_rate_match.group(1))
-            except (TypeError, ValueError):
-                pass
-            continue
-
-        l2_partition_level_parallelism_match=PARTITION_LEVEL_PARALLELISM.search(line)
-        if l2_partition_level_parallelism_match:
-            try:
-                partition_level_parallelism=parse_float_value(l2_partition_level_parallelism_match.group(1))
-            except (TypeError, ValueError):
-                pass
-            continue
-
-        avg_l2_miss_served_cycles_match=L2_AVG_MISS_SERVED_TIME_RE.search(line)
-        if avg_l2_miss_served_cycles_match:
-            try:
-                avg_l2_miss_served_cycles=parse_float_value(avg_l2_miss_served_cycles_match.group(1))
-            except (TypeError, ValueError):
-                pass
-            continue
         avg_l1d_miss_served_cycles_match=L1D_AVG_MISS_SERVED_TIME_RE.search(line)
         if avg_l1d_miss_served_cycles_match:
             try:
@@ -608,6 +634,27 @@ def parse_o_file(path: str):
                 pass
             continue
 
+        total_warp_interferences_match=TOTAL_WARP_INTERFERENCES.search(line)
+        if total_warp_interferences_match:
+            try:
+                total_warp_interferences=parse_float_value(total_warp_interferences_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        total_wi_on_l1d_match=TOTAL_WI_ON_L1D.search(line)
+        if total_wi_on_l1d_match:
+            try:
+                total_wi_on_l1d=parse_float_value(total_wi_on_l1d_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        total_wi_on_l2_match=TOTAL_WI_ON_L2.search(line)
+        if total_wi_on_l2_match:
+            try:
+                total_wi_on_l2=parse_float_value(total_wi_on_l2_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
         total_issue_ratio_match=TOTAL_ISSUE_RATIO.search(line)
         if total_issue_ratio_match:
             try:
@@ -629,6 +676,13 @@ def parse_o_file(path: str):
             except (TypeError, ValueError):
                 pass
             continue
+        g_acc_r_mq_full_match=G_ACC_R_MQ_FULL.search(line)
+        if g_acc_r_mq_full_match:
+            try:
+                g_acc_r_mq_full=parse_float_value(g_acc_r_mq_full_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue        
 
         raw_conflicts_rate_match=RAW_CONFLICTS_RATE_RE.search(line)
         if raw_conflicts_rate_match:
@@ -650,14 +704,6 @@ def parse_o_file(path: str):
                 pass
             else:
                 wr_reg_bank_conflicts_rate_by_bank[bank]=rate
-            continue
-
-        l2_global_acc_w_total_access_match=L2_GLOB_ACC_W_TOTAL_ACCESS_RE.search(line)
-        if l2_global_acc_w_total_access_match:
-            try:
-                l2_global_acc_w_total_access=int(float(l2_global_acc_w_total_access_match.group(1)))
-            except (TypeError, ValueError):
-                pass
             continue
 
         l1d_misses_match=L1D_MISSES_RE.search(line)
@@ -695,21 +741,24 @@ def parse_o_file(path: str):
             'w_reasons': dict(w_reasons),
             'r_drivers': {cause: dict(drivers) for cause, drivers in r_driver_reasons.items()},
             'w_drivers': {cause: dict(drivers) for cause, drivers in w_driver_reasons.items()},
-            'l2_bw': l2_bw,
-            'l2_accesses': l2_accesses,
-            'l2_misses': l2_misses,
             'l2_global_acc_w_total_access': l2_global_acc_w_total_access,
-            'l2_miss_rate': l2_miss_rate,
+            # 'l2_bw': l2_bw,
+            # 'l2_accesses': l2_accesses,
+            # 'l2_misses': l2_misses,            
+            # 'l2_miss_rate': l2_miss_rate,
+            # 'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
+            # 'partition_level_parallelism': partition_level_parallelism,
             'l1d_misses': l1d_misses,
             'l1d_accesses': l1d_accesses,
             'l1d_miss_rate': l1d_miss_rate,            
-            'l2_miss_rate': l2_miss_rate,
-            'partition_level_parallelism': partition_level_parallelism,
-            'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
+            'total_warp_interferences': total_warp_interferences,
+            'total_wi_on_l1d': total_wi_on_l1d,
+            'total_wi_on_l2': total_wi_on_l2,
             'total_issue_ratio': total_issue_ratio,
             'issue_bw_utilization': issue_bw_utilization,
             'total_issue_fails': total_issue_fails,
+            'g_acc_r_mq_full': g_acc_r_mq_full,
             'raw_conflicts_rate_by_bank': dict(raw_conflicts_rate_by_bank),
             'wr_reg_bank_conflicts_rate_by_bank': dict(wr_reg_bank_conflicts_rate_by_bank),
             'raw_conflicts_rate_avg': average_bank_rate(raw_conflicts_rate_by_bank),
@@ -855,26 +904,36 @@ METRIC_DEFINITIONS={
         'value_key': 'w_total',
         'higher_is_better': False,
     },
-    'l2_bw': {
-        'label': 'L2_BW',
-        'value_key': 'l2_bw',
-        'higher_is_better': False,
-    },
-    'l2_accesses': {
-        'label': 'L2_accesses',
-        'value_key': 'l2_accesses',
-        'higher_is_better': False,
-    },
-    'l2_misses': {
-        'label': 'L2_misses',
-        'value_key': 'l2_misses',
-        'higher_is_better': False,
-    },    
-    'l2_miss_rate': {
-        'label': 'L2_miss_rate',
-        'value_key': 'l2_miss_rate',
-        'higher_is_better': False,
-    },
+    # 'l2_bw': {
+    #     'label': 'L2_BW',
+    #     'value_key': 'l2_bw',
+    #     'higher_is_better': False,
+    # },
+    # 'l2_accesses': {
+    #     'label': 'L2_accesses',
+    #     'value_key': 'l2_accesses',
+    #     'higher_is_better': False,
+    # },
+    # 'l2_misses': {
+    #     'label': 'L2_misses',
+    #     'value_key': 'l2_misses',
+    #     'higher_is_better': False,
+    # },    
+    # 'l2_miss_rate': {
+    #     'label': 'L2_miss_rate',
+    #     'value_key': 'l2_miss_rate',
+    #     'higher_is_better': False,
+    # },
+    # 'avg_l2_miss_served_cycles': {
+    #     'label': 'avg_l2_miss_served_cycles',
+    #     'value_key': 'avg_l2_miss_served_cycles',
+    #     'higher_is_better': False,
+    # },  
+    # 'partition_level_parallelism': {
+    #     'label': 'partition_level_parallelism',
+    #     'value_key': 'partition_level_parallelism',
+    #     'higher_is_better': True,
+    # },
     'l1d_accesses': {
         'label': 'L1D_accesses',
         'value_key': 'l1d_accesses',
@@ -889,20 +948,25 @@ METRIC_DEFINITIONS={
         'label': 'L1D_miss_rate',
         'value_key': 'l1d_miss_rate',
         'higher_is_better': False,
-    },
-    'partition_level_parallelism': {
-        'label': 'partition_level_parallelism',
-        'value_key': 'partition_level_parallelism',
-        'higher_is_better': True,
-    },
-    'avg_l2_miss_served_cycles': {
-        'label': 'avg_l2_miss_served_cycles',
-        'value_key': 'avg_l2_miss_served_cycles',
-        'higher_is_better': False,
-    },    
+    },  
     'avg_l1d_miss_served_cycles': {
         'label': 'avg_l1d_miss_served_cycles',
         'value_key': 'avg_l1d_miss_served_cycles',
+        'higher_is_better': False,
+    },
+    'total_warp_interferences': {
+        'label': 'total_warp_interferences',
+        'value_key': 'total_warp_interferences',
+        'higher_is_better': False,
+    },
+    'total_wi_on_l1d': {
+        'label': 'total_wi_on_l1d',
+        'value_key': 'total_wi_on_l1d',
+        'higher_is_better': False,
+    },
+    'total_wi_on_l2': {
+        'label': 'total_wi_on_l2',
+        'value_key': 'total_wi_on_l2',
         'higher_is_better': False,
     },
     'raw_conflicts_rate_avg': {
@@ -930,6 +994,11 @@ METRIC_DEFINITIONS={
         'value_key': 'total_issue_fails',
         'higher_is_better': True,
     },
+    'g_acc_r_mq_full': {
+        'label': 'g_acc_r_mq_full',
+        'value_key': 'g_acc_r_mq_full',
+        'higher_is_better': False,
+    },    
 }
 
 DEFAULT_METRIC_ORDER=['ipc','global_acc_r','global_acc_w']
@@ -961,6 +1030,9 @@ METRIC_NAME_ALIASES={
     'l1d_miss_rate': 'l1d_miss_rate',
     'l1d_total_miss_rate': 'l1d_miss_rate',
     'l1dtotalmissrate': 'l1d_miss_rate',
+    'total_warp_interferences': 'total_warp_interferences',
+    'total_wi_on_l1d': 'total_wi_on_l1d',
+    'total_wi_on_l2': 'total_wi_on_l2',
     'partition_level_parallelism': 'partition_level_parallelism',
     'avg_l2_miss_served_cycles': 'avg_l2_miss_served_cycles',
     'avg_l1d_miss_served_cycles': 'avg_l1d_miss_served_cycles',
@@ -971,6 +1043,7 @@ METRIC_NAME_ALIASES={
     'total_issue_ratio': 'total_issue_ratio',
     'issue_bw_utilization': 'issue_bw_utilization',
     'total_issue_fails': 'total_issue_fails',
+    'g_acc_r_mq_full': 'g_acc_r_mq_full'
 }
 
 def resolve_metric_key(name: str) -> str:
@@ -1121,23 +1194,32 @@ def main():
         '--overall-extra-metrics',
         nargs='*',
         default=[
-            'L2_BW',
-            'L2_accesses',
-            'L2_misses',
-            'L2_miss_rate',
+            # 'L2_BW',
+            # 'L2_accesses',
+            # 'L2_misses',
+            # 'L2_miss_rate',
+            # 'avg_l2_miss_served_cycles',
+            # 'partition_level_parallelism',
             'L1D_accesses',
             'L1D_misses',
-            'L1D_miss_rate',
-            'partition_level_parallelism',
-            'avg_l2_miss_served_cycles',
+            'L1D_miss_rate',                     
             'avg_l1d_miss_served_cycles',
+            'total_warp_interferences',
+            'total_wi_on_l1d',
+            'total_wi_on_l2',
             'raw_conflicts_rate_avg',
             'wr_reg_bank_conflicts_rate_avg',
             'total_issue_ratio',
             'issue_bw_utilization',
             'total_issue_fails',
+            'g_acc_r_mq_full',
         ],
-        help='Additional metrics to include in overall geomean summary (case-insensitive). Known values include GLOBAL_ACC_R, GLOBAL_ACC_W, L2_BW, L2_accesses, L2_misses, L2_miss_rate, L1D_accesses, L1D_misses, L1D_miss_rate, partition_level_parallelism, avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles.',
+        help='Additional metrics to include in overall geomean summary (case-insensitive). '
+        'Known values include: '
+        'GLOBAL_ACC_R, GLOBAL_ACC_W, '
+        'L2_BW, L2_accesses, L2_misses, L2_miss_rate, avg_l2_miss_served_cycles, '
+        'L1D_accesses, L1D_misses, L1D_miss_rate, avg_l1d_miss_served_cycles, '
+        'partition_level_parallelism',
     )
     ap.add_argument(
         '--fail-total-metrics',
