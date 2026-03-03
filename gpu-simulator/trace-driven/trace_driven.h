@@ -202,7 +202,7 @@ class trace_shader_core_ctx : public shader_core_ctx {
                         stats) {
     create_front_pipeline();
     create_shd_warp();
-    create_schedulers();
+    create_schedulers(shader_id);
     create_exec_pipeline();
   }
 

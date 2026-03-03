@@ -577,9 +577,6 @@ void trace_simt_core_cluster::create_shader_core_ctx() {
     if (m_config->n_simt_clusters == 1) {
       assert(sid == i);
     }
-    // if (DTRACE(SIMT_STACK)) {
-    //   fprintf(Trace::out, "shader_core[%u] init simt stack\n", i);
-    // }
     fprintf(Trace::out, "shader_core[%u] init simt stack\n", i);
     m_core[i] = new trace_shader_core_ctx(m_gpu, this, sid, m_cluster_id,
                                           m_config, m_mem_config, m_stats);

@@ -574,10 +574,43 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_mshr_awared_repl
 
 ################################ Inter-Warp Interference-Aware Cache Replace ################################
+# 2/28 Fight for <Warp Scheduler --- Cache>
+# ./regress.sh reg_chk_issue_to_l1d_access_path --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_chk_issue_to_l1d_access_path
+
+# 34.328 (+0.000%) = base
+# ./regress.sh reg_l1d_pending_longop_awared_repl --config-file ./perf_study/configs/l1d_pending_longop_aware_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_pending_longop_awared_repl
+# 34.089 (-0.695%) -> rerun 34.316 (-0.033%) -> again
+# 34.293 (-0.102%) const unsigned reref_bound = 5;
+# 34.318 (-0.028%) const unsigned reref_bound = 1;
+# ./regress.sh reg_evict_l1d_low_reusage_pending_longop --config-file ./perf_study/configs/l1d_pending_longop_aware_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_evict_l1d_low_reusage_pending_longop
+
+# Evict lines that is not pending longop with highest pri
+# 34.242 (-0.250%)
+# ./regress.sh reg_l1d_protect_pending_longop_repl --config-file ./perf_study/configs/l1d_pending_longop_aware_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_protect_pending_longop_repl
+# 34.371 (+0.126%)
+# ./regress.sh reg_l1d_protect_pending_longop_repl_l1d_mq_32 --config-file ./perf_study/configs/l1d_plopa_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_protect_pending_longop_repl_l1d_mq_32
+
+# 34.449 (+0.353%)
+# const unsigned reref_bound = 1; -> 34.452 (+0.362%)
+# ./regress.sh reg_l1d_plopa_repl_l1d_mq_32 --config-file ./perf_study/configs/l1d_plopa_repl_l1d_mq_32.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_plopa_repl_l1d_mq_32
+
+# ./regress.sh reg_l1d_l2_pending_longop_aware_repl --config-file ./perf_study/configs/l1d_l2_pending_longop_aware_repl.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_pending_longop_aware_repl
+
 # IPC: 34.328 (+0.000%) total_issue_fails: 196939.132 (+0.000%) g_acc_r_mq_full: 4892.951 (+0.000%)
 # again: 
 # ./regress.sh reg_wia_cache_repl_base --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_wia_cache_repl_base
+
+# 34.317 (+0.000%)
+# ./regress.sh reg_dis_wia_repl --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_dis_wia_repl
 
 # Running now (BugFix: Excluded "warp_id == -1" from stats for inter-warp interferences)
 # 34.315 (+0.150%) 
@@ -612,6 +645,9 @@ fi
 # IPC: 35.213 (+2.684%)  total_issue_ratio: 3.908 (+2.920%)
 # ./regress.sh reg_wia_rrr_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_rrr_repl_l1d_mq_32.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_wia_rrr_repl_l1d_mq_32
+
+# ./regress.sh reg_wia_old_repl_l1d_mq_16 --config-file ./perf_study/configs/wia_old_repl_l1d_mq_16.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_wia_old_repl_l1d_mq_16
 
 # IPC: 35.328 (+3.019%) total_warp_interferences:  5.022 (-99.743%) total_issue_ratio: 3.928 (+3.454%)
 # ./regress.sh reg_wia_old_repl_l1d_mq_32 --config-file ./perf_study/configs/wia_old_repl_l1d_mq_32.config

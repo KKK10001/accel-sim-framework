@@ -316,16 +316,21 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
+    reg_dis_wia_repl \
     reg_wia_cache_repl_base \
+    reg_chk_l1d_pending_longop_evict \
+    reg_chk_issue_to_l1d_access_path \
     reg_l1d_mshr_awared_repl \
     reg_l1d_l2_mshr_awared_repl \
     reg_wia_cache_repl_l1d_mq_16 \
     reg_wia_cache_repl_l1d_mq_64 \
     reg_wia_cache_repl_l1d_mq_32 \
+    reg_l1d_plopa_repl_l1d_mq_32 \
     reg_wia_mshr_aware_replace_l1d_mq_32 \
     reg_wia_gto_repl_l1d_mq_32 \
     reg_wia_rrr_repl_l1d_mq_32 \
     reg_wia_old_repl_l1d_mq_32 \
+    reg_wia_old_repl_l1d_mq_16 \
     reg_old_repl_l1d_mq_32 \
     reg_l1d_l2_wia_old_repl_l1d_mq_32 \
   --clean-old-o \
@@ -360,14 +365,18 @@ FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 # L2_GLOB_ACC_W_TOTAL_ACCESS_RE = re.compile(rf"L2_stats_breakdown\[GLOBAL_ACC_W\]\[TOTAL_ACCESS\]\s*=\s*{FLOAT_CAPTURE}")
 # L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
 # L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
-L1D_MISSES_RE = re.compile(rf"L1D_misses\s*=\s*{FLOAT_CAPTURE}")
 L1D_ACCESSES_RE = re.compile(rf"L1D_accesses\s*=\s*{FLOAT_CAPTURE}")
 L1D_MISS_RATE_RE = re.compile(rf"L1D_(?:total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
 # PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
-TOTAL_WARP_INTERFERENCES = re.compile(rf"total_warp_interferences\s*=\s*{FLOAT_CAPTURE}")
-TOTAL_WI_ON_L1D = re.compile(rf"total_wi_on_l1d\s*=\s*{FLOAT_CAPTURE}")
-TOTAL_WI_ON_L2  = re.compile(rf"total_wi_on_l2\s*=\s*{FLOAT_CAPTURE}")
+L1D_MPKI = re.compile(rf"L1D_MPKI\s*=\s*{FLOAT_CAPTURE}")
+NON_VALID_PERCENT = re.compile(rf"non_valid_percent\s*=\s*{FLOAT_CAPTURE}")
+DEP_CHK_FAIL_PERCENT = re.compile(rf"dep_chk_fail_percent\s*=\s*{FLOAT_CAPTURE}")
+PIPE_STALLED_PERCENT = re.compile(rf"pipe_stalled_percent\s*=\s*{FLOAT_CAPTURE}")
+
+INTRA_WARP_INTERFERENCES = re.compile(rf"total_intra_warp_interferences\s*=\s*{FLOAT_CAPTURE}")
+INTER_WARP_INTERFERENCES = re.compile(rf"total_inter_warp_interferences\s*=\s*{FLOAT_CAPTURE}")
+IWI_PERCENT = re.compile(rf"inter_warp_interfere_percent\s*=\s*{FLOAT_CAPTURE}")
 RAW_CONFLICTS_RATE_RE = re.compile(rf"raw_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 WR_REG_BANK_CONFLICTS_RATE_RE = re.compile(rf"wr_reg_bank_conflicts_rate\[bank:(\d+)\]\s*=\s*{FLOAT_CAPTURE}")
 TOTAL_ISSUE_RATIO = re.compile(rf"total_issue_ratio\s*=\s*{FLOAT_CAPTURE}")
@@ -406,9 +415,13 @@ def parse_o_file(path: str):
     l2_miss_rate=None
     l1d_misses=None
     l1d_miss_rate=None
-    total_warp_interferences=None
-    total_wi_on_l1d=None
-    total_wi_on_l2=None
+    l1d_mpki=None
+    non_valid_percent=None
+    dep_chk_fail_percent=None
+    pipe_stalled_percent=None
+    intra_warp_interferences=None
+    inter_warp_interferences=None
+    inter_warp_interfere_percent=None
     partition_level_parallelism=None
     avg_l2_miss_served_cycles=None
     avg_l1d_miss_served_cycles=None
@@ -423,8 +436,10 @@ def parse_o_file(path: str):
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
         nonlocal l2_bw, l2_global_acc_w_total_access
         nonlocal l2_misses, l2_accesses, l2_miss_rate
-        nonlocal l1d_misses, l1d_accesses, l1d_miss_rate
-        nonlocal total_warp_interferences, total_wi_on_l1d, total_wi_on_l2
+        nonlocal l1d_miss_rate
+        nonlocal l1d_mpki
+        nonlocal non_valid_percent, dep_chk_fail_percent, pipe_stalled_percent
+        nonlocal intra_warp_interferences, inter_warp_interferences, inter_warp_interfere_percent
         nonlocal partition_level_parallelism
         nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
         nonlocal total_issue_ratio, issue_bw_utilization, total_issue_fails
@@ -443,9 +458,13 @@ def parse_o_file(path: str):
         l2_miss_rate=None
         l1d_misses=None
         l1d_miss_rate=None
-        total_warp_interferences=None
-        total_wi_on_l1d=None
-        total_wi_on_l2=None
+        l1d_mpki=None
+        non_valid_percent=None
+        dep_chk_fail_percent=None
+        pipe_stalled_percent=None
+        intra_warp_interferences=None
+        inter_warp_interferences=None
+        inter_warp_interfere_percent=None
         partition_level_parallelism=None
         avg_l2_miss_served_cycles=None
         avg_l1d_miss_served_cycles=None
@@ -471,12 +490,14 @@ def parse_o_file(path: str):
         current['l2_misses']=l2_misses
         current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
         current['l2_miss_rate']=l2_miss_rate
-        current['l1d_misses']=l1d_misses
-        current['l1d_accesses']=l1d_accesses
         current['l1d_miss_rate']=l1d_miss_rate
-        current['total_warp_interferences']=total_warp_interferences
-        current['total_wi_on_l1d']=total_wi_on_l1d
-        current['total_wi_on_l2']=total_wi_on_l2
+        current['l1d_mpki']=l1d_mpki
+        current['non_valid_percent']=non_valid_percent
+        current['dep_chk_fail_percent']=dep_chk_fail_percent
+        current['pipe_stalled_percent']=pipe_stalled_percent
+        current['intra_warp_interferences']=intra_warp_interferences
+        current['inter_warp_interferences']=inter_warp_interferences
+        current['inter_warp_interfere_percent']=inter_warp_interfere_percent        
         current['partition_level_parallelism']=partition_level_parallelism
         current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
         current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
@@ -634,27 +655,30 @@ def parse_o_file(path: str):
                 pass
             continue
 
-        total_warp_interferences_match=TOTAL_WARP_INTERFERENCES.search(line)
-        if total_warp_interferences_match:
+        intra_warp_interferences_match=INTRA_WARP_INTERFERENCES.search(line)
+        if intra_warp_interferences_match:
             try:
-                total_warp_interferences=parse_float_value(total_warp_interferences_match.group(1))
+                intra_warp_interferences=parse_float_value(intra_warp_interferences_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
-        total_wi_on_l1d_match=TOTAL_WI_ON_L1D.search(line)
-        if total_wi_on_l1d_match:
+
+        inter_warp_interferences_match=INTER_WARP_INTERFERENCES.search(line)
+        if inter_warp_interferences_match:
             try:
-                total_wi_on_l1d=parse_float_value(total_wi_on_l1d_match.group(1))
+                inter_warp_interferences=parse_float_value(inter_warp_interferences_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
-        total_wi_on_l2_match=TOTAL_WI_ON_L2.search(line)
-        if total_wi_on_l2_match:
+
+        iwi_percent_match=IWI_PERCENT.search(line)
+        if iwi_percent_match:
             try:
-                total_wi_on_l2=parse_float_value(total_wi_on_l2_match.group(1))
+                inter_warp_interfere_percent=parse_float_value(iwi_percent_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
+
         total_issue_ratio_match=TOTAL_ISSUE_RATIO.search(line)
         if total_issue_ratio_match:
             try:
@@ -705,21 +729,7 @@ def parse_o_file(path: str):
             else:
                 wr_reg_bank_conflicts_rate_by_bank[bank]=rate
             continue
-
-        l1d_misses_match=L1D_MISSES_RE.search(line)
-        if l1d_misses_match:
-            try:
-                l1d_misses=int(float(l1d_misses_match.group(1)))
-            except (TypeError, ValueError):
-                pass
-            continue
-        l1d_accesses_match=L1D_ACCESSES_RE.search(line)
-        if l1d_accesses_match:
-            try:
-                l1d_accesses=int(float(l1d_accesses_match.group(1)))
-            except (TypeError, ValueError):
-                pass
-            continue        
+      
         l1d_miss_rate_match=L1D_MISS_RATE_RE.search(line)
         if l1d_miss_rate_match:
             try:
@@ -727,10 +737,39 @@ def parse_o_file(path: str):
             except (TypeError, ValueError):
                 pass
             continue
+        l1d_mpki_match=L1D_MPKI.search(line)
+        if l1d_mpki_match:
+            try:
+                l1d_mpki=parse_float_value(l1d_mpki_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        non_valid_percent_match=NON_VALID_PERCENT.search(line)
+        if non_valid_percent_match:
+            try:
+                non_valid_percent=parse_float_value(non_valid_percent_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue        
+        dep_chk_fail_percent_match=DEP_CHK_FAIL_PERCENT.search(line)
+        if dep_chk_fail_percent_match:
+            try:
+                dep_chk_fail_percent=parse_float_value(dep_chk_fail_percent_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        pipe_stalled_percent_match=PIPE_STALLED_PERCENT.search(line)
+        if pipe_stalled_percent_match:
+            try:
+                pipe_stalled_percent=parse_float_value(pipe_stalled_percent_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
 
     if current is not None:
         commit_current()
     elif r_total or w_total or r_reasons or w_reasons or r_driver_reasons or w_driver_reasons:
+        # kerenels determines if item would appear in .xlsx
         kernels=[{
             'ipc': None,
             'kernel': pending_kernel_name,
@@ -748,13 +787,15 @@ def parse_o_file(path: str):
             # 'l2_miss_rate': l2_miss_rate,
             # 'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             # 'partition_level_parallelism': partition_level_parallelism,
-            'l1d_misses': l1d_misses,
-            'l1d_accesses': l1d_accesses,
-            'l1d_miss_rate': l1d_miss_rate,            
-            'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
-            'total_warp_interferences': total_warp_interferences,
-            'total_wi_on_l1d': total_wi_on_l1d,
-            'total_wi_on_l2': total_wi_on_l2,
+            'l1d_miss_rate': l1d_miss_rate,
+            'l1d_mpki': l1d_mpki,
+            'non_valid_percent': non_valid_percent,
+            'dep_chk_fail_percent': dep_chk_fail_percent,
+            'pipe_stalled_percent': pipe_stalled_percent,
+            # 'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
+            'intra_warp_interferences': intra_warp_interferences,
+            'inter_warp_interferences': inter_warp_interferences,
+            'inter_warp_interfere_percent': inter_warp_interfere_percent,            
             'total_issue_ratio': total_issue_ratio,
             'issue_bw_utilization': issue_bw_utilization,
             'total_issue_fails': total_issue_fails,
@@ -887,7 +928,8 @@ def geometric_mean(values):
     log_sum=sum(math.log(v+1.0) for v in cleaned)
     return math.exp(log_sum/len(cleaned))-1.0
 
-
+# 1. 'label': name showed in .xlsx. You can use an alias name
+# 1. enum name should match 'value_key'
 METRIC_DEFINITIONS={
     'ipc': {
         'label': 'IPC',
@@ -934,39 +976,49 @@ METRIC_DEFINITIONS={
     #     'value_key': 'partition_level_parallelism',
     #     'higher_is_better': True,
     # },
-    'l1d_accesses': {
-        'label': 'L1D_accesses',
-        'value_key': 'l1d_accesses',
-        'higher_is_better': False,
-    },  
-    'l1d_misses': {
-        'label': 'L1D_misses',
-        'value_key': 'l1d_misses',
-        'higher_is_better': False,
-    },            
     'l1d_miss_rate': {
         'label': 'L1D_miss_rate',
         'value_key': 'l1d_miss_rate',
         'higher_is_better': False,
     },  
+    'l1d_mpki': { # This name should match 'value_key'
+        'label': 'L1D_MPKI', # alias name
+        'value_key': 'l1d_mpki',
+        'higher_is_better': False,
+    },
+    'non_valid_percent': { # This name should match 'value_key'
+        'label': 'non_valid_percent', # alias name
+        'value_key': 'non_valid_percent',
+        'higher_is_better': False,
+    },
+    'dep_chk_fail_percent': { # This name should match 'value_key'
+        'label': 'dep_chk_fail_percent', # alias name
+        'value_key': 'dep_chk_fail_percent',
+        'higher_is_better': False,
+    },     
+    'pipe_stalled_percent': { # This name should match 'value_key'
+        'label': 'pipe_stalled_percent', # alias name
+        'value_key': 'pipe_stalled_percent',
+        'higher_is_better': False,
+    },      
     'avg_l1d_miss_served_cycles': {
         'label': 'avg_l1d_miss_served_cycles',
         'value_key': 'avg_l1d_miss_served_cycles',
         'higher_is_better': False,
     },
-    'total_warp_interferences': {
-        'label': 'total_warp_interferences',
-        'value_key': 'total_warp_interferences',
+    'intra_warp_interferences': {
+        'label': 'intra_warp_interferences',
+        'value_key': 'intra_warp_interferences',
         'higher_is_better': False,
     },
-    'total_wi_on_l1d': {
-        'label': 'total_wi_on_l1d',
-        'value_key': 'total_wi_on_l1d',
+    'inter_warp_interferences': {
+        'label': 'inter_warp_interferences',
+        'value_key': 'inter_warp_interferences',
         'higher_is_better': False,
     },
-    'total_wi_on_l2': {
-        'label': 'total_wi_on_l2',
-        'value_key': 'total_wi_on_l2',
+    'inter_warp_interfere_percent': {
+        'label': 'inter_wi_percent', # alias name
+        'value_key': 'inter_warp_interfere_percent',
         'higher_is_better': False,
     },
     'raw_conflicts_rate_avg': {
@@ -1011,6 +1063,8 @@ DEFAULT_FAIL_CAUSE_TYPES=('MSHR_MERGE_ENTRY_FAIL','MISS_QUEUE_FULL')
 def _canonicalize_metric_cli_name(name: str) -> str:
     return re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_') if name else ''
 
+# 1. Once defined, item must appear in METRIC_NAME_ALIASES[]. Otherwise, error would arise
+# 2. 'A': 'A' is ok.    'A': 'alias_A' wrong
 METRIC_NAME_ALIASES={
     'global_acc_r': 'global_acc_r',
     'globalacc_r': 'global_acc_r',
@@ -1025,14 +1079,16 @@ METRIC_NAME_ALIASES={
     'l2_total_cache_miss_rate': 'l2_miss_rate',
     'l2totalcachemissrate': 'l2_miss_rate',
     'l2_total_miss_rate': 'l2_miss_rate',
-    'l1d_misses': 'l1d_misses',
-    'l1d_accesses': 'l1d_accesses',
     'l1d_miss_rate': 'l1d_miss_rate',
     'l1d_total_miss_rate': 'l1d_miss_rate',
     'l1dtotalmissrate': 'l1d_miss_rate',
-    'total_warp_interferences': 'total_warp_interferences',
-    'total_wi_on_l1d': 'total_wi_on_l1d',
-    'total_wi_on_l2': 'total_wi_on_l2',
+    'l1d_mpki': 'l1d_mpki',
+    'non_valid_percent': 'non_valid_percent',
+    'dep_chk_fail_percent': 'dep_chk_fail_percent',
+    'pipe_stalled_percent': 'pipe_stalled_percent',
+    'intra_warp_interferences': 'intra_warp_interferences',
+    'inter_warp_interferences': 'inter_warp_interferences',
+    'inter_warp_interfere_percent': 'inter_warp_interfere_percent',
     'partition_level_parallelism': 'partition_level_parallelism',
     'avg_l2_miss_served_cycles': 'avg_l2_miss_served_cycles',
     'avg_l1d_miss_served_cycles': 'avg_l1d_miss_served_cycles',
@@ -1190,25 +1246,23 @@ def main():
     ap.add_argument('--overall-md', default=os.path.join(SCRIPT_DIR, 'overall_perf_study.md'), help='Aggregate Markdown across studies with per-study geomean results.')
     ap.add_argument('--overall-xlsx', default=os.path.join(SCRIPT_DIR, 'overall_perf_study.xlsx'), help='Aggregate XLSX across studies (requires openpyxl).')
     ap.add_argument('--study-name', help='Override study name for overall tables (default: normalized tuned variant).')
+    # Following argument is switches for items (also a must)
+    # You can just comment specific item, and keep other logic, and then the item would not show in .xlxs
     ap.add_argument(
         '--overall-extra-metrics',
         nargs='*',
         default=[
-            # 'L2_BW',
-            # 'L2_accesses',
-            # 'L2_misses',
-            # 'L2_miss_rate',
-            # 'avg_l2_miss_served_cycles',
-            # 'partition_level_parallelism',
-            'L1D_accesses',
-            'L1D_misses',
             'L1D_miss_rate',                     
             'avg_l1d_miss_served_cycles',
-            'total_warp_interferences',
-            'total_wi_on_l1d',
-            'total_wi_on_l2',
-            'raw_conflicts_rate_avg',
-            'wr_reg_bank_conflicts_rate_avg',
+            'intra_warp_interferences',
+            'inter_warp_interferences',
+            'inter_warp_interfere_percent',
+            'L1D_MPKI',
+            'non_valid_percent',
+            'dep_chk_fail_percent',
+            'pipe_stalled_percent',
+            # 'raw_conflicts_rate_avg',
+            # 'wr_reg_bank_conflicts_rate_avg',
             'total_issue_ratio',
             'issue_bw_utilization',
             'total_issue_fails',
@@ -1218,7 +1272,7 @@ def main():
         'Known values include: '
         'GLOBAL_ACC_R, GLOBAL_ACC_W, '
         'L2_BW, L2_accesses, L2_misses, L2_miss_rate, avg_l2_miss_served_cycles, '
-        'L1D_accesses, L1D_misses, L1D_miss_rate, avg_l1d_miss_served_cycles, '
+        'L1D_miss_rate, avg_l1d_miss_served_cycles, '
         'partition_level_parallelism',
     )
     ap.add_argument(
@@ -1229,9 +1283,8 @@ def main():
             'L2_accesses',
             'L2_misses',
             'L2_miss_rate',            
-            'L1D_accesses',
-            'L1D_misses',
             'L1D_miss_rate',
+            'L1D_MPKI',
             'partition_level_parallelism',
             'avg_l2_miss_served_cycles',
             'avg_l1d_miss_served_cycles',
