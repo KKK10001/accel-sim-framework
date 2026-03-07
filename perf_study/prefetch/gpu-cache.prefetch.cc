@@ -195,6 +195,34 @@ void data_cache::prune_prefetch_entries(unsigned long long time) {
       ++it;
     }
   }
+  //
+  if (!m_prefetch_cfg.lifetime) {
+    return;
+  }
+  for (unsigned idx = 0; idx < m_prefetch_lines.size(); idx++)
+  {
+    const prefetch_line_state& state = m_prefetch_lines[idx];
+    unsigned long long base = state.issued ? state.issue_cycle : state.enqueue_cycle;
+    if (base && time - base > m_prefetch_cfg.lifetime) {
+      m_prefetch_stats.expired++;
+      m_prefetch_lines.erase(idx);
+    } else if (!m_prefetch_cfg.lifetime) {
+      auto outstanding_stores = count_outstanding_prefetches();
+      if (oustanding_stores > m_prefetch_cfg.max_outstanding) {
+        unsigned total = 0;
+        for (const auto& kv : m_prefetch_lines) {
+          if (kv.second.issued) {
+            total += kv.second.pending_misses;
+            m_prefetch_lines.erase(kv.first);
+            if (total <= m_prefetch_cfg.max_outstanding) {
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  
 }
 
 unsigned data_cache::count_outstanding_prefetches() const {
@@ -206,7 +234,41 @@ unsigned data_cache::count_outstanding_prefetches() const {
 }
 
 void data_cache::service_prefetch(unsigned long long time) {
+  if (!prefetched_enabled()) {
+    return;
+  }
+  unsigned attemps = 0;
+  while (!m_prefetch_queue.empty()) {
+    auto line_it = m_prefetch_lines.find(cand.block_addr);
+    if (line_it == m_prefetch_lines.end()) {
+      m_prefetch_lines.end();
+    }
+  }
+}
+
+void data_cache::service_prefetch(unsigned long long time) {
   if (!prefetch_enabled()) return;
+
+  unsigned attemps = 0;
+  while (!m_prefetch_queue.empty()) {
+    auto line_it = m_prefetch_lines.find(cand.block_addr);
+    if (line_it == m_prefetch_lines.end()) {
+      m_prefetch_lines.end();
+    }
+  }
+  //
+  prune_prefetch_entries(time);
+  if (m_prefetch_queue.empty()) {
+    return;
+  }
+  const prefetch_candidate& cand = m_prefetch_queue.front();
+  auto line_it = m_prefetch_lines.find(cand.block_addr);
+  if (line_it == m_prefetch_lines.end()) {
+    m_prefetch_queue.pop_front();
+  } else {
+
+  }
+  //
 
   prune_prefetch_entries(time);
   if (m_prefetch_queue.empty()) return;
@@ -227,6 +289,28 @@ void data_cache::service_prefetch(unsigned long long time) {
     enum cache_request_status status =
         m_tag_array->probe(cand.block_addr, cache_index, sector_mask, false,
                            time, false, NULL);
+    if (line_it == m_prefetched_lines.end()) {
+      m_prefetch_queue.pop_front();
+      continue;
+    } else {
+      const prefetch_candidate& cand = m_prefetch_queue.front();
+      auto line_it = m_prefetch_lines.end();
+      if (line_it == m_prefetch_lines.end()) {
+        m_prefetch_queue.pop_front();
+        continue;
+      }
+    }
+    const prefetch_candidate& cand = m_prefetch_queue.front();
+    auto line_it = m_prefetch_lines.find(cand.block_addr);
+    if (line_it != m_prefetch_lines.end()) {
+      m_prefetch_lines.pop_front();
+    } else {
+      if (miss_queue_full(m_prefetch_cfg.miss_queue_reservation)) {
+        break;
+      }
+      attempts++;
+    }
+
 
     if (status == HIT || status == HIT_RESERVED) {
       m_prefetch_stats.redundant++;
@@ -264,6 +348,17 @@ enum cache_request_status data_cache::access(new_addr_type addr, mem_fetch *mf,
   enum cache_request_status access_status =
       process_tag_probe(wr, probe_status, addr, cache_index, mf, time, events);
 
+  assert(mf->get_data_size() <= m_config.get_atom_sz());
+  if (mf->get_is_write()) {
+    new_addr_type block_addr = m_config.block_addr(addr);
+    unsigned cache_index = (unsigned) - 1;
+    enum cache_request_status probe_status = 
+      m_tag_array->probe(block_addr, cache_index, mf, true, time, true);
+      if (probe_status != MISS) {
+        process_tag_probe(wr, probe_status, addr, cache_index, mf, time, events);
+      }
+  }
+
   if (prefetch_enabled()) {
     record_prefetch_feedback(block_addr, probe_status, access_status, time);
     handle_prefetch_generation(block_addr, mf, probe_status, access_status,
@@ -278,4 +373,1382 @@ enum cache_request_status data_cache::access(new_addr_type addr, mem_fetch *mf,
                        mf->get_streamID());
 
   return access_status;
+}
+//// L2 
+// Copyright (c) 2009-2021, Tor M. Aamodt, Vijay Kandiah, Nikos Hardavellas,
+// Mahmoud Khairy, Junrui Pan, Timothy G. Rogers
+// The University of British Columbia, Northwestern University, Purdue
+// University All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+// this
+//    list of conditions and the following disclaimer;
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution;
+// 3. Neither the names of The University of British Columbia, Northwestern
+//    University nor the names of their contributors may be used to
+//    endorse or promote products derived from this software without specific
+//    prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <list>
+#include <set>
+
+#include "../abstract_hardware_model.h"
+#include "../option_parser.h"
+#include "../statwrapper.h"
+#include "dram.h"
+#include "gpu-cache.h"
+#include "gpu-sim.h"
+#include "histogram.h"
+#include "l2cache.h"
+#include "l2cache_trace.h"
+#include "mem_fetch.h"
+#include "mem_latency_stat.h"
+#include "shader.h"
+
+mem_fetch *partition_mf_allocator::alloc(new_addr_type addr,
+                                         mem_access_type type, unsigned size,
+                                         bool wr, unsigned long long cycle,
+                                         unsigned long long streamID) const {
+  assert(wr);
+  mem_access_t access(type, addr, size, wr, m_memory_config->gpgpu_ctx);
+  mem_fetch *mf = new mem_fetch(access, NULL, streamID, WRITE_PACKET_SIZE, -1,
+                                -1, -1, m_memory_config, cycle);
+
+  // 2/13 debug
+  assert(addr == mf->get_addr());
+  if (DTRACE(DEBUG_SINGLE_MF)) {
+    fprintf(Trace::out, "%llu partition_mf_allocator::alloc "
+      "new mem_fetch addr = %#llx sid:%u warp_id:%u\n",
+      cycle, mf->get_addr(), mf->get_sid(), mf->get_wid());
+  }
+
+  return mf;
+}
+
+mem_fetch *partition_mf_allocator::alloc(
+    new_addr_type addr, mem_access_type type, const active_mask_t &active_mask,
+    const mem_access_byte_mask_t &byte_mask,
+    const mem_access_sector_mask_t &sector_mask, unsigned size, bool wr,
+    unsigned long long cycle, unsigned wid, unsigned sid, unsigned tpc,
+    mem_fetch *original_mf, unsigned long long streamID) const {
+  mem_access_t access(type, addr, size, wr, active_mask, byte_mask, sector_mask,
+                      m_memory_config->gpgpu_ctx);
+  mem_fetch *mf = new mem_fetch(access, NULL, streamID,
+                                wr ? WRITE_PACKET_SIZE : READ_PACKET_SIZE, wid,
+                                sid, tpc, m_memory_config, cycle, original_mf);
+
+  // 2/13 debug
+  assert(addr == mf->get_addr());
+  if (DTRACE(DEBUG_SINGLE_MF)) {
+    fprintf(Trace::out, "%llu partition_mf_allocator::alloc "
+      "new mem_fetch addr = %#llx sid:%u warp_id:%u\n",
+      cycle, mf->get_addr(), mf->get_sid(), mf->get_wid());    
+  }
+
+  return mf;
+}
+memory_partition_unit::memory_partition_unit(unsigned partition_id,
+                                             const memory_config *config,
+                                             class memory_stats_t *stats,
+                                             class gpgpu_sim *gpu)
+    : m_id(partition_id),
+      m_config(config),
+      m_stats(stats),
+      m_arbitration_metadata(config),
+      m_gpu(gpu) {
+
+  m_dram = new dram_t(m_id, m_config, m_stats, this, gpu);
+
+  m_sub_partition = new memory_sub_partition
+      *[m_config->m_n_sub_partition_per_memory_channel];
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
+    unsigned sub_partition_id = m_id * m_config->m_n_sub_partition_per_memory_channel + p;
+    m_sub_partition[p] = new memory_sub_partition(sub_partition_id, m_config, stats, gpu);
+  }
+}
+
+void memory_partition_unit::handle_memcpy_to_gpu(
+    size_t addr, unsigned global_subpart_id, mem_access_sector_mask_t mask) {
+  unsigned p = global_sub_partition_id_to_local_id(global_subpart_id);
+  std::string mystring = mask.to_string<char, std::string::traits_type,
+                                        std::string::allocator_type>();
+  MEMPART_DPRINTF(
+      "Copy Engine Request Received For Address=%zx, local_subpart=%u, "
+      "global_subpart=%u, sector_mask=%s \n",
+      addr, p, global_subpart_id, mystring.c_str());
+  m_sub_partition[p]->force_l2_tag_update(
+      addr, m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, mask);
+}
+
+memory_partition_unit::~memory_partition_unit() {
+  delete m_dram;
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel;
+       p++) {
+    delete m_sub_partition[p];
+  }
+  delete[] m_sub_partition;
+}
+
+memory_partition_unit::arbitration_metadata::arbitration_metadata(
+    const memory_config *config)
+    : m_last_borrower(config->m_n_sub_partition_per_memory_channel - 1),
+      m_private_credit(config->m_n_sub_partition_per_memory_channel, 0),
+      m_shared_credit(0) {
+  // each sub partition get at least 1 credit for forward progress
+  // the rest is shared among with other partitions
+  m_private_credit_limit = 1;
+  m_shared_credit_limit = config->gpgpu_frfcfs_dram_sched_queue_size +
+                          config->gpgpu_dram_return_queue_size -
+                          (config->m_n_sub_partition_per_memory_channel - 1);
+  if (config->seperate_write_queue_enabled)
+    m_shared_credit_limit += config->gpgpu_frfcfs_dram_write_queue_size;
+  if (config->gpgpu_frfcfs_dram_sched_queue_size == 0 or
+      config->gpgpu_dram_return_queue_size == 0) {
+    m_shared_credit_limit =
+        0;  // no limit if either of the queue has no limit in size
+  }
+  assert(m_shared_credit_limit >= 0);
+}
+
+bool memory_partition_unit::arbitration_metadata::has_credits(
+    int inner_sub_partition_id) const {
+  int spid = inner_sub_partition_id;
+  if (m_private_credit[spid] < m_private_credit_limit) {
+    return true;
+  } else if (m_shared_credit_limit == 0 ||
+             m_shared_credit < m_shared_credit_limit) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void memory_partition_unit::arbitration_metadata::borrow_credit(
+    int inner_sub_partition_id) {
+  int spid = inner_sub_partition_id;
+  if (m_private_credit[spid] < m_private_credit_limit) {
+    m_private_credit[spid] += 1;
+  } else if (m_shared_credit_limit == 0 ||
+             m_shared_credit < m_shared_credit_limit) {
+    m_shared_credit += 1;
+  } else {
+    assert(0 && "DRAM arbitration error: Borrowing from depleted credit!");
+  }
+  m_last_borrower = spid;
+}
+
+void memory_partition_unit::arbitration_metadata::return_credit(
+    int inner_sub_partition_id) {
+  int spid = inner_sub_partition_id;
+  if (m_private_credit[spid] > 0) {
+    m_private_credit[spid] -= 1;
+  } else {
+    m_shared_credit -= 1;
+  }
+  assert((m_shared_credit >= 0) &&
+         "DRAM arbitration error: Returning more than available credits!");
+}
+
+void memory_partition_unit::arbitration_metadata::print(FILE *fp) const {
+  fprintf(fp, "private_credit = ");
+  for (unsigned p = 0; p < m_private_credit.size(); p++) {
+    fprintf(fp, "%d ", m_private_credit[p]);
+  }
+  fprintf(fp, "(limit = %d)\n", m_private_credit_limit);
+  fprintf(fp, "shared_credit = %d (limit = %d)\n", m_shared_credit,
+          m_shared_credit_limit);
+}
+
+bool memory_partition_unit::busy() const {
+  bool busy = false;
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel;
+       p++) {
+    if (m_sub_partition[p]->busy()) {
+      busy = true;
+    }
+  }
+  return busy;
+}
+
+void memory_partition_unit::cache_cycle(unsigned long long cycle) {
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel;
+       p++) {
+    m_sub_partition[p]->cache_cycle(cycle);
+  }
+}
+
+void memory_partition_unit::visualizer_print(gzFile visualizer_file) const {
+  m_dram->visualizer_print(visualizer_file);
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel;
+       p++) {
+    m_sub_partition[p]->visualizer_print(visualizer_file);
+  }
+}
+
+// determine whether a given subpartition can issue to DRAM
+bool memory_partition_unit::can_issue_to_dram(int inner_sub_partition_id) {
+  int spid = inner_sub_partition_id;
+  bool sub_partition_contention = m_sub_partition[spid]->dram_L2_queue_full();
+  bool has_dram_resource = m_arbitration_metadata.has_credits(spid);
+
+  MEMPART_DPRINTF(
+      "sub partition %d sub_partition_contention=%c has_dram_resource=%c\n",
+      spid, (sub_partition_contention) ? 'T' : 'F',
+      (has_dram_resource) ? 'T' : 'F');
+
+  return (has_dram_resource && !sub_partition_contention);
+}
+
+int memory_partition_unit::global_sub_partition_id_to_local_id(
+  int global_sub_partition_id) const {
+
+  return (global_sub_partition_id - 
+    m_id * m_config->m_n_sub_partition_per_memory_channel);
+}
+
+void memory_partition_unit::simple_dram_model_cycle() {
+  // pop completed memory request from dram and push it to dram-to-L2 queue
+  // of the original sub partition
+  if (!m_dram_latency_queue.empty() &&
+      ((m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle) >=
+       m_dram_latency_queue.front().ready_cycle)) {
+    mem_fetch *mf_return = m_dram_latency_queue.front().req;
+    if (mf_return->get_access_type() != L1_WRBK_ACC &&
+        mf_return->get_access_type() != L2_WRBK_ACC) {
+      mf_return->set_reply();
+
+      unsigned dest_global_spid = mf_return->get_sub_partition_id();
+      int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+      assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
+      if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
+        if (mf_return->get_access_type() == L1_WRBK_ACC) {
+          m_sub_partition[dest_spid]->set_done(mf_return);
+          delete mf_return;
+        } else {
+          m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+          mf_return->set_status(
+              IN_PARTITION_DRAM_TO_L2_QUEUE,
+              m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+          m_arbitration_metadata.return_credit(dest_spid);
+          MEMPART_DPRINTF(
+              "mem_fetch request %p return from dram to sub partition %d\n",
+              mf_return, dest_spid);
+        }
+        m_dram_latency_queue.pop_front();
+      }
+
+    } else {
+      this->set_done(mf_return);
+      delete mf_return;
+      m_dram_latency_queue.pop_front();
+    }
+  }
+
+  // mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+  // if( !m_dram->full(mf->is_write()) ) {
+  // L2->DRAM queue to DRAM latency queue
+  // Arbitrate among multiple L2 subpartitions
+  int last_issued_partition = m_arbitration_metadata.last_borrower();
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel;
+       p++) {
+    int spid = (p + last_issued_partition + 1) %
+               m_config->m_n_sub_partition_per_memory_channel;
+    if (!m_sub_partition[spid]->L2_dram_queue_empty() &&
+        can_issue_to_dram(spid)) {
+      mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+      if (m_dram->full(mf->is_write())) break;
+
+      m_sub_partition[spid]->L2_dram_queue_pop();
+      MEMPART_DPRINTF(
+          "Issue mem_fetch request %p from sub partition %d to dram\n", mf,
+          spid);
+      dram_delay_t d;
+      d.req = mf;
+      d.ready_cycle = m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle +
+                      m_config->dram_latency;
+      m_dram_latency_queue.push_back(d);
+      mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,
+                     m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+      m_arbitration_metadata.borrow_credit(spid);
+      break;  // the DRAM should only accept one request per cycle
+    }
+  }
+  //}
+}
+
+void memory_partition_unit::dram_cycle() {
+  // pop completed memory request from dram and push it to dram-to-L2 queue
+  // of the original sub partition
+  mem_fetch *mf_return = m_dram->return_queue_top();
+  if (mf_return) {
+    if (DTRACE(DRAM_EVENT)) {
+      dumpDramEvent(m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, 
+        "::dram_cycle", "get m_dram->return_queue_top", mf_return);
+    }
+
+    unsigned dest_global_spid = mf_return->get_sub_partition_id();
+    int dest_spid = global_sub_partition_id_to_local_id(dest_global_spid);
+    assert(m_sub_partition[dest_spid]->get_id() == dest_global_spid);
+    if (!m_sub_partition[dest_spid]->dram_L2_queue_full()) {
+      if (mf_return->get_access_type() == L1_WRBK_ACC) {
+        m_sub_partition[dest_spid]->set_done(mf_return);
+        delete mf_return;
+      } else {
+        m_sub_partition[dest_spid]->dram_L2_queue_push(mf_return);
+        mf_return->set_status(IN_PARTITION_DRAM_TO_L2_QUEUE,
+                              m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+        m_arbitration_metadata.return_credit(dest_spid);
+        MEMPART_DPRINTF(
+            "mem_fetch request %p return from dram to sub partition %d\n",
+            mf_return, dest_spid);
+      }
+      m_dram->return_queue_pop();
+    } else {
+      if (DTRACE(CACHE_EVENT)) {
+        fprintf(Trace::out, "%llu ::dram_cycle() L2_sub[%u]->m_dram_L2_queue is full ---> blocking "
+          "mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx pos:%s}\n", 
+          m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, dest_spid,
+          mf_return->get_tpc(), mf_return->get_sid(), mf_return->get_wid(), 
+          mf_return->get_request_uid(), mf_return->get_addr(),
+          mf_return->mem_fetch_status_str(mf_return->get_status())
+        );
+      }  
+    }
+  } // if (mf_return) { 
+  else {
+    m_dram->return_queue_pop();
+    if (DTRACE(DRAM_EVENT)) {
+      dumpDramEvent(m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, 
+        "::dram_cycle", "get m_dram->return_queue_pop", mf_return);
+    }    
+  }
+
+  m_dram->cycle();
+  m_dram->dram_log(SAMPLELOG);
+
+  // mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+  // if( !m_dram->full(mf->is_write()) ) {
+  // L2->DRAM queue to DRAM latency queue
+  // Arbitrate among multiple L2 subpartitions
+  int last_issued_partition = m_arbitration_metadata.last_borrower();
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel;
+       p++) {
+    int spid = (p + last_issued_partition + 1) %
+               m_config->m_n_sub_partition_per_memory_channel;
+    if (!m_sub_partition[spid]->L2_dram_queue_empty() &&
+        can_issue_to_dram(spid)) {
+      mem_fetch *mf = m_sub_partition[spid]->L2_dram_queue_top();
+      if (m_dram->full(mf->is_write())) break;
+
+      m_sub_partition[spid]->L2_dram_queue_pop();
+      MEMPART_DPRINTF(
+          "Issue mem_fetch request %p from sub partition %d to dram\n", mf,
+          spid);
+      dram_delay_t d;
+      d.req = mf;
+      d.ready_cycle = m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle +
+                      m_config->dram_latency;
+      m_dram_latency_queue.push_back(d);
+      mf->set_status(IN_PARTITION_DRAM_LATENCY_QUEUE,
+                     m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+      m_arbitration_metadata.borrow_credit(spid);
+      break;  // the DRAM should only accept one request per cycle
+    }
+  }
+  //}
+
+  // DRAM latency queue
+  if (!m_dram_latency_queue.empty() &&
+      ((m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle) >=
+       m_dram_latency_queue.front().ready_cycle) &&
+      !m_dram->full(m_dram_latency_queue.front().req->is_write())) {
+    mem_fetch *mf = m_dram_latency_queue.front().req;
+    m_dram_latency_queue.pop_front();
+    m_dram->push(mf);
+  }
+}
+
+void memory_partition_unit::set_done(mem_fetch *mf) {
+  unsigned global_spid = mf->get_sub_partition_id();
+  int spid = global_sub_partition_id_to_local_id(global_spid);
+  assert(m_sub_partition[spid]->get_id() == global_spid);
+  if (mf->get_access_type() == L1_WRBK_ACC ||
+      mf->get_access_type() == L2_WRBK_ACC) {
+    m_arbitration_metadata.return_credit(spid);
+    MEMPART_DPRINTF(
+        "mem_fetch request %p return from dram to sub partition %d\n", mf,
+        spid);
+  }
+  m_sub_partition[spid]->set_done(mf);
+}
+
+void memory_partition_unit::set_dram_power_stats(
+    unsigned &n_cmd, unsigned &n_activity, unsigned &n_nop, unsigned &n_act,
+    unsigned &n_pre, unsigned &n_rd, unsigned &n_wr, unsigned &n_wr_WB,
+    unsigned &n_req) const {
+  m_dram->set_dram_power_stats(n_cmd, n_activity, n_nop, n_act, n_pre, n_rd,
+                               n_wr, n_wr_WB, n_req);
+}
+
+void memory_partition_unit::print(FILE *fp) const {
+  fprintf(fp, "Memory Partition %u: \n", m_id);
+  for (unsigned p = 0; p < m_config->m_n_sub_partition_per_memory_channel; p++) {
+    m_sub_partition[p]->print(fp);
+  }
+  fprintf(fp, "In Dram Latency Queue (total = %zd): \n",
+          m_dram_latency_queue.size());
+  for (std::list<dram_delay_t>::const_iterator mf_dlq =
+           m_dram_latency_queue.begin();
+       mf_dlq != m_dram_latency_queue.end(); ++mf_dlq) {
+    mem_fetch *mf = mf_dlq->req;
+    fprintf(fp, "Ready @ %llu - ", mf_dlq->ready_cycle);
+    if (mf)
+      mf->print(fp);
+    else
+      fprintf(fp, " <NULL mem_fetch?>\n");
+  }
+  m_dram->print(fp);
+}
+
+void memory_partition_unit::dumpDramEvent(
+    unsigned long long time, const char* stage, const char* event, mem_fetch *mf) {
+
+  if (mf) {
+    fprintf(Trace::out, "%llu stage(%s) dram_event(%s) "
+      "mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx pos:%s}\n", 
+      time, stage, event,
+      mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_request_uid(), mf->get_addr(),
+      mf->mem_fetch_status_str(mf->get_status())
+      );
+  } else {
+    fprintf(Trace::out, "%llu stage(%s) dram_event(%s) mf = nullptr\n", 
+      time, stage, event);
+  }
+}
+
+memory_sub_partition::memory_sub_partition(unsigned sub_partition_id,
+                                           const memory_config *config,
+                                           class memory_stats_t *stats,
+                                           class gpgpu_sim *gpu) {
+  m_id = sub_partition_id;
+  m_config = config;
+  m_stats = stats;
+  m_gpu = gpu;
+  m_memcpy_cycle_offset = 0;
+
+#ifdef ZERO_ROP_LATENCY
+    m_rop_latency = 0;
+#else
+    m_rop_latency = m_config->rop_latency;
+#endif
+
+  assert(m_id < m_config->m_n_mem_sub_partition);
+
+  char L2c_name[32];
+  snprintf(L2c_name, 32, "L2_bank_%03d", m_id);
+  m_L2interface = new L2interface(this);
+  m_mf_allocator = new partition_mf_allocator(config);
+
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache = new l2_cache(L2c_name, m_config->m_L2_config, -1, -1,
+                             m_L2interface, m_mf_allocator,
+                             IN_PARTITION_L2_MISS_QUEUE, gpu, L2_GPU_CACHE);
+    m_L2cache->m_stats.set_sub_partitions(m_config->m_n_mem_sub_partition);
+  }
+
+  unsigned icnt_l2_q_capacity;
+  unsigned l2_dram_q_capacity;
+  unsigned dram_l2_q_capacity;
+  unsigned l2_icnt_q_capacity;
+
+  sscanf(m_config->gpgpu_L2_queue_config, "%u:%u:%u:%u", 
+    &icnt_l2_q_capacity, 
+    &l2_dram_q_capacity,
+    &dram_l2_q_capacity, 
+    &l2_icnt_q_capacity);
+  m_icnt_L2_queue = new fifo_pipeline<mem_fetch>("icnt-to-L2", 0, icnt_l2_q_capacity);
+  m_L2_dram_queue = new fifo_pipeline<mem_fetch>("L2-to-dram", 0, l2_dram_q_capacity);
+  m_dram_L2_queue = new fifo_pipeline<mem_fetch>("dram-to-L2", 0, dram_l2_q_capacity);
+  m_L2_icnt_queue = new fifo_pipeline<mem_fetch>("L2-to-icnt", 0, l2_icnt_q_capacity);
+  
+  m_L2_icnt_inputs.resize(m_config->m_n_mem_sub_partition);
+  for (size_t i = 0; i < m_config->m_n_mem_sub_partition; i++)
+  {
+    m_L2_icnt_inputs[i].resize(m_gpu->get_config().num_shader(), 0);
+  }
+
+  m_L2cache->m_stats.set_l2_dram_queue_capacity(l2_dram_q_capacity);
+  m_L2cache->m_stats.set_l2_icnt_queue_capacity(l2_icnt_q_capacity);
+  printf("L2_sub[%u] m_L2cache->m_stats.get_l2_dram_queue_capacity() = %u\n",
+    m_id, m_L2cache->m_stats.get_l2_dram_queue_capacity()
+  );
+
+  wb_addr = -1;
+
+  if (DTRACE(L2_TRACE)) {
+    fprintf(Trace::out, "%llu init gpgpu_dram_partition_queues "
+      "maxlen: { "
+      "icnt_l2_q_capacity:%u\n"
+      "l2_dram_q_capacity:%u\n"
+      "dram_l2_q_capacity:%u\n"
+      "l2_icnt_q_capacity:%u}\n",
+      m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle,
+      icnt_l2_q_capacity, 
+      l2_dram_q_capacity, 
+      dram_l2_q_capacity, 
+      l2_icnt_q_capacity
+    );
+  }
+}
+
+memory_sub_partition::~memory_sub_partition() {
+  delete m_icnt_L2_queue;
+  delete m_L2_dram_queue;
+  delete m_dram_L2_queue;
+  delete m_L2_icnt_queue;
+  delete m_L2cache;
+  delete m_L2interface;
+
+  if (DTRACE(L2_TRACE)) {
+    fprintf(Trace::out, "%llu delete gpgpu_dram_partition_queues\n",
+      m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle
+    );
+  }  
+}
+
+void memory_sub_partition::cache_cycle(
+  unsigned long long cycle, mem_fetch* mf_monitor) {
+  // L2 fill responses
+  unsigned long long unified_cycle = get_unified_cycle();
+
+  if (!m_config->m_L2_config.disabled()) {
+    if (m_L2cache->access_ready() && !m_L2_icnt_queue->full()) {
+      mem_fetch *mf = m_L2cache->next_access("L2", cycle);
+      mf->set_sub_partition(m_id);
+      // Don't pass write allocate read request back to upper level cache
+      if (mf->get_access_type() != L2_WR_ALLOC_R) {
+        mf->set_reply();
+        mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, unified_cycle);
+        m_L2_icnt_queue->push(mf);
+        m_L2_icnt_inputs[m_id][mf->get_sid()]++;
+        
+        if (DTRACE(CACHE_Q_SIZE)) {
+          fprintf(Trace::out, 
+            "m_L2_icnt_inputs[L2_sub:%u][sid:%u]++ = %u\n", 
+            m_id, mf->get_sid(), m_L2_icnt_inputs[m_id][mf->get_sid()]);
+        }        
+
+        if (DTRACE(RESP_PKT)) {
+          fprintf(Trace::out, "%llu L2_sub[%u] "
+            "push m_L2_icnt_queue with mf of addr: %#llx\n", 
+            unified_cycle, m_id, mf->get_addr());
+        }
+        if (DTRACE(L2_ICNT_QUEUE)) {
+          fprintf(Trace::out, "%llu L2_sub[%u] m_L2_icnt_queue added mf:"
+            "{TPC:%u SM:%u WARP:%u req_uid:%u %#llx acc_type:%s}\n",
+            unified_cycle, m_id,
+            mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_request_uid(), mf->get_addr(),
+            mem_access_type_str(mem_access_type(mf->get_access_type()))
+            );
+        }
+        m_L2cache->m_stats.inc_accu_l2_icnt_queue_size(
+          mf->get_streamID(), m_id, m_L2_icnt_queue->get_length());
+        m_L2cache->m_stats.inc_l2_icnt_q_accesses(mf->get_streamID(), m_id);       
+      } else {
+        if (m_config->m_L2_config.m_write_alloc_policy == FETCH_ON_WRITE) {
+          mem_fetch *original_wr_mf = mf->get_original_wr_mf();
+          assert(original_wr_mf);
+          assert(original_wr_mf->get_sub_partition() == m_id);
+          original_wr_mf->set_reply();
+          original_wr_mf->set_status(
+            IN_PARTITION_L2_TO_ICNT_QUEUE, 
+            m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+
+          m_L2_icnt_queue->push(original_wr_mf);
+          m_L2_icnt_inputs[m_id][mf->get_sid()]++;
+          m_L2cache->m_stats.inc_accu_l2_icnt_queue_size(
+            original_wr_mf->get_streamID(), m_id, m_L2_icnt_queue->get_length());
+          m_L2cache->m_stats.inc_l2_icnt_q_accesses(original_wr_mf->get_streamID(), m_id);
+
+          if (DTRACE(CACHE_Q_SIZE)) {
+            fprintf(Trace::out, 
+              "m_L2_icnt_inputs[L2_sub:%u][sid:%u]++ = %u\n", 
+              m_id, mf->get_sid(), m_L2_icnt_inputs[m_id][mf->get_sid()]);
+          }
+
+          if (DTRACE(RESP_PKT)) {
+            fprintf(Trace::out, "%llu L2_sub[%u] "
+              "push m_L2_icnt_queue with mf of addr: %#llx\n", 
+              unified_cycle, m_id, mf->get_addr());
+          }          
+        }
+
+        if (DTRACE(CACHE_EVENT)) {
+          m_L2cache->dumpCacheEvent(
+            get_unified_cycle(), 
+            "memory_sub_partition::cache_cycle", 
+            "m_request_tracker.erase(mf)", mf);
+        }
+        m_request_tracker.erase(mf);
+        delete mf;
+      }
+    }
+  } // if (!m_config->m_L2_config.disabled())
+
+  // DRAM to L2 (texture) and icnt (not texture)
+  if (!m_dram_L2_queue->empty()) {
+    mem_fetch *mf = m_dram_L2_queue->top();
+    if (DTRACE(L2_DRAM_IF) || DTRACE(MEM_FETCH_LIFETIME) || DTRACE(REFILL_PATH)) {
+      fprintf(Trace::out, "%llu m_dram_L2_queue->top is mf:"
+        "{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx}\n",
+        unified_cycle,
+        mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_request_uid(), mf->get_addr()
+      );
+    }
+    if (!m_config->m_L2_config.disabled() && m_L2cache->waiting_for_fill(mf)) {
+      if (m_L2cache->fill_port_free()) {
+        mf->set_status(IN_PARTITION_L2_FILL_QUEUE,
+                       m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+        m_L2cache->fill(mf, unified_cycle);
+
+        if (DTRACE(L2_TRACE) || DTRACE(MEM_FETCH_LIFETIME) || DTRACE(REFILL_PATH)) {
+          fprintf(Trace::out, "%llu "
+            "mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx acc_type:%s pos:%s} "
+            "m_dram_L2_queue(occup:%f) -> L2_sub[%u]\n", 
+            unified_cycle,
+            mf->get_tpc(), mf->get_sid(), mf->get_wid(), 
+            mf->get_request_uid(), mf->get_addr(),
+            mem_access_type_str(mem_access_type(mf->get_access_type())),
+            mf->mem_fetch_status_str(mf->get_status()),
+            (float)(m_dram_L2_queue->get_length() - 1) / m_dram_L2_queue->get_max_len(), // occupancy          
+            m_id
+            );
+        }        
+
+        m_dram_L2_queue->pop(); 
+      }
+    }
+    // Following condition seems never met
+    // In general, no *mf can bypass L2 and just go to m_L2_icnt_queue from m_dram_L2_queue
+    else if (!m_L2_icnt_queue->full()) {
+      // 2026-1-5
+      // [BugFix] Added assert(0) on never happened path: 
+      // mem_fetch* mf from m_dram_L2_queue bypass L2 and directly go to m_L2_icnt_queue.      
+      assert(0);
+      if (mf->is_write() && mf->get_type() == WRITE_ACK) {
+        mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE, 
+          m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+      }
+
+      if (DTRACE(L2_TRACE) || DTRACE(MEM_FETCH_LIFETIME) || DTRACE(REFILL_PATH)) {
+        fprintf(Trace::out, "%llu "
+          "mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx acc_type:%s pos:%s} "
+          "m_dram_L2_queue(occup:%f) -> L2_sub[%u] -> m_L2_icnt_queue(occup:%f)\n", 
+          unified_cycle, 
+          mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_request_uid(), mf->get_addr(), 
+          mem_access_type_str(mem_access_type(mf->get_access_type())),
+          mf->mem_fetch_status_str(mf->get_status()),
+          (float)(m_dram_L2_queue->get_length() - 1) / m_dram_L2_queue->get_max_len(), // occupancy          
+          m_id,
+          (float)(m_L2_icnt_queue->get_length() + 1) / m_L2_icnt_queue->get_max_len() // occupancy
+          );
+      }    
+      
+      m_L2_icnt_queue->push(mf);
+      m_L2_icnt_inputs[m_id][mf->get_sid()]++;
+      m_L2cache->m_stats.inc_accu_l2_icnt_queue_size(
+        mf->get_streamID(), m_id, m_L2_icnt_queue->get_length());
+      m_L2cache->m_stats.inc_l2_icnt_q_accesses(mf->get_streamID(), m_id);
+      m_dram_L2_queue->pop();
+
+      if (DTRACE(CACHE_Q_SIZE)) {
+        fprintf(Trace::out, 
+          "m_L2_icnt_inputs[L2_sub:%u][sid:%u]++ = %u\n", 
+          m_id, mf->get_sid(), m_L2_icnt_inputs[m_id][mf->get_sid()]);
+      }
+
+      if (DTRACE(RESP_PKT)) {
+        fprintf(Trace::out, "%llu L2_sub[%u] "
+          "push m_L2_icnt_queue with mf of addr: %#llx\n", 
+          m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, m_id, mf->get_addr());
+      }      
+    }
+  } else {
+    if (DTRACE(L2_DRAM_IF)) {
+      fprintf(Trace::out, "%llu m_dram_L2_queue is empty ---> no cache fill\n",
+        get_unified_cycle());
+    }
+  }
+
+  // prior L2 misses inserted into m_L2_dram_queue here
+  if (!m_config->m_L2_config.disabled()) {
+    // begin: stats related logic
+    if (!m_L2cache->m_miss_queue.empty()) {
+      mem_fetch *mf = m_L2cache->m_miss_queue.front();
+      if (!m_L2cache->m_memport->full(mf->size(), mf->get_is_write())) {
+        m_L2cache->m_stats.inc_accu_l2_dram_queue_size(
+          mf->get_streamID(), m_id, m_L2_dram_queue->get_length() + 1);
+
+        m_L2cache->m_stats.inc_l2_dram_q_accesses(mf->get_streamID(), m_id);
+      }
+    } // end: stats related logic
+    
+    m_L2cache->cycle();
+  }
+
+  bool output_full = m_L2_icnt_queue->full();
+  bool port_free = m_L2cache->data_port_free();
+  bool access_l2_condition_1 = !m_icnt_L2_queue->empty();
+  bool access_l2_condition_2 = port_free;
+#ifdef CONSERVATIVE_REQUEST_L2_SUB
+  access_l2_condition_1 &= !m_L2_dram_queue->full();
+  access_l2_condition_2 &= !output_full;
+#endif
+  bool abort_access_l2_due_to_l2_dram_q_full = m_L2_dram_queue->full() && !m_icnt_L2_queue->empty();
+  bool abort_access_l2_due_to_l2_icnt_q_full = m_L2_icnt_queue->full() && access_l2_condition_1;
+  if (abort_access_l2_due_to_l2_dram_q_full) {
+    m_stats->m_abort_l2_access_due_to_l2_dram_q_full++;
+  }
+  if (abort_access_l2_due_to_l2_icnt_q_full) {
+    m_stats->m_abort_l2_access_due_to_l2_icnt_q_full++;
+  }
+
+  // m_L2cache->inc_aggregated_fail_stats
+  // new L2 texture accesses and/or non-texture accesses
+  if (access_l2_condition_1) {
+    mem_fetch *mf = m_icnt_L2_queue->top();
+    mf->set_sub_partition(m_id);
+    if (!m_config->m_L2_config.disabled() &&
+        ((m_config->m_L2_texure_only && mf->istexture()) ||
+         (!m_config->m_L2_texure_only))) {
+      // L2 is enabled and access is for L2
+      if (access_l2_condition_2) {
+        std::list<cache_event> events;
+        mf->set_sub_partition(m_id);
+        enum cache_request_status status = 
+          m_L2cache->access(mf->get_addr(), mf, unified_cycle, events);
+
+        bool write_sent = was_write_sent(events);
+        bool read_sent  = was_read_sent(events);
+        MEM_SUBPART_DPRINTF("Probing L2 cache Address=%llx, status=%u\n",
+                            mf->get_addr(), status);
+
+        if (status == HIT) {
+          if (!write_sent) {
+            // L2 cache replies
+            assert(!read_sent);
+            if (mf->get_access_type() == L1_WRBK_ACC) {
+              if (DTRACE(CACHE_EVENT)) {
+                m_L2cache->dumpCacheEvent(
+                  unified_cycle, 
+                  "memory_sub_partition::cache_cycle", 
+                  "m_request_tracker.erase(mf) for !write_sent L1_WRBK_ACC", 
+                  mf);
+              }
+              m_request_tracker.erase(mf);
+              delete mf;
+            } else {
+              mf->set_reply();
+              mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,
+                             m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+              m_L2_icnt_queue->push(mf);
+              m_L2_icnt_inputs[m_id][mf->get_sid()]++;
+              m_L2cache->m_stats.inc_accu_l2_icnt_queue_size(
+                mf->get_streamID(), m_id, m_L2_icnt_queue->get_length());              
+              m_L2cache->m_stats.inc_l2_icnt_q_accesses(mf->get_streamID(), m_id);
+
+              if (DTRACE(CACHE_Q_SIZE)) {
+                fprintf(Trace::out, 
+                  "m_L2_icnt_inputs[L2_sub:%u][sid:%u]++ = %u\n", 
+                  m_id, mf->get_sid(), m_L2_icnt_inputs[m_id][mf->get_sid()]);
+              }
+
+              if (DTRACE(RESP_PKT)) {
+                fprintf(Trace::out, "%llu L2_sub[%u] "
+                  "push m_L2_icnt_queue with mf of addr: %#llx\n", 
+                  m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, m_id, mf->get_addr());
+              }
+            }
+            m_icnt_L2_queue->pop();
+          } else {
+            assert(write_sent);
+            m_icnt_L2_queue->pop();
+          }
+        } else if (status != RESERVATION_FAIL) {
+          if (mf->is_write() &&
+              (m_config->m_L2_config.m_write_alloc_policy == FETCH_ON_WRITE ||
+               m_config->m_L2_config.m_write_alloc_policy == LAZY_FETCH_ON_READ) &&
+              !was_writeallocate_sent(events)) {
+            if (mf->get_access_type() == L1_WRBK_ACC) {
+              if (DTRACE(CACHE_EVENT)) {
+                m_L2cache->dumpCacheEvent(
+                  unified_cycle, 
+                  "memory_sub_partition::cache_cycle", 
+                  "m_request_tracker.erase(mf) for L1_WRBK_ACC", mf);
+              }
+              m_request_tracker.erase(mf);
+              delete mf;
+            } else if (m_config->m_L2_config.get_write_policy() == WRITE_BACK) {
+              mf->set_reply();
+              mf->set_status(IN_PARTITION_L2_TO_ICNT_QUEUE,
+                             m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+              m_L2_icnt_queue->push(mf);
+              m_L2_icnt_inputs[m_id][mf->get_sid()]++;
+              m_L2cache->m_stats.inc_accu_l2_icnt_queue_size(
+                mf->get_streamID(), m_id, m_L2_icnt_queue->get_length());              
+              m_L2cache->m_stats.inc_l2_icnt_q_accesses(mf->get_streamID(), m_id);
+
+              if (DTRACE(CACHE_Q_SIZE)) {
+                fprintf(Trace::out, 
+                  "m_L2_icnt_inputs[L2_sub:%u][sid:%u]++ = %u\n", 
+                  m_id, mf->get_sid(), m_L2_icnt_inputs[m_id][mf->get_sid()]);
+              }
+
+              if (DTRACE(RESP_PKT)) {
+                fprintf(Trace::out, "%llu L2_sub[%u] "
+                  "push m_L2_icnt_queue with mf of addr: %#llx\n", 
+                  m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, m_id, mf->get_addr());
+              }
+
+              if (DTRACE(L2_TRACE)) {
+                fprintf(Trace::out, "%llu mf:{TPC:%u SM:%u WARP:%u addr:%#llx acc_type:%s pos:%s} "
+                  "L2 wap:wb req_status:%s L2_sub[%u] -> m_L2_icnt_queue(occup:%f)\n", 
+                  unified_cycle, 
+                  mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_addr(), 
+                  mem_access_type_str(mem_access_type(mf->get_access_type())),
+                  mf->mem_fetch_status_str(mf->get_status()),
+                  cache_request_status_str(status), m_id,
+                  (float)(m_L2_icnt_queue->get_length()) / m_L2_icnt_queue->get_max_len() // occupancy
+                  );
+              }
+            }
+          }
+          if (DTRACE(L2_TRACE)) {
+            fprintf(Trace::out, "%llu mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx acc_type:%s pos:%s} "
+              "L2_sub[%u] m_icnt_L2_queue->pop {occup=(%u/%u)=%f}\n", 
+              unified_cycle, 
+              mf->get_tpc(), mf->get_sid(), mf->get_wid(), 
+              mf->get_request_uid(), mf->get_addr(), 
+              mem_access_type_str(mem_access_type(mf->get_access_type())), 
+              mf->mem_fetch_status_str(mf->get_status()),
+              m_id,
+              m_icnt_L2_queue->get_length(), m_icnt_L2_queue->get_max_len(),
+              (float)(m_icnt_L2_queue->get_length()) / m_icnt_L2_queue->get_max_len() // occupancy
+              );
+          }          
+          // L2 cache accepted request
+          m_icnt_L2_queue->pop();
+        } else {
+          assert(!write_sent);
+          assert(!read_sent);
+          // L2 cache lock-up: will try again next cycle
+        }
+      }
+    } else {
+      // L2 is disabled or non-texture access to texture-only L2
+      mf->set_status(IN_PARTITION_L2_TO_DRAM_QUEUE,
+                     m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+      m_L2_dram_queue->push(mf);
+      m_icnt_L2_queue->pop();
+
+      if (DTRACE(L2_TRACE)) {
+        fprintf(Trace::out, "%llu mf:{TPC:%u SM:%u WARP:%u addr:%#llx acc_type:%s pos:%s} "
+          "L2_sub[%u] -> m_L2_dram_queue(occup:%f); m_icnt_L2_queue.pop(occup:%f)\n", 
+          unified_cycle, 
+          mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_addr(), 
+          mem_access_type_str(mem_access_type(mf->get_access_type())),
+          mf->mem_fetch_status_str(mf->get_status()),
+          m_id,
+          (float)m_L2_dram_queue->get_length() / m_L2_dram_queue->get_max_len(), // occupancy          
+          (float)m_icnt_L2_queue->get_length() / m_icnt_L2_queue->get_max_len()
+          );
+      }      
+    }
+  }
+
+  // ROP delay queue
+  if (!m_rop.empty() && (cycle >= m_rop.front().ready_cycle) &&
+      !m_icnt_L2_queue->full()) {
+    mem_fetch *mf = m_rop.front().req;
+    m_rop.pop();
+    m_icnt_L2_queue->push(mf);
+    unsigned long long time = m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle;
+    mf->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE, time);
+    mf->set_sub_partition(m_id);
+
+    if (DTRACE(CACHE_EVENT)) {      
+      m_L2cache->dumpCacheEvent(
+        time, "memory_sub_partition::cache_cycle", 
+        "m_rop.front().req ---> m_icnt_L2_queue", mf);
+    }
+
+    if (DTRACE(ICNT_TO_L2)) {
+      fprintf(Trace::out, "%llu memory_sub_partition::%s "
+        "m_icnt_L2_queue->push mf "
+        "[sid:%u][warp:%u][addr:%#llx]\n",
+        time, __func__, mf->get_sid(), mf->get_wid(), mf->get_addr()
+      );
+    }
+
+    if (DTRACE(L2_TRACE)) {
+      fprintf(Trace::out, "%llu mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx acc_type:%s pos:%s} "
+        "m_rop.pop (size:%lu->%lu) ---> m_icnt_L2_queue: {occupancy=(%u/%u)=%f} -> L2 sub[%u]\n", 
+        m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle,
+        mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_request_uid(), mf->get_addr(), 
+        mem_access_type_str(mem_access_type(mf->get_access_type())),
+        mf->mem_fetch_status_str(mf->get_status()),
+        m_rop.size() + 1, m_rop.size(),
+        m_icnt_L2_queue->get_length(), m_icnt_L2_queue->get_max_len(),
+        (float)m_icnt_L2_queue->get_length() / m_icnt_L2_queue->get_max_len(), m_id);
+    }                   
+  } else if (!m_rop.empty() && !m_icnt_L2_queue->full()) {
+    mem_fetch *mf = m_rop.front().req;
+    mf->set_sub_partition(m_id);
+    if (DTRACE(ROP_EVENT)) {
+      m_L2cache->dumpCacheEvent(
+        m_gpu->gpu_tot_sim_cycle + m_gpu->gpu_sim_cycle, 
+        "memory_sub_partition::cache_cycle()", 
+        "buffering in ROP", mf);
+    }
+  }
+}
+
+bool memory_sub_partition::full() const { return m_icnt_L2_queue->full(); }
+
+bool memory_sub_partition::full(unsigned size) const {
+  return m_icnt_L2_queue->is_avilable_size(size);
+}
+
+bool memory_sub_partition::L2_dram_queue_empty() const {
+  return m_L2_dram_queue->empty();
+}
+
+class mem_fetch *memory_sub_partition::L2_dram_queue_top() const {
+  return m_L2_dram_queue->top();
+}
+
+void memory_sub_partition::L2_dram_queue_pop() { m_L2_dram_queue->pop(); }
+
+bool memory_sub_partition::dram_L2_queue_full() const {
+  return m_dram_L2_queue->full();
+}
+
+void memory_sub_partition::dram_L2_queue_push(class mem_fetch *mf) {
+
+  m_dram_L2_queue->push(mf);
+  assert(mf->get_sub_partition() == m_id);
+  if (DTRACE(CACHE_EVENT)) {
+    m_L2cache->dumpCacheEvent(
+      get_unified_cycle(),
+      "memory_sub_partition::dram_L2_queue_push", 
+      "m_dram_L2_queue->push(mf)", mf);
+  }  
+}
+
+void memory_sub_partition::print_cache_stat(unsigned &accesses,
+                                            unsigned &misses) const {
+  FILE *fp = stdout;
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->print(fp, accesses, misses);
+  }
+}
+
+void memory_sub_partition::print(FILE *fp) const {
+  if (!m_request_tracker.empty()) {
+    fprintf(fp, "Memory Sub Parition %u: pending memory requests:\n", m_id);
+    for (std::set<mem_fetch *>::const_iterator r = m_request_tracker.begin();
+         r != m_request_tracker.end(); ++r) {
+      mem_fetch *mf = *r;
+      if (mf)
+        mf->print(fp);
+      else
+        fprintf(fp, " <NULL mem_fetch?>\n");
+    }
+  }
+  if (!m_config->m_L2_config.disabled()) m_L2cache->display_state(fp);
+}
+
+void memory_stats_t::visualizer_print(gzFile visualizer_file) {
+  gzprintf(visualizer_file, "Ltwowritemiss: %d\n", L2_write_miss);
+  gzprintf(visualizer_file, "Ltwowritehit: %d\n", L2_write_hit);
+  gzprintf(visualizer_file, "Ltworeadmiss: %d\n", L2_read_miss);
+  gzprintf(visualizer_file, "Ltworeadhit: %d\n", L2_read_hit);
+  clear_L2_stats_pw();
+
+  if (num_mfs)
+    gzprintf(visualizer_file, "averagemflatency: %lld\n",
+             mf_total_lat / num_mfs);
+}
+
+void memory_stats_t::clear_L2_stats_pw() {
+  L2_write_miss = 0;
+  L2_write_hit = 0;
+  L2_read_miss = 0;
+  L2_read_hit = 0;
+}
+
+void gpgpu_sim::print_dram_stats(FILE *fout) const {
+  unsigned cmd = 0;
+  unsigned activity = 0;
+  unsigned nop = 0;
+  unsigned act = 0;
+  unsigned pre = 0;
+  unsigned rd = 0;
+  unsigned wr = 0;
+  unsigned wr_WB = 0;
+  unsigned req = 0;
+  unsigned tot_cmd = 0;
+  unsigned tot_nop = 0;
+  unsigned tot_act = 0;
+  unsigned tot_pre = 0;
+  unsigned tot_rd = 0;
+  unsigned tot_wr = 0;
+  unsigned tot_req = 0;
+
+  for (unsigned i = 0; i < m_memory_config->m_n_mem; i++) {
+    m_memory_partition_unit[i]->set_dram_power_stats(cmd, activity, nop, act,
+                                                     pre, rd, wr, wr_WB, req);
+    tot_cmd += cmd;
+    tot_nop += nop;
+    tot_act += act;
+    tot_pre += pre;
+    tot_rd += rd;
+    tot_wr += wr + wr_WB;
+    tot_req += req;
+  }
+  fprintf(fout, "gpgpu_n_dram_reads = %d\n", tot_rd);
+  fprintf(fout, "gpgpu_n_dram_writes = %d\n", tot_wr);
+  fprintf(fout, "gpgpu_n_dram_activate = %d\n", tot_act);
+  fprintf(fout, "gpgpu_n_dram_commands = %d\n", tot_cmd);
+  fprintf(fout, "gpgpu_n_dram_noops = %d\n", tot_nop);
+  fprintf(fout, "gpgpu_n_dram_precharges = %d\n", tot_pre);
+  fprintf(fout, "gpgpu_n_dram_requests = %d\n", tot_req);
+}
+
+unsigned memory_sub_partition::flushL2() {
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->flush();
+  }
+  return 0;  // TODO: write the flushed data to the main memory
+}
+
+unsigned memory_sub_partition::invalidateL2() {
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->invalidate();
+  }
+  return 0;
+}
+
+bool memory_sub_partition::busy() const { return !m_request_tracker.empty(); }
+
+std::vector<mem_fetch *>
+memory_sub_partition::breakdown_request_to_sector_requests(mem_fetch *mf) {
+  std::vector<mem_fetch *> result;
+  mem_access_sector_mask_t sector_mask = mf->get_access_sector_mask();
+  if (mf->get_data_size() == SECTOR_SIZE &&
+      mf->get_access_sector_mask().count() == 1) {
+    result.push_back(mf);
+  } else if (mf->get_data_size() == MAX_MEMORY_ACCESS_SIZE) {
+    // break down every sector
+    mem_access_byte_mask_t mask;
+    for (unsigned i = 0; i < SECTOR_CHUNK_SIZE; i++) {
+      for (unsigned k = i * SECTOR_SIZE; k < (i + 1) * SECTOR_SIZE; k++) {
+        mask.set(k);
+      }
+      mem_fetch *n_mf = m_mf_allocator->alloc(
+          mf->get_addr() + SECTOR_SIZE * i, mf->get_access_type(),
+          mf->get_access_warp_mask(), mf->get_access_byte_mask() & mask,
+          std::bitset<SECTOR_CHUNK_SIZE>().set(i), SECTOR_SIZE, mf->is_write(),
+          m_gpu->gpu_tot_sim_cycle + m_gpu->gpu_sim_cycle, mf->get_wid(),
+          mf->get_sid(), mf->get_tpc(), mf, mf->get_streamID());
+
+      result.push_back(n_mf);
+    }
+    // This is for constant cache
+  } else if (mf->get_data_size() == 64 &&
+             (mf->get_access_sector_mask().all() ||
+              mf->get_access_sector_mask().none())) {
+    unsigned start;
+    if (mf->get_addr() % MAX_MEMORY_ACCESS_SIZE == 0) {
+      start = 0;
+    } else {
+      start = 2;
+    }
+
+    mem_access_byte_mask_t mask;
+    for (unsigned i = start; i < start + 2; i++) {
+      for (unsigned k = i * SECTOR_SIZE; k < (i + 1) * SECTOR_SIZE; k++) {
+        mask.set(k);
+      }
+      mem_fetch *n_mf = m_mf_allocator->alloc(
+          mf->get_addr(), mf->get_access_type(), mf->get_access_warp_mask(),
+          mf->get_access_byte_mask() & mask,
+          std::bitset<SECTOR_CHUNK_SIZE>().set(i), SECTOR_SIZE, mf->is_write(),
+          m_gpu->gpu_tot_sim_cycle + m_gpu->gpu_sim_cycle, mf->get_wid(),
+          mf->get_sid(), mf->get_tpc(), mf, mf->get_streamID());
+
+      result.push_back(n_mf);
+    }
+  } else {
+    for (unsigned i = 0; i < SECTOR_CHUNK_SIZE; i++) {
+      if (sector_mask.test(i)) {
+        mem_access_byte_mask_t mask;
+        for (unsigned k = i * SECTOR_SIZE; k < (i + 1) * SECTOR_SIZE; k++) {
+          mask.set(k);
+        }
+        mem_fetch *n_mf = m_mf_allocator->alloc(
+            mf->get_addr() + SECTOR_SIZE * i, mf->get_access_type(),
+            mf->get_access_warp_mask(), mf->get_access_byte_mask() & mask,
+            std::bitset<SECTOR_CHUNK_SIZE>().set(i), SECTOR_SIZE,
+            mf->is_write(), m_gpu->gpu_tot_sim_cycle + m_gpu->gpu_sim_cycle,
+            mf->get_wid(), mf->get_sid(), mf->get_tpc(), mf,
+            mf->get_streamID());
+        result.push_back(n_mf);
+      }
+    }
+  }
+  if (!result.size()) {
+    assert(0 && "no mf sent");
+  }
+  return result;
+}
+
+void memory_sub_partition::push(mem_fetch *m_req, unsigned long long cycle) {
+  if (m_req) {
+    m_stats->memlatstat_icnt2mem_pop(m_req);
+    std::vector<mem_fetch *> reqs;
+    if (m_config->m_L2_config.m_cache_type == SECTOR) {
+      reqs = breakdown_request_to_sector_requests(m_req);
+    } else {
+      reqs.push_back(m_req);
+    }
+
+    for (unsigned i = 0; i < reqs.size(); ++i) {
+      mem_fetch *req = reqs[i];
+      req->set_sub_partition(m_id);
+      m_request_tracker.insert(req);
+
+      if (DTRACE(CACHE_EVENT)) {
+        m_L2cache->dumpCacheEvent(
+          m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, 
+          "memory_sub_partition::push", 
+          "m_request_tracker.insert(req)", req);
+      }
+
+      if (req->istexture()) {
+        if (DTRACE(L2_TRACE)) {
+          fprintf(Trace::out, "%llu Texture pop one req to L2 QUEUE"
+            "(size:%u, element:%u) addr:%llx -> L2 sub[%u]\n", 
+            m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle,
+            m_icnt_L2_queue->get_length(),
+            m_icnt_L2_queue->get_n_element(),
+            req->get_addr(), m_id);
+        }
+
+        m_icnt_L2_queue->push(req);
+        req->set_status(IN_PARTITION_ICNT_TO_L2_QUEUE,
+                        m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+
+        assert(req->get_sub_partition() == m_id);
+        if (DTRACE(CACHE_EVENT)) {
+          m_L2cache->dumpCacheEvent(
+            m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, 
+            "memory_sub_partition::push", 
+            "m_icnt_L2_queue->push(req)", req);
+        }
+
+        if (DTRACE(ICNT_TO_L2)) {
+          fprintf(Trace::out, "%llu memory_sub_partition::%s "
+            "m_icnt_L2_queue->push mf "
+            "[sid:%u][warp:%u][addr:%#llx]\n",
+            m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle, 
+            __func__, req->get_sid(), req->get_wid(), req->get_addr()
+          );
+        }
+      } // if (req->istexture()) { 
+      else {
+        rop_delay_t r;
+        r.req = req;
+        // r.ready_cycle = cycle + m_config->rop_latency;
+        r.ready_cycle = cycle + m_rop_latency;
+        m_rop.push(r);
+        req->set_status(IN_PARTITION_ROP_DELAY,
+                        m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle);
+        
+        if (DTRACE(ROP_EVENT)) {
+          fprintf(Trace::out, "%llu "
+            "mf:{TPC:%u SM:%u WARP:%u req_uid:%u addr:%#llx pos:%s} "
+            "is pushed into m_rop (size:%lu)\n", 
+            m_gpu->gpu_sim_cycle + m_gpu->gpu_tot_sim_cycle,
+            r.req->get_tpc(), r.req->get_sid(), r.req->get_wid(), r.req->get_request_uid(), r.req->get_addr(), 
+            r.req->mem_fetch_status_str(r.req->get_status()),
+            m_rop.size()
+            );
+        }
+      }
+    }
+  }
+}
+
+mem_fetch *memory_sub_partition::pop() {
+  mem_fetch *mf = m_L2_icnt_queue->pop(); // mf can be NULL here
+
+  if (DTRACE(CACHE_EVENT)) {
+    m_L2cache->dumpCacheEvent(
+      get_unified_cycle(),
+      "memory_sub_partition::pop()", 
+      "1. m_L2_icnt_queue->pop 2. m_request_tracker.erase", mf);
+  }
+
+  m_request_tracker.erase(mf);
+  if (mf && mf->isatomic()) {
+    mf->do_atomic();
+  }
+  if (mf && (mf->get_access_type() == L2_WRBK_ACC ||
+             mf->get_access_type() == L1_WRBK_ACC)) {
+    delete mf;
+    mf = NULL;
+  }
+  return mf;
+}
+
+mem_fetch *memory_sub_partition::top() {
+  mem_fetch *mf = m_L2_icnt_queue->top(); // mf can be NULL here
+
+  if (mf && mf->get_access_type() == L2_WRBK_ACC) {
+    
+  }
+
+  if (mf && (mf->get_access_type() == L2_WRBK_ACC ||
+             mf->get_access_type() == L1_WRBK_ACC)) {
+
+    if (DTRACE(CACHE_EVENT)) {  
+      m_L2cache->dumpCacheEvent(
+        get_unified_cycle(),
+        "memory_sub_partition::top()", 
+        "1. m_L2_icnt_queue->pop 2. m_request_tracker.erase", mf);
+    }
+
+    if (DTRACE(RELEASE_REQ_TRACKER)) {
+      fprintf(Trace::out, "%llu L2_sub[%u] req_tracker released "
+        "mf:{ TPC:%u SM:%u WARP:%u %#llx }\n",
+        get_unified_cycle(),
+        m_id,
+        mf->get_tpc(), mf->get_sid(), mf->get_wid(), mf->get_addr()
+      );
+    }
+    m_L2_icnt_queue->pop();
+    m_request_tracker.erase(mf);
+    delete mf;
+    mf = NULL;
+  }
+  return mf;
+}
+
+void memory_sub_partition::set_done(mem_fetch *mf) {
+  assert(mf);  
+  // mf->get_sub_partition() != m_id can also happen
+  
+  if (DTRACE(CACHE_EVENT)) {
+    m_L2cache->dumpCacheEvent(
+      get_unified_cycle(),
+      "memory_sub_partition::set_done", 
+      "m_request_tracker.erase(mf)", mf);
+  }
+
+  m_request_tracker.erase(mf);
+}
+
+void memory_sub_partition::accumulate_L2cache_stats(
+    class cache_stats &l2_stats) const {
+  if (!m_config->m_L2_config.disabled()) {
+    l2_stats.set_cache_name("L2");
+    l2_stats += m_L2cache->get_stats();
+    printf("l2_stats.get_l2_dram_queue_capacity() = %u\n",
+      l2_stats.get_l2_dram_queue_capacity());
+  }
+}
+void memory_sub_partiton::accumulate_l2_cache_stats()
+{
+  class cache_stats l2_stats;
+  if (!m_config->m_L2_config.disabled()) {
+    l2_stats.set_cache_name("L2");
+    l2_stats += m_L2cache->get_stats();
+    printf("l2_stats.get_l2_dram_queue_capacity() = %u\n",
+      l2_stats.get_l2_dram_queue_capacity());
+  }
+}
+
+void memory_sub_partition::get_L2cache_sub_stats(
+    struct cache_sub_stats &css) const {
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->get_sub_stats(css);
+  }
+}
+void memory_sub_partition::get_L2cache_sub_stats(
+  struct cache_sub_stats& css) const {
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->get_sub_stats(css);
+  }
+}
+void memory_sub_partition::get_L2cache_sub_stats_pw(
+  struct cache_sub_stats_pw& css
+) {
+  if (!m_config->m_l2_config.disable()) {
+    m_L2cache->get_sub_stats_pw(css);
+  } else {
+    m_L2cache->get_sub_stats_pw(css);
+  }
+}
+
+void memory_sub_partition::get_L2cache_sub_stats_pw(
+    struct cache_sub_stats_pw &css) const {
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->get_sub_stats_pw(css);
+  }
+}
+
+void memory_sub_partition::clear_L2cache_stats_pw() {
+  if (!m_config->m_L2_config.disabled()) {
+    m_L2cache->clear_pw();
+  }
+}
+void memory_sub_partition::clear_L2cache_stats_pw() {
+  visualizer_print(gzFile visualizer file);
+  if (get_L2cache_sub_)
+}
+
+void memory_sub_partition::visualizer_print(gzFile visualizer_file) {
+  // Support for L2 AerialVision stats
+  // Per-sub-partition stats would be trivial to extend from this
+  cache_sub_stats_pw temp_sub_stats;
+  get_L2cache_sub_stats_pw(temp_sub_stats);
+
+  m_stats->L2_read_miss += temp_sub_stats.read_misses;
+  m_stats->L2_write_miss += temp_sub_stats.write_misses;
+  m_stats->L2_read_hit += temp_sub_stats.read_hits;
+  m_stats->L2_write_hit += temp_sub_stats.write_hits;
+
+  clear_L2cache_stats_pw();
 }

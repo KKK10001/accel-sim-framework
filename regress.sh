@@ -612,6 +612,29 @@ fi
 # ./regress.sh reg_dis_wia_repl --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_dis_wia_repl
 
+# 25.854 (-24.661%) Just for test. (L1D will help increase a lot of perf.)
+# ./regress.sh reg_skip_l1d --config-file ./perf_study/configs/skip_l1d.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_skip_l1d
+
+# 3/3
+# 14:00-
+# ./regress.sh reg_base_cmp_for_uc --config-file ./perf_study/configs/warp_schedule_base.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_cmp_for_uc
+
+# 3/6 ok
+# ./regress.sh reg_chk_assert_no_wr_event_sent_by_l1d --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_chk_assert_no_wr_event_sent_by_l1d
+
+# ./regress.sh reg_byp_trashed_req_for_l1d --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_byp_trashed_req_for_l1d
+
+# "no_alloc": dont update tag metadata only, having not bypassed L1D yet.
+# ./regress.sh reg_no_alloc_low_loc_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_no_alloc_low_loc_lines
+
+# ./regress.sh reg_uncache_low_loc_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_uncache_low_loc_lines
+
 # Running now (BugFix: Excluded "warp_id == -1" from stats for inter-warp interferences)
 # 34.315 (+0.150%) 
 # ./regress.sh reg_warp_interfere_awared_cache_replace_2_24 --config-file ./perf_study/configs/warp_interfere_awared_cache_replace.config

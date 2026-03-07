@@ -342,6 +342,19 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_cmp_for_uc \
+    reg_chk_assert_no_wr_event_sent_by_l1d \
+    reg_no_alloc_low_loc_lines \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
 """
 import argparse, os, re, sys, math
 from typing import List

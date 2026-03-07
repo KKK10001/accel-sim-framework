@@ -49,7 +49,11 @@ shopt -s nullglob
 # regress_tag=reg_evict_l1d_low_reusage_pending_longop
 # regress_tag=reg_l1d_plopa_repl_l1d_mq_32
 # regress_tag=reg_chk_l1d_pending_longop_evict
-regress_tag=reg_dis_wia_repl
+# regress_tag=reg_dis_wia_repl
+# regress_tag=reg_dont_cache_low_locality_lines
+# regress_tag=reg_no_alloc_low_loc_lines
+regress_tag=reg_chk_assert_no_wr_event_sent_by_l1d
+# regress_tag=reg_dont_cache_low_loc_ln_II
 # regress_tag=reg_wia_cache_repl_l1d_mq_64
 # regress_tag=reg_mshr_disable_all_lru_enhanced_with_timestamp_and_total_hits
 # regress_tag=reg_baseline_fixed_mshr_corr_repl
