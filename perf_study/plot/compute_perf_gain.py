@@ -344,9 +344,13 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_base_cmp_for_uc \
-    reg_chk_assert_no_wr_event_sent_by_l1d \
-    reg_no_alloc_low_loc_lines \
+    reg_base_no_mshr \
+    reg_byp_trashed_req_for_l1d \
+    reg_byp_trash_over_50_for_l1d \
+    reg_byp_trash_over_10_for_l1d \
+    reg_byp_trash_over_5_for_l1d \
+    reg_byp_trash_over_4_for_l1d \
+    reg_l1d_bypass_low_loc_lines_mq_32 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
