@@ -574,6 +574,23 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_mshr_awared_repl
 
 ################################ Bypass Highly Trashed L1D Reqs ################################
+# 3/9
+# 29.966 (+0.000%)
+# ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
+
+# 3/9 done
+# 30.001 (+0.117%)
+# ./regress.sh reg_l1d_bypass_low_loc_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_lines
+
+# ./regress.sh reg_l1d_bypass_low_loc_lines_II --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_lines_II
+
+# 30.127 (+0.538%)
+# ./regress.sh reg_byp_trash_over_5_for_l1d --config-file ./perf_study/configs/l1d_bypass_low_loc_threshold_5_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_byp_trash_over_5_for_l1d
+
 # 0:08:01
 # 29.965 (+0.000%) Rerun-> 29.966 (+0.000%)	
 # ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
@@ -651,17 +668,6 @@ fi
 # 14:00-
 # ./regress.sh reg_base_cmp_for_uc --config-file ./perf_study/configs/warp_schedule_base.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_cmp_for_uc
-
-# 3/6 ok
-# ./regress.sh reg_chk_assert_no_wr_event_sent_by_l1d --config-file ./perf_study/configs/base_no_mshr.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_chk_assert_no_wr_event_sent_by_l1d
-
-# "no_alloc": dont update tag metadata only, having not bypassed L1D yet.
-# ./regress.sh reg_no_alloc_low_loc_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_no_alloc_low_loc_lines
-
-# ./regress.sh reg_uncache_low_loc_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_uncache_low_loc_lines
 
 # Running now (BugFix: Excluded "warp_id == -1" from stats for inter-warp interferences)
 # 34.315 (+0.150%) 

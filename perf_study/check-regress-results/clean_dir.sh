@@ -54,7 +54,9 @@ shopt -s nullglob
 # regress_tag=reg_no_alloc_low_loc_lines
 # regress_tag=reg_chk_assert_no_wr_event_sent_by_l1d
 # regress_tag=reg_base_no_mshr
-regress_tag=reg_byp_trash_over_3_for_l1d
+regress_tag=reg_l1d_bypass_low_loc_lines_II
+# regress_tag=reg_byp_trash_over_3_for_l1d
+# regress_tag=reg_l1d_bypass_low_loc_lines
 # regress_tag=reg_byp_trashed_req_for_l1d
 # regress_tag=reg_dont_cache_low_loc_ln_II
 # regress_tag=reg_wia_cache_repl_l1d_mq_64
