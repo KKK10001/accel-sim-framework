@@ -574,18 +574,183 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_mshr_awared_repl
 
 ################################ Bypass Highly Trashed L1D Reqs ################################
-# 3/9
-# 29.966 (+0.000%)
+
 # ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
+
+# ./regress.sh reg_l1d_byp_fine_tune --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune
+
+# reg_base_no_mshr
+# reg_l1d_byp_fine_tune
+
+# Compare single case
+# 1. srad_v2-rodinia-2.0-ft
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_src_v2 --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_src_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2
+# 124.427 (+3.290%)
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_fine_tune_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune_srad_v2
+
+# reg_base_no_mshr_srad_v2
+# reg_l1d_byp_fine_tune_srad_v2
+
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_fine_tuned_srad_v2_II --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tuned_srad_v2_II
+# reg_base_no_mshr_srad_v2
+# 121.874 (+1.171%)
+# reg_l1d_byp_fine_tuned_srad_v2_II
+
+# 2. backprop-rodinia-2.0-ft
+# ./regress.sh single backprop-rodinia-2.0-ft reg_base_no_mshr_src_backprop --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_src_backprop
+# ./regress.sh single backprop-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_backprop --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_backprop
+
+# 3. streamcluster-rodinia-2.0-ft
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_base_no_mshr_streamcluster --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_streamcluster
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dynamic_byp_streamcluster_dec_step_1 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dynamic_byp_streamcluster_dec_step_1
+# reg_base_no_mshr_streamcluster
+# IPC: 17.003 (-2.979%) L1D_rd_miss_rate:0.856 (+15.596%) # with dec_step = 1
+# reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_streamcluster
+
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_base_no_mshr_streamcluster --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_streamcluster
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_byp_fine_tuned_streamcluster --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tuned_streamcluster
+# reg_base_no_mshr_streamcluster
+# 17.111 (-2.375%)
+# reg_l1d_byp_fine_tuned_streamcluster
+
+
+# 4. Needleman-Wunsch (nw) nw-rodinia-2.0-ft - Very little reuse observed in L1D
+# ./regress.sh single nw-rodinia-2.0-ft reg_base_no_mshr_nw --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_nw
+# ./regress.sh single nw-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw
+# Equal 3.421 (+0.000%)
+# reg_base_no_mshr_nw
+# reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw
+
+# 5. nn-rodinia-2.0-ft
+# ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_nn --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_nn
+# ./regress.sh single nn-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nn --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nn
+# reg_base_no_mshr_nn
+# IPC: 14.844 (+0.015%); L1D_rd_miss_rate: 0.165 (+0.334%)
+# reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nn
+
+# 6. hotspot-rodinia-2.0-ft
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_base_no_mshr_hotspot --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_hotspot --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_hotspot
+# reg_base_no_mshr_hotspot
+# IPC: 212.160 (-1.004%) L1D_rd_miss_rate: 0.238 (+5.939%)
+# reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_hotspot
+
+# 30.108 (+0.032%) avg_l1d_rd_miss_served_cycles: 799.460 (+3.064%)
+# ./regress.sh reg_l1d_bypass_fixed_thrash_threshold --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_fixed_thrash_threshold
+
+# ./regress.sh reg_l1d_byp_detect_f2e_gap_conf_cnt --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_conf_cnt
+
+# 3/122
+# srad_v2 perfs. better than base
+# gpu_tot_ipc =     184.5683
+# gpu_tot_ipc =     121.0288
+# gpu_tot_ipc =     138.5135
+# gpu_tot_ipc =     124.4266
+
+# // base
+# gpu_tot_ipc =     184.5683
+# gpu_tot_ipc =     121.0288
+# gpu_tot_ipc =     140.7211
+# gpu_tot_ipc =     120.4632
+
+# 30.856 (+0.000%)
+# ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
+# IPC: 30.842 (-0.046%) 
+# ./regress.sh reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt
+
+# ./regress.sh reg_l1d_byp_assert_verify_f2e_gap_conf_cnt --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_assert_verify_f2e_gap_conf_cnt
+
+# dead-lock for srad_v2
+# ./regress.sh reg_l1d_bypass_low_loc_threshold_5_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_threshold_5_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_threshold_5_lines
+
+# 29.790 (-1.024%) ---> should try more large threshold
+# ./regress.sh reg_l1d_bypass_low_loc_threshold_10_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_threshold_10_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_threshold_10_lines
+# 30.002 (-0.318%)
+# ./regress.sh reg_l1d_bypass_low_loc_threshold_50_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_threshold_50_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_threshold_50_lines
+
+# 30.020 (+0.178%) 292.244 (-11.201%)
+# re-run 3/10 15:12 29.990 (+0.094%)
+# 16:35 29.906 (-0.186%) the same as fuck logic (verified)
+# ./regress.sh reg_l1d_bypass_low_loc_blk_addr --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_blk_addr
+
+# 29.976 (+0.047%) At least it works.
+# ./regress.sh reg_l1d_deferred_bypass --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_deferred_bypass
+
+# 29.993 (+0.104%) highest up to now
+# ./regress.sh reg_l1d_smart_byp --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_smart_byp
+# 29.993 (+0.104%) the same as above
+# ./regress.sh reg_l1d_smart_byp_no_reset --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_smart_byp_no_reset
+# 29.993 (+0.104%)
+# ./regress.sh reg_l1d_smart_byp_no_rst_gap_10 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_smart_byp_no_rst_gap_10
+
+# 29.906 (-0.186%) ?? why? just same logic
+# ./regress.sh reg_l1d_byp_fuck_check --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fuck_check
+
+# 30.004 (-0.150%) 
+# re-run 3/10 14:48 29.887 (-0.250%)
+# ./regress.sh reg_l1d_mpki_aware_bypass --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mpki_aware_bypass
+
+# 30.110 (+0.204%) Yes!!! 
+# -> Rereun [fixed reverse judging l1d_bypass during m_rd_hit mtag_array->access]
+# 3rd time
+# ./regress.sh reg_l1d_byp_adaptive_tune_low_loc_thres --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_adaptive_tune_low_loc_thres
+
+# 29.960 (-0.295%)
+# ./regress.sh reg_l1d_byp_adaptive_tune_low_loc_thres_step_10 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_adaptive_tune_low_loc_thres_step_10
+
+# 29.961 (-0.292%) worse. Enlarging mq size would not help.
+# ./regress.sh reg_l1d_byp_adapt_tune_l1d_l2_mq_64 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_l1d_l2_mq_64.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_adapt_tune_l1d_l2_mq_64
 
 # 3/9 done
 # 30.001 (+0.117%)
 # ./regress.sh reg_l1d_bypass_low_loc_lines --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_lines
 
-# ./regress.sh reg_l1d_bypass_low_loc_lines_II --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypass_low_loc_lines_II
+# ./regress.sh reg_l1d_sel_byp_trash_over_5_blk_addr --config-file ./perf_study/configs/l1d_bypass_low_loc_threshold_5_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_sel_byp_trash_over_5_blk_addr
 
 # 30.127 (+0.538%)
 # ./regress.sh reg_byp_trash_over_5_for_l1d --config-file ./perf_study/configs/l1d_bypass_low_loc_threshold_5_lines.config
@@ -795,6 +960,24 @@ fi
 # Environment alternative:
 #   CUSTOM_GPGPUSIM_CONFIG=/abs/path/custom.config VARIANT_TAG=mytag ./regress.sh
 ############################################################
+run_compute_perf_gain() {
+  local per_bench_dir="./perf_study/plot/per_benchmark_csv"
+  local has_split_arg=0
+
+  for a in "$@"; do
+    if [[ "$a" == "--per-benchmark-csv-dir" ]]; then
+      has_split_arg=1
+      break
+    fi
+  done
+
+  if [[ $has_split_arg -eq 1 ]]; then
+    python3 ./perf_study/plot/compute_perf_gain.py "$@"
+  else
+    python3 ./perf_study/plot/compute_perf_gain.py "$@" --per-benchmark-csv-dir "$per_bench_dir"
+  fi
+}
+
 if [ -z "$SINGLE_BENCH" ] && [ "$1" != "single" ]; then
   # Parse args for group mode
   CUSTOM_CFG_FILE="${CUSTOM_GPGPUSIM_CONFIG:-}"

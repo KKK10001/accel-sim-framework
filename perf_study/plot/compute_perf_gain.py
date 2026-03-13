@@ -345,9 +345,12 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr \
-    reg_l1d_bypass_low_loc_lines \
-    reg_l1d_bypass_low_loc_lines_II \
-    reg_byp_trash_over_5_for_l1d \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt \
+    reg_l1d_bypass_fixed_thrash_threshold \
+    reg_l1d_smart_byp \
+    reg_l1d_smart_byp_no_reset \
+    reg_l1d_deferred_bypass \
+    reg_l1d_mpki_aware_bypass \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -356,6 +359,138 @@ python3 compute_perf_gain.py \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr \
+    reg_l1d_byp_fine_tune \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+# Compare single cases
+# 164.599 (+0.000%) vs 164.599 (+0.000%) - no diff in IPC
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_src_backprop \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_backprop \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_streamcluster \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_streamcluster \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_nw \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_nn \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nn \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_hotspot \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_hotspot \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_streamcluster \
+    reg_l1d_dynamic_byp_streamcluster_dec_step_2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_srad_v2 \
+    reg_l1d_byp_fine_tune_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_streamcluster \
+    reg_l1d_byp_fine_tuned_streamcluster \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+  
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_src_v2 \
+    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx  
 """
 import argparse, os, re, sys, math
 from typing import List
@@ -380,9 +515,14 @@ FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 # L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
 # L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 L1D_ACCESSES_RE = re.compile(rf"L1D_accesses\s*=\s*{FLOAT_CAPTURE}")
-L1D_MISS_RATE_RE = re.compile(rf"L1D_(?:total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_MISS_RATE_RE = re.compile(rf"L1D_rd_miss_rate\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_BYPASS_RATE_RE = re.compile(rf"L1D_rd_bypass_rate\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_BYPASSES_RE = re.compile(rf"L1D_rd_bypasses\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_MISSES_RE = re.compile(rf"L1D_rd_misses\s*=\s*{FLOAT_CAPTURE}")
+L1D_READS_RE = re.compile(rf"L1D_reads\s*=\s*{FLOAT_CAPTURE}")
 # PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}")
-L1D_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
+L1D_AVG_RD_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_rd_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
+
 L1D_MPKI = re.compile(rf"L1D_MPKI\s*=\s*{FLOAT_CAPTURE}")
 NON_VALID_PERCENT = re.compile(rf"non_valid_percent\s*=\s*{FLOAT_CAPTURE}")
 DEP_CHK_FAIL_PERCENT = re.compile(rf"dep_chk_fail_percent\s*=\s*{FLOAT_CAPTURE}")
@@ -398,6 +538,63 @@ ISSUE_BW_UTILIZATION = re.compile(rf"issue_bw_utilization\s*=\s*{FLOAT_CAPTURE}"
 TOTAL_ISSUE_FAILS = re.compile(rf"total_issue_fails\s*=\s*{FLOAT_CAPTURE}")
 G_ACC_R_MQ_FULL = re.compile(rf"breakdown\[GLOBAL_ACC_R\]\[MISS_QUEUE_FULL\]\s*=\s*{FLOAT_CAPTURE}")
 
+def _sanitize_csv_name(name: str) -> str:
+    s = str(name).strip()
+    if not s:
+        s = "unknown_benchmark"
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", s)
+
+def split_overall_csv_by_benchmark(overall_csv: str, out_dir: str) -> None:
+    if not overall_csv or not os.path.isfile(overall_csv):
+        print(f"[INFO] skip split: csv not found: {overall_csv}")
+        return
+
+    with open(overall_csv, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        headers = reader.fieldnames or []
+        rows = list(reader)
+
+    if not headers:
+        print(f"[INFO] skip split: empty header in {overall_csv}")
+        return
+
+    # 自动识别 benchmark 列
+    candidates = ["benchmark", "bench", "app", "application", "workload", "kernel", "trace"]
+    lower_map = {h.lower(): h for h in headers}
+    bench_col = None
+
+    for c in candidates:
+        if c in lower_map:
+            bench_col = lower_map[c]
+            break
+    if bench_col is None:
+        for h in headers:
+            lh = h.lower()
+            if any(c in lh for c in candidates):
+                bench_col = h
+                break
+
+    if bench_col is None:
+        print(f"[INFO] skip split: benchmark column not found in {overall_csv}")
+        return
+
+    os.makedirs(out_dir, exist_ok=True)
+
+    grouped = OrderedDict()
+    for r in rows:
+        key = (r.get(bench_col, "") or "").strip()
+        if not key:
+            key = "unknown_benchmark"
+        grouped.setdefault(key, []).append(r)
+
+    for bench, bench_rows in grouped.items():
+        out_csv = os.path.join(out_dir, f"{_sanitize_csv_name(bench)}.csv")
+        with open(out_csv, "w", newline="", encoding="utf-8") as wf:
+            writer = csv.DictWriter(wf, fieldnames=headers, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(bench_rows)
+        print(f"[INFO] wrote per-benchmark csv: {out_csv}")
+
 def pick_latest_o_file(variant_dir: str) -> str:
     pat = re.compile(r".*\.o(\d+)?$")
     if not os.path.isdir(variant_dir): return ''
@@ -407,6 +604,7 @@ def pick_latest_o_file(variant_dir: str) -> str:
     paths.sort(key=lambda p: os.path.getmtime(p), reverse=True)
     return paths[0]
 
+# also a must, otherwise fields would not appear in .csv
 def parse_o_file(path: str):
     try:
         lines=open(path).read().splitlines()
@@ -428,7 +626,11 @@ def parse_o_file(path: str):
     l2_global_acc_w_total_access=None
     l2_miss_rate=None
     l1d_misses=None
-    l1d_miss_rate=None
+    l1d_rd_miss_rate=None
+    l1d_rd_bypass_rate=None
+    l1d_rd_bypasses=None
+    l1d_rd_misses=None
+    l1d_reads=None
     l1d_mpki=None
     non_valid_percent=None
     dep_chk_fail_percent=None
@@ -438,7 +640,7 @@ def parse_o_file(path: str):
     inter_warp_interfere_percent=None
     partition_level_parallelism=None
     avg_l2_miss_served_cycles=None
-    avg_l1d_miss_served_cycles=None
+    avg_l1d_rd_miss_served_cycles=None
     total_issue_ratio=None
     issue_bw_utilization=None
     total_issue_fails=None
@@ -450,12 +652,12 @@ def parse_o_file(path: str):
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
         nonlocal l2_bw, l2_global_acc_w_total_access
         nonlocal l2_misses, l2_accesses, l2_miss_rate
-        nonlocal l1d_miss_rate
+        nonlocal l1d_rd_miss_rate,l1d_rd_bypass_rate,l1d_reads,l1d_rd_misses,l1d_rd_bypasses
         nonlocal l1d_mpki
         nonlocal non_valid_percent, dep_chk_fail_percent, pipe_stalled_percent
         nonlocal intra_warp_interferences, inter_warp_interferences, inter_warp_interfere_percent
         nonlocal partition_level_parallelism
-        nonlocal avg_l2_miss_served_cycles, avg_l1d_miss_served_cycles
+        nonlocal avg_l2_miss_served_cycles, avg_l1d_rd_miss_served_cycles
         nonlocal total_issue_ratio, issue_bw_utilization, total_issue_fails
         nonlocal g_acc_r_mq_full
         nonlocal raw_conflicts_rate_by_bank, wr_reg_bank_conflicts_rate_by_bank
@@ -471,7 +673,11 @@ def parse_o_file(path: str):
         l2_global_acc_w_total_access=None
         l2_miss_rate=None
         l1d_misses=None
-        l1d_miss_rate=None
+        l1d_rd_miss_rate=None
+        l1d_rd_bypass_rate=None
+        l1d_rd_bypasses=None
+        l1d_rd_misses=None
+        l1d_reads=None
         l1d_mpki=None
         non_valid_percent=None
         dep_chk_fail_percent=None
@@ -481,7 +687,7 @@ def parse_o_file(path: str):
         inter_warp_interfere_percent=None
         partition_level_parallelism=None
         avg_l2_miss_served_cycles=None
-        avg_l1d_miss_served_cycles=None
+        avg_l1d_rd_miss_served_cycles=None
         total_issue_ratio=None
         issue_bw_utilization=None
         total_issue_fails=None
@@ -504,7 +710,11 @@ def parse_o_file(path: str):
         current['l2_misses']=l2_misses
         current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
         current['l2_miss_rate']=l2_miss_rate
-        current['l1d_miss_rate']=l1d_miss_rate
+        current['l1d_rd_miss_rate']=l1d_rd_miss_rate
+        current['l1d_rd_bypass_rate']=l1d_rd_bypass_rate
+        current['l1d_rd_bypasses']=l1d_rd_bypasses
+        current['l1d_rd_misses']=l1d_rd_misses
+        current['l1d_reads']=l1d_reads
         current['l1d_mpki']=l1d_mpki
         current['non_valid_percent']=non_valid_percent
         current['dep_chk_fail_percent']=dep_chk_fail_percent
@@ -514,7 +724,7 @@ def parse_o_file(path: str):
         current['inter_warp_interfere_percent']=inter_warp_interfere_percent        
         current['partition_level_parallelism']=partition_level_parallelism
         current['avg_l2_miss_served_cycles']=avg_l2_miss_served_cycles
-        current['avg_l1d_miss_served_cycles']=avg_l1d_miss_served_cycles
+        current['avg_l1d_rd_miss_served_cycles']=avg_l1d_rd_miss_served_cycles
         current['total_issue_ratio']=total_issue_ratio
         current['issue_bw_utilization']=issue_bw_utilization
         current['total_issue_fails']=total_issue_fails
@@ -661,10 +871,10 @@ def parse_o_file(path: str):
         #         pass
         #     continue
 
-        avg_l1d_miss_served_cycles_match=L1D_AVG_MISS_SERVED_TIME_RE.search(line)
-        if avg_l1d_miss_served_cycles_match:
+        avg_l1d_rd_miss_served_cycles_match=L1D_AVG_RD_MISS_SERVED_TIME_RE.search(line)
+        if avg_l1d_rd_miss_served_cycles_match:
             try:
-                avg_l1d_miss_served_cycles=parse_float_value(avg_l1d_miss_served_cycles_match.group(1))
+                avg_l1d_rd_miss_served_cycles=parse_float_value(avg_l1d_rd_miss_served_cycles_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -744,10 +954,38 @@ def parse_o_file(path: str):
                 wr_reg_bank_conflicts_rate_by_bank[bank]=rate
             continue
       
-        l1d_miss_rate_match=L1D_MISS_RATE_RE.search(line)
-        if l1d_miss_rate_match:
+        l1d_rd_miss_rate_match=L1D_RD_MISS_RATE_RE.search(line)
+        if l1d_rd_miss_rate_match:
             try:
-                l1d_miss_rate=parse_float_value(l1d_miss_rate_match.group(1))
+                l1d_rd_miss_rate=parse_float_value(l1d_rd_miss_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        l1d_rd_bypass_rate_match=L1D_RD_BYPASS_RATE_RE.search(line)
+        if l1d_rd_bypass_rate_match:
+            try:
+                l1d_rd_bypass_rate=parse_float_value(l1d_rd_bypass_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+        l1d_rd_misses_match=L1D_RD_MISSES_RE.search(line)
+        if l1d_rd_misses_match:
+            try:
+                l1d_rd_misses=parse_float_value(l1d_rd_misses_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue          
+        l1d_rd_bypasses_match=L1D_RD_BYPASSES_RE.search(line)
+        if l1d_rd_bypasses_match:
+            try:
+                l1d_rd_bypasses=parse_float_value(l1d_rd_bypasses_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue  
+        l1d_reads_match=L1D_READS_RE.search(line)
+        if l1d_reads_match:
+            try:
+                l1d_reads=parse_float_value(l1d_reads_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -783,7 +1021,7 @@ def parse_o_file(path: str):
     if current is not None:
         commit_current()
     elif r_total or w_total or r_reasons or w_reasons or r_driver_reasons or w_driver_reasons:
-        # kerenels determines if item would appear in .xlsx
+        # kerenel determines if item would appear in .xlsx
         kernels=[{
             'ipc': None,
             'kernel': pending_kernel_name,
@@ -801,12 +1039,16 @@ def parse_o_file(path: str):
             # 'l2_miss_rate': l2_miss_rate,
             # 'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             # 'partition_level_parallelism': partition_level_parallelism,
-            'l1d_miss_rate': l1d_miss_rate,
+            'l1d_rd_miss_rate': l1d_rd_miss_rate,
+            'l1d_rd_bypass_rate': l1d_rd_bypass_rate,
+            'l1d_rd_bypasses': l1d_rd_bypasses,
+            'l1d_rd_misses': l1d_rd_misses,
+            'l1d_reads': l1d_reads,
             'l1d_mpki': l1d_mpki,
             'non_valid_percent': non_valid_percent,
             'dep_chk_fail_percent': dep_chk_fail_percent,
             'pipe_stalled_percent': pipe_stalled_percent,
-            # 'avg_l1d_miss_served_cycles': avg_l1d_miss_served_cycles,
+            'avg_l1d_rd_miss_served_cycles': avg_l1d_rd_miss_served_cycles,
             'intra_warp_interferences': intra_warp_interferences,
             'inter_warp_interferences': inter_warp_interferences,
             'inter_warp_interfere_percent': inter_warp_interfere_percent,            
@@ -990,16 +1232,36 @@ METRIC_DEFINITIONS={
     #     'value_key': 'partition_level_parallelism',
     #     'higher_is_better': True,
     # },
-    'l1d_miss_rate': {
-        'label': 'L1D_miss_rate',
-        'value_key': 'l1d_miss_rate',
+    'l1d_rd_miss_rate': {
+        'label': 'L1D_RD_MISS_RATE',
+        'value_key': 'l1d_rd_miss_rate',
         'higher_is_better': False,
     },  
-    'l1d_mpki': { # This name should match 'value_key'
-        'label': 'L1D_MPKI', # alias name
-        'value_key': 'l1d_mpki',
+    'l1d_rd_bypass_rate': {
+        'label': 'L1D_RD_BYP_RATE',
+        'value_key': 'l1d_rd_bypass_rate',
         'higher_is_better': False,
     },
+    'l1d_rd_bypasses': {
+        'label': 'L1D_RD_BYP',
+        'value_key': 'l1d_rd_bypasses',
+        'higher_is_better': False,
+    },     
+    'l1d_rd_misses': {
+        'label': 'L1D_RD_MISSES',
+        'value_key': 'l1d_rd_misses',
+        'higher_is_better': False,
+    },   
+    'l1d_reads': {
+        'label': 'L1D_READS',
+        'value_key': 'l1d_reads',
+        'higher_is_better': False,
+    },         
+    # 'l1d_mpki': { # This name should match 'value_key'
+    #     'label': 'L1D_MPKI', # alias name
+    #     'value_key': 'l1d_mpki',
+    #     'higher_is_better': False,
+    # },
     'non_valid_percent': { # This name should match 'value_key'
         'label': 'non_valid_percent', # alias name
         'value_key': 'non_valid_percent',
@@ -1015,9 +1277,9 @@ METRIC_DEFINITIONS={
         'value_key': 'pipe_stalled_percent',
         'higher_is_better': False,
     },      
-    'avg_l1d_miss_served_cycles': {
-        'label': 'avg_l1d_miss_served_cycles',
-        'value_key': 'avg_l1d_miss_served_cycles',
+    'avg_l1d_rd_miss_served_cycles': {
+        'label': 'avg_l1d_rd_miss_served_cycles',
+        'value_key': 'avg_l1d_rd_miss_served_cycles',
         'higher_is_better': False,
     },
     'intra_warp_interferences': {
@@ -1091,11 +1353,12 @@ METRIC_NAME_ALIASES={
     'l2_total_cache_accesses': 'l2_accesses',
     'l2_miss_rate': 'l2_miss_rate',
     'l2_total_cache_miss_rate': 'l2_miss_rate',
-    'l2totalcachemissrate': 'l2_miss_rate',
     'l2_total_miss_rate': 'l2_miss_rate',
-    'l1d_miss_rate': 'l1d_miss_rate',
-    'l1d_total_miss_rate': 'l1d_miss_rate',
-    'l1dtotalmissrate': 'l1d_miss_rate',
+    'l1d_rd_miss_rate': 'l1d_rd_miss_rate',
+    'l1d_rd_bypass_rate': 'l1d_rd_bypass_rate',
+    'l1d_rd_bypasses': 'l1d_rd_bypasses',
+    'l1d_rd_misses': 'l1d_rd_misses',
+    'l1d_reads': 'l1d_reads',
     'l1d_mpki': 'l1d_mpki',
     'non_valid_percent': 'non_valid_percent',
     'dep_chk_fail_percent': 'dep_chk_fail_percent',
@@ -1105,7 +1368,7 @@ METRIC_NAME_ALIASES={
     'inter_warp_interfere_percent': 'inter_warp_interfere_percent',
     'partition_level_parallelism': 'partition_level_parallelism',
     'avg_l2_miss_served_cycles': 'avg_l2_miss_served_cycles',
-    'avg_l1d_miss_served_cycles': 'avg_l1d_miss_served_cycles',
+    'avg_l1d_rd_miss_served_cycles': 'avg_l1d_rd_miss_served_cycles',
     'raw_conflicts_rate': 'raw_conflicts_rate_avg',
     'raw_conflicts_rate_avg': 'raw_conflicts_rate_avg',
     'wr_reg_bank_conflicts_rate': 'wr_reg_bank_conflicts_rate_avg',
@@ -1244,6 +1507,11 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def main():
     ap=argparse.ArgumentParser(description='Compute performance gain percentages between base and tuned variant.')
+    ap.add_argument(
+        "--per-benchmark-csv-dir",
+        default="",
+        help="Output directory for one CSV per benchmark (split from --csv-file).",
+    )        
     ap.add_argument('--sim-root',help='Path to sim_run dir (default $ACCELSIM_ROOT/../sim_run_12.1)')
     ap.add_argument('--benchmarks',nargs='*',help='Benchmarks to include (auto-discover if omitted).')
     ap.add_argument('--variants',nargs='+',required=True,help='Variants list containing base and tuned.')
@@ -1266,12 +1534,16 @@ def main():
         '--overall-extra-metrics',
         nargs='*',
         default=[
-            'L1D_miss_rate',                     
-            'avg_l1d_miss_served_cycles',
+            'L1D_rd_miss_rate',
+            'L1D_rd_bypass_rate',
+            'L1D_rd_bypasses',
+            'L1D_rd_misses',
+            'L1D_reads',
+            'avg_l1d_rd_miss_served_cycles',
             'intra_warp_interferences',
             'inter_warp_interferences',
             'inter_warp_interfere_percent',
-            'L1D_MPKI',
+            # 'L1D_MPKI',
             'non_valid_percent',
             'dep_chk_fail_percent',
             'pipe_stalled_percent',
@@ -1286,7 +1558,7 @@ def main():
         'Known values include: '
         'GLOBAL_ACC_R, GLOBAL_ACC_W, '
         'L2_BW, L2_accesses, L2_misses, L2_miss_rate, avg_l2_miss_served_cycles, '
-        'L1D_miss_rate, avg_l1d_miss_served_cycles, '
+        'L1D_rd_miss_rate, avg_l1d_rd_miss_served_cycles, '
         'partition_level_parallelism',
     )
     ap.add_argument(
@@ -1297,11 +1569,11 @@ def main():
             'L2_accesses',
             'L2_misses',
             'L2_miss_rate',            
-            'L1D_miss_rate',
+            'L1D_rd_miss_rate',
             'L1D_MPKI',
             'partition_level_parallelism',
             'avg_l2_miss_served_cycles',
-            'avg_l1d_miss_served_cycles',
+            'avg_l1d_rd_miss_served_cycles',
         ],
         help='Metrics to display in Fail-total sheet (case-insensitive). Use NONE to skip defaults.',
     )
@@ -1709,7 +1981,48 @@ def main():
         if metric_class=='worse':
             return f"<span style='background-color:#f8d0d0'>{display}</span>"
         return display
+#
+    def geometric_mean_from_records(records, value_key):
+        if not records:
+            return None
+        values=[]
+        for rec in records:
+            val=rec.get(value_key)
+            if val is None:
+                continue
+            try:
+                fval=float(val)
+            except (TypeError, ValueError):
+                continue
+            if math.isnan(fval):
+                continue
+            values.append(max(fval, 0.0))
+        if not values:
+            return None
+        positive_values=[v for v in values if v>0.0]
+        if len(positive_values)==len(values):
+            log_sum=sum(math.log(v) for v in positive_values)
+            return math.exp(log_sum/len(positive_values))
+        if not positive_values:
+            return 0.0
+        log_sum=sum(math.log(v+1.0) for v in values)
+        return math.exp(log_sum/len(values))-1.0
 
+
+    def last_valid_metric_from_records(records, value_key):
+        for rec in reversed(records or []):
+            val=rec.get(value_key)
+            if val is None:
+                continue
+            try:
+                fval=float(val)
+            except (TypeError, ValueError):
+                continue
+            if math.isnan(fval):
+                continue
+            return fval
+        return None
+#
     base_cache={}
     for bench in benches:
         base_data=base_cache.get(bench)
@@ -1800,6 +2113,22 @@ def main():
             bench_metric_pct={}
             for metric in METRIC_ORDER:
                 key=METRIC_VALUE_KEYS[metric]
+
+                if metric == 'ipc':
+                    # gpu_tot_ipc: use the final benchmark value (last valid record), not kernel geomean
+                    base_metric_val=last_valid_metric_from_records(base_aligned, key)
+                    tuned_metric_val=last_valid_metric_from_records(tuned_aligned, key)
+                    ratio=ratio_from_geomeans(base_metric_val, tuned_metric_val)
+                    pct=ratio_to_pct(ratio)
+                    bench_metric_pct[metric]=pct
+                    if base_metric_val is not None:
+                        result['metric_geomean_inputs'][metric]['base'].append(base_metric_val)
+                    if tuned_metric_val is not None:
+                        result['metric_geomean_inputs'][metric]['tuned'].append(tuned_metric_val)
+                    if ratio is not None:
+                        result['metric_ratios'][metric].append(ratio)
+                    continue
+                                    
                 base_geo=geometric_mean_from_records(base_aligned, key)
                 tuned_geo=geometric_mean_from_records(tuned_aligned, key)
                 ratio=ratio_from_geomeans(base_geo, tuned_geo)
@@ -2169,7 +2498,9 @@ def main():
                         pct_val=(fail_summary.get(cause) or {}).get('pct')
                         row.append(format_pct(pct_val))
                 w.writerow(row)
-    print(f"[INFO] wrote {args.csv_file}")
+    print(f"[INFO] wrote {args.csv_file}")    
+    if args.per_benchmark_csv_dir:
+        split_overall_csv_by_benchmark(args.csv_file, args.per_benchmark_csv_dir)    
 
     md_lines=[
         "# Performance Gain Report",
