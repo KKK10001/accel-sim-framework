@@ -581,6 +581,19 @@ fi
 # ./regress.sh reg_l1d_byp_fine_tune --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune
 
+# ./regress.sh reg_l1d_byp_alway_probe --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_alway_probe
+
+# ./regress.sh reg_l1d_byp_alway_probe_dec_step_2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_alway_probe_dec_step_2
+
+# ./regress.sh reg_l1d_byp_alway_probe_erase_avg_byp_record --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_alway_probe_erase_avg_byp_record
+
+# m_trash_conf_cnt_bound = 5
+# ./regress.sh reg_l1d_byp_always_probe_and_keep_byp_record --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_always_probe_and_keep_byp_record
+
 # reg_base_no_mshr
 # reg_l1d_byp_fine_tune
 
@@ -594,11 +607,20 @@ fi
 
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_fine_tune_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_tune_srad_v2_dec_step_1 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_tune_srad_v2_dec_step_1
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_tune_srad_v2_dec_step_2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_tune_srad_v2_dec_step_2
 
 # reg_base_no_mshr_srad_v2
 # reg_l1d_byp_fine_tune_srad_v2
+# IPC geomean percent change: 1.171%
+# L1D_RD_MISS_RATE geomean percent change: 0.298%
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_fine_tune_srad_v2_only_inc --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune_srad_v2_only_inc
+# reg_base_no_mshr_srad_v2
+# reg_l1d_byp_fine_tune_srad_v2_only_inc
 
 
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config

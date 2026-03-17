@@ -364,6 +364,8 @@ python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr \
     reg_l1d_byp_fine_tune \
+    reg_l1d_byp_alway_probe \
+    reg_l1d_byp_alway_probe_dec_step_2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -456,7 +458,8 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr_srad_v2 \
-    reg_l1d_byp_fine_tune_srad_v2 \
+    reg_l1d_byp_tune_srad_v2_dec_step_1 \
+    reg_l1d_byp_tune_srad_v2_dec_step_2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -515,12 +518,14 @@ FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 # L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
 # L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 L1D_ACCESSES_RE = re.compile(rf"L1D_accesses\s*=\s*{FLOAT_CAPTURE}")
-L1D_RD_MISS_RATE_RE = re.compile(rf"L1D_rd_miss_rate\s*=\s*{FLOAT_CAPTURE}")
-L1D_RD_BYPASS_RATE_RE = re.compile(rf"L1D_rd_bypass_rate\s*=\s*{FLOAT_CAPTURE}")
-L1D_RD_BYPASSES_RE = re.compile(rf"L1D_rd_bypasses\s*=\s*{FLOAT_CAPTURE}")
-L1D_RD_MISSES_RE = re.compile(rf"L1D_rd_misses\s*=\s*{FLOAT_CAPTURE}")
 L1D_READS_RE = re.compile(rf"L1D_reads\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_MISSES_RE = re.compile(rf"L1D_rd_misses\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_MISS_RATE_RE = re.compile(rf"L1D_rd_miss_rate\s*=\s*{FLOAT_CAPTURE}")
 # PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}")
+# L1D_AVG_RD_BYP_ACT_RE      = re.compile(rf"L1D_AVG_RD_BYP_ACT\s*=\s*{FLOAT_CAPTURE}")
+L1D_AVG_RD_BYP_ACT_RE      = re.compile(rf"l1d_avg_rd_byp_act\s*=\s*{FLOAT_CAPTURE}")
+L1D_AVG_RD_BYP_DEACT_RE    = re.compile(rf"l1d_avg_rd_byp_deact\s*=\s*{FLOAT_CAPTURE}")
+L1D_AVG_RD_BYP_ACT_RATE_RE = re.compile(rf"l1d_avg_rd_byp_act_rate\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_RD_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_rd_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 
 L1D_MPKI = re.compile(rf"L1D_MPKI\s*=\s*{FLOAT_CAPTURE}")
@@ -627,8 +632,9 @@ def parse_o_file(path: str):
     l2_miss_rate=None
     l1d_misses=None
     l1d_rd_miss_rate=None
-    l1d_rd_bypass_rate=None
-    l1d_rd_bypasses=None
+    l1d_avg_rd_byp_rate=None
+    l1d_avg_rd_byp_act=None
+    l1d_avg_rd_byp_deact=None
     l1d_rd_misses=None
     l1d_reads=None
     l1d_mpki=None
@@ -652,7 +658,8 @@ def parse_o_file(path: str):
         nonlocal r_total, w_total, r_reasons, w_reasons, r_driver_reasons, w_driver_reasons
         nonlocal l2_bw, l2_global_acc_w_total_access
         nonlocal l2_misses, l2_accesses, l2_miss_rate
-        nonlocal l1d_rd_miss_rate,l1d_rd_bypass_rate,l1d_reads,l1d_rd_misses,l1d_rd_bypasses
+        nonlocal l1d_reads,l1d_rd_misses,l1d_rd_miss_rate
+        nonlocal l1d_avg_rd_byp_act,l1d_avg_rd_byp_deact,l1d_avg_rd_byp_act_rate
         nonlocal l1d_mpki
         nonlocal non_valid_percent, dep_chk_fail_percent, pipe_stalled_percent
         nonlocal intra_warp_interferences, inter_warp_interferences, inter_warp_interfere_percent
@@ -673,9 +680,10 @@ def parse_o_file(path: str):
         l2_global_acc_w_total_access=None
         l2_miss_rate=None
         l1d_misses=None
-        l1d_rd_miss_rate=None
-        l1d_rd_bypass_rate=None
-        l1d_rd_bypasses=None
+        l1d_rd_miss_rate=None        
+        l1d_avg_rd_byp_act=None
+        l1d_avg_rd_byp_deact=None        
+        l1d_avg_rd_byp_act_rate=None
         l1d_rd_misses=None
         l1d_reads=None
         l1d_mpki=None
@@ -710,9 +718,10 @@ def parse_o_file(path: str):
         current['l2_misses']=l2_misses
         current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
         current['l2_miss_rate']=l2_miss_rate
-        current['l1d_rd_miss_rate']=l1d_rd_miss_rate
-        current['l1d_rd_bypass_rate']=l1d_rd_bypass_rate
-        current['l1d_rd_bypasses']=l1d_rd_bypasses
+        current['l1d_rd_miss_rate']=l1d_rd_miss_rate        
+        current['l1d_avg_rd_byp_act']=l1d_avg_rd_byp_act
+        current['l1d_avg_rd_byp_deact']=l1d_avg_rd_byp_deact
+        current['l1d_avg_rd_byp_act_rate']=l1d_avg_rd_byp_act_rate
         current['l1d_rd_misses']=l1d_rd_misses
         current['l1d_reads']=l1d_reads
         current['l1d_mpki']=l1d_mpki
@@ -770,6 +779,22 @@ def parse_o_file(path: str):
                 pending_kernel_uid=None
             reset_state()
             continue
+
+        l1d_rd_miss_rate_match=L1D_RD_MISS_RATE_RE.search(line)
+        if l1d_rd_miss_rate_match:
+            try:
+                l1d_rd_miss_rate=parse_float_value(l1d_rd_miss_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l1d_avg_rd_byp_act_rate_match=L1D_AVG_RD_BYP_ACT_RATE_RE.search(line)
+        if l1d_avg_rd_byp_act_rate_match:
+            try:
+                l1d_avg_rd_byp_act_rate=parse_float_value(l1d_avg_rd_byp_act_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue     
 
         total_r_match=TOTAL_R_RE.search(line)
         if total_r_match:
@@ -953,21 +978,7 @@ def parse_o_file(path: str):
             else:
                 wr_reg_bank_conflicts_rate_by_bank[bank]=rate
             continue
-      
-        l1d_rd_miss_rate_match=L1D_RD_MISS_RATE_RE.search(line)
-        if l1d_rd_miss_rate_match:
-            try:
-                l1d_rd_miss_rate=parse_float_value(l1d_rd_miss_rate_match.group(1))
-            except (TypeError, ValueError):
-                pass
-            continue
-        l1d_rd_bypass_rate_match=L1D_RD_BYPASS_RATE_RE.search(line)
-        if l1d_rd_bypass_rate_match:
-            try:
-                l1d_rd_bypass_rate=parse_float_value(l1d_rd_bypass_rate_match.group(1))
-            except (TypeError, ValueError):
-                pass
-            continue
+         
         l1d_rd_misses_match=L1D_RD_MISSES_RE.search(line)
         if l1d_rd_misses_match:
             try:
@@ -975,13 +986,20 @@ def parse_o_file(path: str):
             except (TypeError, ValueError):
                 pass
             continue          
-        l1d_rd_bypasses_match=L1D_RD_BYPASSES_RE.search(line)
-        if l1d_rd_bypasses_match:
+        l1d_avg_rd_byp_act_match=L1D_AVG_RD_BYP_ACT_RE.search(line)
+        if l1d_avg_rd_byp_act_match:
             try:
-                l1d_rd_bypasses=parse_float_value(l1d_rd_bypasses_match.group(1))
+                l1d_avg_rd_byp_act=parse_float_value(l1d_avg_rd_byp_act_match.group(1))
             except (TypeError, ValueError):
                 pass
-            continue  
+            continue
+        l1d_avg_rd_byp_deact_match=L1D_AVG_RD_BYP_DEACT_RE.search(line)
+        if l1d_avg_rd_byp_deact_match:
+            try:
+                l1d_avg_rd_byp_deact=parse_float_value(l1d_avg_rd_byp_deact_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue        
         l1d_reads_match=L1D_READS_RE.search(line)
         if l1d_reads_match:
             try:
@@ -1039,11 +1057,12 @@ def parse_o_file(path: str):
             # 'l2_miss_rate': l2_miss_rate,
             # 'avg_l2_miss_served_cycles': avg_l2_miss_served_cycles,
             # 'partition_level_parallelism': partition_level_parallelism,
-            'l1d_rd_miss_rate': l1d_rd_miss_rate,
-            'l1d_rd_bypass_rate': l1d_rd_bypass_rate,
-            'l1d_rd_bypasses': l1d_rd_bypasses,
             'l1d_rd_misses': l1d_rd_misses,
-            'l1d_reads': l1d_reads,
+            'l1d_reads': l1d_reads,            
+            'l1d_rd_miss_rate': l1d_rd_miss_rate,            
+            'l1d_avg_rd_byp_act': l1d_avg_rd_byp_act,
+            'l1d_avg_rd_byp_deact': l1d_avg_rd_byp_deact,
+            'l1d_avg_rd_byp_rate': l1d_avg_rd_byp_rate,
             'l1d_mpki': l1d_mpki,
             'non_valid_percent': non_valid_percent,
             'dep_chk_fail_percent': dep_chk_fail_percent,
@@ -1072,6 +1091,9 @@ def default_sim_root()->str:
     if not env: return ''
     cand=os.path.abspath(os.path.join(env,'..','sim_run_12.1'))
     return cand if os.path.isdir(cand) else ''
+
+# LAST_VALUE_METRICS={'ipc', 'l1d_rd_miss_rate', 'l1d_avg_rd_byp_act_rate'}
+LAST_VALUE_METRICS={'ipc', 'l1d_rd_miss_rate'}
 
 def find_base_and_tuned(variants):
     base=None; tuned=None
@@ -1236,27 +1258,32 @@ METRIC_DEFINITIONS={
         'label': 'L1D_RD_MISS_RATE',
         'value_key': 'l1d_rd_miss_rate',
         'higher_is_better': False,
-    },  
-    'l1d_rd_bypass_rate': {
-        'label': 'L1D_RD_BYP_RATE',
-        'value_key': 'l1d_rd_bypass_rate',
-        'higher_is_better': False,
     },
-    'l1d_rd_bypasses': {
-        'label': 'L1D_RD_BYP',
-        'value_key': 'l1d_rd_bypasses',
+    'l1d_avg_rd_byp_rate': {
+        'label': 'l1d_avg_rd_byp_rate',
+        'value_key': 'l1d_avg_rd_byp_rate',
+        'higher_is_better': False,
+    },    
+    'l1d_avg_rd_byp_act': {
+        'label': 'l1d_avg_rd_byp_act', # alias name
+        'value_key': 'l1d_avg_rd_byp_act',
         'higher_is_better': False,
     },     
-    'l1d_rd_misses': {
-        'label': 'L1D_RD_MISSES',
-        'value_key': 'l1d_rd_misses',
+    'l1d_avg_rd_byp_deact': {
+        'label': 'l1d_avg_rd_byp_deact', # alias name
+        'value_key': 'l1d_avg_rd_byp_deact',
         'higher_is_better': False,
-    },   
-    'l1d_reads': {
-        'label': 'L1D_READS',
-        'value_key': 'l1d_reads',
-        'higher_is_better': False,
-    },         
+    },        
+    # 'l1d_rd_misses': {
+    #     'label': 'L1D_RD_MISSES',
+    #     'value_key': 'l1d_rd_misses',
+    #     'higher_is_better': False,
+    # },   
+    # 'l1d_reads': {
+    #     'label': 'L1D_READS',
+    #     'value_key': 'l1d_reads',
+    #     'higher_is_better': False,
+    # },         
     # 'l1d_mpki': { # This name should match 'value_key'
     #     'label': 'L1D_MPKI', # alias name
     #     'value_key': 'l1d_mpki',
@@ -1355,8 +1382,9 @@ METRIC_NAME_ALIASES={
     'l2_total_cache_miss_rate': 'l2_miss_rate',
     'l2_total_miss_rate': 'l2_miss_rate',
     'l1d_rd_miss_rate': 'l1d_rd_miss_rate',
-    'l1d_rd_bypass_rate': 'l1d_rd_bypass_rate',
-    'l1d_rd_bypasses': 'l1d_rd_bypasses',
+    'l1d_avg_rd_byp_act': 'l1d_avg_rd_byp_act',
+    'l1d_avg_rd_byp_deact': 'l1d_avg_rd_byp_deact',
+    'l1d_avg_rd_byp_act_rate': 'l1d_avg_rd_byp_act_rate',
     'l1d_rd_misses': 'l1d_rd_misses',
     'l1d_reads': 'l1d_reads',
     'l1d_mpki': 'l1d_mpki',
@@ -1534,11 +1562,12 @@ def main():
         '--overall-extra-metrics',
         nargs='*',
         default=[
-            'L1D_rd_miss_rate',
-            'L1D_rd_bypass_rate',
-            'L1D_rd_bypasses',
-            'L1D_rd_misses',
-            'L1D_reads',
+            'L1D_rd_miss_rate',            
+            'l1d_avg_rd_byp_act',
+            'l1d_avg_rd_byp_deact',
+            # 'l1d_avg_rd_byp_act_rate',
+            # 'L1D_rd_misses',
+            # 'L1D_reads',
             'avg_l1d_rd_miss_served_cycles',
             'intra_warp_interferences',
             'inter_warp_interferences',
@@ -2114,8 +2143,8 @@ def main():
             for metric in METRIC_ORDER:
                 key=METRIC_VALUE_KEYS[metric]
 
-                if metric == 'ipc':
-                    # gpu_tot_ipc: use the final benchmark value (last valid record), not kernel geomean
+                if metric in LAST_VALUE_METRICS:
+                    # Use the final benchmark value (last valid record), not kernel geomean.
                     base_metric_val=last_valid_metric_from_records(base_aligned, key)
                     tuned_metric_val=last_valid_metric_from_records(tuned_aligned, key)
                     ratio=ratio_from_geomeans(base_metric_val, tuned_metric_val)
@@ -2143,8 +2172,12 @@ def main():
 
             for metric in extra_metric_keys:
                 key=METRIC_VALUE_KEYS[metric]
-                base_geo=geometric_mean_from_records(base_aligned, key)
-                tuned_geo=geometric_mean_from_records(tuned_aligned, key)
+                if metric in LAST_VALUE_METRICS:
+                    base_geo=last_valid_metric_from_records(base_aligned, key)
+                    tuned_geo=last_valid_metric_from_records(tuned_aligned, key)
+                else:
+                    base_geo=geometric_mean_from_records(base_aligned, key)
+                    tuned_geo=geometric_mean_from_records(tuned_aligned, key)
                 ratio=ratio_from_geomeans(base_geo, tuned_geo)
                 if base_geo is not None:
                     result['extra_metric_geo_inputs'][metric]['base'].append(base_geo)
