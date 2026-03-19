@@ -364,8 +364,8 @@ python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr \
     reg_l1d_byp_fine_tune \
-    reg_l1d_byp_alway_probe \
-    reg_l1d_byp_alway_probe_dec_step_2 \
+    reg_l1d_byp_rm_f2e_q_when_deact \
+    reg_l1d_byp_dec_step_2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -376,6 +376,18 @@ python3 compute_perf_gain.py \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
 # Compare single cases
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+  
 # 164.599 (+0.000%) vs 164.599 (+0.000%) - no diff in IPC
 python3 compute_perf_gain.py \
   --variants \
@@ -518,11 +530,10 @@ FLOAT_CAPTURE = r"([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 # L2_MISS_RATE_RE = re.compile(rf"L2_(?:total_cache_|total_)?miss_rate\s*=\s*{FLOAT_CAPTURE}")
 # L2_AVG_MISS_SERVED_TIME_RE = re.compile(rf"avg_l2_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 L1D_ACCESSES_RE = re.compile(rf"L1D_accesses\s*=\s*{FLOAT_CAPTURE}")
-L1D_READS_RE = re.compile(rf"L1D_reads\s*=\s*{FLOAT_CAPTURE}")
-L1D_RD_MISSES_RE = re.compile(rf"L1D_rd_misses\s*=\s*{FLOAT_CAPTURE}")
-L1D_RD_MISS_RATE_RE = re.compile(rf"L1D_rd_miss_rate\s*=\s*{FLOAT_CAPTURE}")
-# PARTITION_LEVEL_PARALLELISM = re.compile(rf"partition_level_parallelism\s*=\s*{FLOAT_CAPTURE}")
-# L1D_AVG_RD_BYP_ACT_RE      = re.compile(rf"L1D_AVG_RD_BYP_ACT\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_MISSES_RE    = re.compile(rf"L1D_RD_MISSES\s*=\s*{FLOAT_CAPTURE}")
+L1D_READS_RE        = re.compile(rf"L1D_READS\s*=\s*{FLOAT_CAPTURE}")
+L1D_RD_MISS_RATE_RE = re.compile(rf"L1D_RD_MISS_RATE\s*=\s*{FLOAT_CAPTURE}")
+L1D_N_FILL_TO_EVICT_LINES_RE = re.compile(rf"L1D_N_FILL_TO_EVICT_LINES\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_RD_BYP_ACT_RE      = re.compile(rf"l1d_avg_rd_byp_act\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_RD_BYP_DEACT_RE    = re.compile(rf"l1d_avg_rd_byp_deact\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_RD_BYP_ACT_RATE_RE = re.compile(rf"l1d_avg_rd_byp_act_rate\s*=\s*{FLOAT_CAPTURE}")
@@ -631,12 +642,13 @@ def parse_o_file(path: str):
     l2_global_acc_w_total_access=None
     l2_miss_rate=None
     l1d_misses=None
+    l1d_rd_misses=None
+    l1d_reads=None    
     l1d_rd_miss_rate=None
+    l1d_n_fill_to_evict_lines=None
     l1d_avg_rd_byp_rate=None
     l1d_avg_rd_byp_act=None
     l1d_avg_rd_byp_deact=None
-    l1d_rd_misses=None
-    l1d_reads=None
     l1d_mpki=None
     non_valid_percent=None
     dep_chk_fail_percent=None
@@ -659,7 +671,7 @@ def parse_o_file(path: str):
         nonlocal l2_bw, l2_global_acc_w_total_access
         nonlocal l2_misses, l2_accesses, l2_miss_rate
         nonlocal l1d_reads,l1d_rd_misses,l1d_rd_miss_rate
-        nonlocal l1d_avg_rd_byp_act,l1d_avg_rd_byp_deact,l1d_avg_rd_byp_act_rate
+        nonlocal l1d_n_fill_to_evict_lines,l1d_avg_rd_byp_act,l1d_avg_rd_byp_deact,l1d_avg_rd_byp_act_rate
         nonlocal l1d_mpki
         nonlocal non_valid_percent, dep_chk_fail_percent, pipe_stalled_percent
         nonlocal intra_warp_interferences, inter_warp_interferences, inter_warp_interfere_percent
@@ -680,12 +692,13 @@ def parse_o_file(path: str):
         l2_global_acc_w_total_access=None
         l2_miss_rate=None
         l1d_misses=None
-        l1d_rd_miss_rate=None        
+        l1d_rd_misses=None
+        l1d_reads=None        
+        l1d_rd_miss_rate=None
+        l1d_n_fill_to_evict_lines=None     
         l1d_avg_rd_byp_act=None
         l1d_avg_rd_byp_deact=None        
         l1d_avg_rd_byp_act_rate=None
-        l1d_rd_misses=None
-        l1d_reads=None
         l1d_mpki=None
         non_valid_percent=None
         dep_chk_fail_percent=None
@@ -718,12 +731,13 @@ def parse_o_file(path: str):
         current['l2_misses']=l2_misses
         current['l2_global_acc_w_total_access']=l2_global_acc_w_total_access
         current['l2_miss_rate']=l2_miss_rate
-        current['l1d_rd_miss_rate']=l1d_rd_miss_rate        
+        current['l1d_rd_misses']=l1d_rd_misses
+        current['l1d_reads']=l1d_reads        
+        current['l1d_rd_miss_rate']=l1d_rd_miss_rate
+        current['l1d_n_fill_to_evict_lines']=l1d_n_fill_to_evict_lines
         current['l1d_avg_rd_byp_act']=l1d_avg_rd_byp_act
         current['l1d_avg_rd_byp_deact']=l1d_avg_rd_byp_deact
         current['l1d_avg_rd_byp_act_rate']=l1d_avg_rd_byp_act_rate
-        current['l1d_rd_misses']=l1d_rd_misses
-        current['l1d_reads']=l1d_reads
         current['l1d_mpki']=l1d_mpki
         current['non_valid_percent']=non_valid_percent
         current['dep_chk_fail_percent']=dep_chk_fail_percent
@@ -784,6 +798,14 @@ def parse_o_file(path: str):
         if l1d_rd_miss_rate_match:
             try:
                 l1d_rd_miss_rate=parse_float_value(l1d_rd_miss_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue
+
+        l1d_n_fill_to_evict_lines_match=L1D_N_FILL_TO_EVICT_LINES_RE.search(line)
+        if l1d_n_fill_to_evict_lines_match:
+            try:
+                l1d_n_fill_to_evict_lines=parse_float_value(l1d_n_fill_to_evict_lines_match.group(1))
             except (TypeError, ValueError):
                 pass
             continue
@@ -1059,7 +1081,8 @@ def parse_o_file(path: str):
             # 'partition_level_parallelism': partition_level_parallelism,
             'l1d_rd_misses': l1d_rd_misses,
             'l1d_reads': l1d_reads,            
-            'l1d_rd_miss_rate': l1d_rd_miss_rate,            
+            'l1d_rd_miss_rate': l1d_rd_miss_rate,
+            'l1d_n_fill_to_evict_lines': l1d_n_fill_to_evict_lines,      
             'l1d_avg_rd_byp_act': l1d_avg_rd_byp_act,
             'l1d_avg_rd_byp_deact': l1d_avg_rd_byp_deact,
             'l1d_avg_rd_byp_rate': l1d_avg_rd_byp_rate,
@@ -1092,8 +1115,8 @@ def default_sim_root()->str:
     cand=os.path.abspath(os.path.join(env,'..','sim_run_12.1'))
     return cand if os.path.isdir(cand) else ''
 
-# LAST_VALUE_METRICS={'ipc', 'l1d_rd_miss_rate', 'l1d_avg_rd_byp_act_rate'}
-LAST_VALUE_METRICS={'ipc', 'l1d_rd_miss_rate'}
+# LAST_VALUE_METRICS={'ipc', 'xxx', 'yyy'}
+LAST_VALUE_METRICS={'ipc'}
 
 def find_base_and_tuned(variants):
     base=None; tuned=None
@@ -1254,11 +1277,27 @@ METRIC_DEFINITIONS={
     #     'value_key': 'partition_level_parallelism',
     #     'higher_is_better': True,
     # },
+    'l1d_rd_misses': {
+        'label': 'L1D_RD_MISSES',
+        'value_key': 'l1d_rd_misses',
+        'higher_is_better': False,
+    },   
+    'l1d_reads': {
+        'label': 'L1D_READS',
+        'value_key': 'l1d_reads',
+        'higher_is_better': False,
+    },    
     'l1d_rd_miss_rate': {
         'label': 'L1D_RD_MISS_RATE',
         'value_key': 'l1d_rd_miss_rate',
         'higher_is_better': False,
     },
+    'l1d_n_fill_to_evict_lines': {
+        # 'label': 'L1D_RD_N_F2E_LN',
+        'label': 'L1D_N_FILL_TO_EVICT_LINES',
+        'value_key': 'l1d_n_fill_to_evict_lines',
+        'higher_is_better': False,
+    },    
     'l1d_avg_rd_byp_rate': {
         'label': 'l1d_avg_rd_byp_rate',
         'value_key': 'l1d_avg_rd_byp_rate',
@@ -1273,17 +1312,7 @@ METRIC_DEFINITIONS={
         'label': 'l1d_avg_rd_byp_deact', # alias name
         'value_key': 'l1d_avg_rd_byp_deact',
         'higher_is_better': False,
-    },        
-    # 'l1d_rd_misses': {
-    #     'label': 'L1D_RD_MISSES',
-    #     'value_key': 'l1d_rd_misses',
-    #     'higher_is_better': False,
-    # },   
-    # 'l1d_reads': {
-    #     'label': 'L1D_READS',
-    #     'value_key': 'l1d_reads',
-    #     'higher_is_better': False,
-    # },         
+    },     
     # 'l1d_mpki': { # This name should match 'value_key'
     #     'label': 'L1D_MPKI', # alias name
     #     'value_key': 'l1d_mpki',
@@ -1381,12 +1410,13 @@ METRIC_NAME_ALIASES={
     'l2_miss_rate': 'l2_miss_rate',
     'l2_total_cache_miss_rate': 'l2_miss_rate',
     'l2_total_miss_rate': 'l2_miss_rate',
+    'l1d_rd_misses': 'l1d_rd_misses',
+    'l1d_reads': 'l1d_reads',    
     'l1d_rd_miss_rate': 'l1d_rd_miss_rate',
+    'l1d_n_fill_to_evict_lines': 'l1d_n_fill_to_evict_lines',
     'l1d_avg_rd_byp_act': 'l1d_avg_rd_byp_act',
     'l1d_avg_rd_byp_deact': 'l1d_avg_rd_byp_deact',
     'l1d_avg_rd_byp_act_rate': 'l1d_avg_rd_byp_act_rate',
-    'l1d_rd_misses': 'l1d_rd_misses',
-    'l1d_reads': 'l1d_reads',
     'l1d_mpki': 'l1d_mpki',
     'non_valid_percent': 'non_valid_percent',
     'dep_chk_fail_percent': 'dep_chk_fail_percent',
@@ -1562,12 +1592,13 @@ def main():
         '--overall-extra-metrics',
         nargs='*',
         default=[
-            'L1D_rd_miss_rate',            
+            'L1D_RD_MISSES',
+            'L1D_READS',
+            'L1D_RD_MISS_RATE',
+            'L1D_N_FILL_TO_EVICT_LINES',
             'l1d_avg_rd_byp_act',
             'l1d_avg_rd_byp_deact',
             # 'l1d_avg_rd_byp_act_rate',
-            # 'L1D_rd_misses',
-            # 'L1D_reads',
             'avg_l1d_rd_miss_served_cycles',
             'intra_warp_interferences',
             'inter_warp_interferences',

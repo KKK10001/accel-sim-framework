@@ -97,6 +97,9 @@ class trace_kernel_info_t : public kernel_info_t {
   unsigned long long get_cuda_stream_id() {
     return m_kernel_trace_info->cuda_stream_id;
   }
+  unsigned get_kernel_id() {
+    return m_kernel_trace_info->kernel_id;
+  }
 
   kernel_trace_t *get_trace_info() { return m_kernel_trace_info; }
 

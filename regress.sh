@@ -577,9 +577,14 @@ fi
 
 # ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
-
 # ./regress.sh reg_l1d_byp_fine_tune --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune
+
+# ./regress.sh reg_l1d_byp_rm_f2e_q_when_deact --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_rm_f2e_q_when_deact
+
+# ./regress.sh reg_l1d_byp_dec_step_2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_dec_step_2
 
 # ./regress.sh reg_l1d_byp_alway_probe --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_alway_probe
@@ -598,9 +603,16 @@ fi
 # reg_l1d_byp_fine_tune
 
 # Compare single case
+# ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_src_nn --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_src_nn
+# ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_src_nn_II --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_src_nn_II
+# ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_src_nn_III --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_src_nn_III
+
 # 1. srad_v2-rodinia-2.0-ft
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_src_v2 --config-file ./perf_study/configs/base_no_mshr.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_src_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2
 # 124.427 (+3.290%)
