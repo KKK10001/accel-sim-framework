@@ -360,12 +360,15 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+# now
 python3 compute_perf_gain.py \
   --variants \
+    reg_base_rm_set_addr_with_extra_mf_fields_addr \
     reg_base_no_mshr \
     reg_l1d_byp_fine_tune \
     reg_l1d_byp_rm_f2e_q_when_deact \
     reg_l1d_byp_dec_step_2 \
+    reg_l1d_max_byp_n_10_inc_bound_5 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -379,6 +382,15 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr_srad_v2 \
+    reg_l1d_byp_tune_srad_v2_dec_step_1 \
+    reg_l1d_bypkey_srad_v2 \
+    reg_l1d_set_max_byp_num_5_srad_v2 \
+    reg_l1d_set_max_byp_num_15_srad_v2 \
+    reg_l1d_max_byp_n_10_no_dec_srad_v2 \
+    reg_l1d_max_byp_n_10_inc_bound_7_srad_v2 \
+    reg_l1d_max_byp_n_10_inc_bound_5_srad_v2 \
+    reg_l1d_max_byp_n_10_inc_bound_3_srad_v2 \
+    reg_l1d_max_byp_n_8_inc_bound_5_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
