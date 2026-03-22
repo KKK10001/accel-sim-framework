@@ -508,8 +508,9 @@ python3 compute_perf_gain.py \
   
 python3 compute_perf_gain.py \
   --variants \
-    reg_base_no_mshr_src_v2 \
-    reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2 \
+    reg_base_no_mshr_srad_v2 \
+    reg_l1d_bypkey_srad_v2 \
+    reg_l1d_also_byp_probe_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -517,7 +518,20 @@ python3 compute_perf_gain.py \
   --md-file perf_gain.md \
   --html-file perf_gain.html \
   --xlsx-file perf_gain.xlsx \
-  --fail-cause-xlsx fail_cause_breakdown.xlsx  
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr \
+    reg_l1d_also_byp_tag_probe \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
 """
 import argparse, os, re, sys, math
 from typing import List

@@ -53,14 +53,15 @@ shopt -s nullglob
 # regress_tag=reg_dont_cache_low_locality_lines
 # regress_tag=reg_no_alloc_low_loc_lines
 # regress_tag=reg_chk_assert_no_wr_event_sent_by_l1d
-# regress_tag=reg_base_no_mshr
+regress_tag=reg_base_no_mshr
 # regress_tag=reg_base_no_mshr_src_nn
 # regress_tag=reg_l1d_byp_fine_tune
 # regress_tag=reg_l1d_byp_alway_probe
 # regress_tag=reg_base_no_mshr_srad_v2
 # regress_tag=reg_l1d_byp_tune_srad_v2_dec_step_1
 # regress_tag=reg_l1d_bypkey_srad_v2
-regress_tag=reg_base_rm_set_addr_with_extra_mf_fields_addr
+# regress_tag=reg_base_rm_set_addr_with_extra_mf_fields_addr
+# regress_tag=reg_l1d_also_byp_probe_srad_v2
 # regress_tag=reg_l1d_byp_tune_srad_v2_dec_step_2
 # regress_tag=reg_l1d_byp_fine_tune_srad_v2
 # regress_tag=reg_l1d_byp_detect_f2e_gap_conf_cnt

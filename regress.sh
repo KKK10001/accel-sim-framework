@@ -605,8 +605,10 @@ fi
 # ./regress.sh reg_l1d_byp_always_probe_and_keep_byp_record --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_always_probe_and_keep_byp_record
 
-# reg_base_no_mshr
-# reg_l1d_byp_fine_tune
+# ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
+# ./regress.sh reg_l1d_also_byp_tag_probe --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_also_byp_tag_probe
 
 # Compare single case
 # ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_src_nn --config-file ./perf_study/configs/base_no_mshr.config
@@ -625,11 +627,12 @@ fi
 
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_tune_srad_v2_dec_step_1 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_tune_srad_v2_dec_step_1
-
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_bypkey_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypkey_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_also_byp_probe_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_also_byp_probe_srad_v2
+
+
 # 122.365 (+1.579%)
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_set_max_byp_num_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_set_max_byp_num_srad_v2
@@ -660,15 +663,6 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tune_srad_v2_only_inc
 # reg_base_no_mshr_srad_v2
 # reg_l1d_byp_fine_tune_srad_v2_only_inc
-
-
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_fine_tuned_srad_v2_II --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_fine_tuned_srad_v2_II
-# reg_base_no_mshr_srad_v2
-# 121.874 (+1.171%)
-# reg_l1d_byp_fine_tuned_srad_v2_II
 
 # 2. backprop-rodinia-2.0-ft
 # ./regress.sh single backprop-rodinia-2.0-ft reg_base_no_mshr_src_backprop --config-file ./perf_study/configs/base_no_mshr.config
