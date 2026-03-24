@@ -609,6 +609,22 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
 # ./regress.sh reg_l1d_also_byp_tag_probe --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_also_byp_tag_probe
+# ./regress.sh reg_l1d_also_byp_tag_probe_q_size_1000 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_also_byp_tag_probe_q_size_1000
+# ./regress.sh reg_l1d_also_byp_tag_probe_q_size_10_no_dec --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_also_byp_tag_probe_q_size_10_no_dec
+
+# 1) l1d_byp item can never appear inside "rd_hit_base"
+# ./regress.sh reg_l1d_byp_check_flow --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_check_flow
+
+# ./regress.sh reg_base_no_mshr_gto --config-file ./perf_study/configs/base_no_mshr_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_gto
+# ./regress.sh reg_l1d_sat_cnt_up_bound_3_gto --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_sat_cnt_up_bound_3_gto
+
+# ./regress.sh reg_l1d_mixed_byp_gto --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_mixed_byp_gto
 
 # Compare single case
 # ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_src_nn --config-file ./perf_study/configs/base_no_mshr.config
@@ -621,17 +637,61 @@ fi
 # 1. srad_v2-rodinia-2.0-ft
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_srad_v2
-# 124.427 (+3.290%)
-
-# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_srad_v2 --config-file ./perf_study/configs/base_no_mshr.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_gto_srad_v2 --config-file ./perf_study/configs/base_no_mshr_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_gto_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_base_no_mshr_gto_srad_v2_II --config-file ./perf_study/configs/base_no_mshr_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_gto_srad_v2_II
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_bypkey_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_bypkey_srad_v2
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_also_byp_probe_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_also_byp_probe_srad_v2
 
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_bound_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_bound_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_bound_20_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_bound_20_gto_srad_v2
+# 126.384 (+0.859%) 2nd-Highest
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_bound_10_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_bound_10_gto_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_bound_10_gto_srad_v2_II --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_bound_10_gto_srad_v2_II
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_sat_cnt_based_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_sat_cnt_based_gto_srad_v2
+# 128.046 (+2.185%) Highest
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_sat_cnt_up_bound_3_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_sat_cnt_up_bound_3_gto_srad_v2
+# 128.046 (+2.185%) Highest
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2_II --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2_II
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2_III --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2_III
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_then_satcnt_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_then_satcnt_gto_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_satcnt_only_inc_upb_3_byp_factor_05_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_satcnt_only_inc_upb_3_byp_factor_05_gto_srad_v2
+
+# 125.028 (-0.224%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_satcnt_only_inc_upb_3_old_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_old.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_satcnt_only_inc_upb_3_old_srad_v2
+
+# 125.049 (-0.207%) Drops ---> dec cnt would always hurt perf.
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_satcnt_both_inc_dec_upb_3_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_satcnt_both_inc_dec_upb_3_gto_srad_v2
+# 126.155 (+0.676%) Drops
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_sat_cnt_up_bound_2_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_sat_cnt_up_bound_2_gto_srad_v2
+
+# 124.722 (+3.535%) drops
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_bound_5_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_bound_5_gto_srad_v2
+# 125.730 (+4.372%) lower than "bound_10"
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_max_evict_bound_7_gto_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines_gto.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_max_evict_bound_7_gto_srad_v2
 
 # 122.365 (+1.579%)
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_set_max_byp_num_srad_v2 --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
