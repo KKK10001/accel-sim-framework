@@ -61,7 +61,9 @@ shopt -s nullglob
 # regress_tag=reg_l1d_max_evict_then_satcnt_gto_srad_v2_again
 # regress_tag=reg_l1d_l2_max_evict_then_satcnt_gto_srad_v2
 # regress_tag=reg_l1d_max_evict_upb_10_then_satcnt_upb_3_gto_srad_v2
-regress_tag=reg_l1d_dyn_byp_evict_bd_10_satcnt_bd_3_gto_srad_v2
+# regress_tag=reg_l1d_dyn_byp_evict_bd_10_satcnt_bd_3_gto_srad_v2
+# regress_tag=reg_l1d_dyn_byp_total_evict_unaware_lrr_srad_v2
+regress_tag=reg_l1d_dyn_byp_total_evict_unaware_lrr
 # regress_tag=reg_l1d_also_byp_tag_probe
 # regress_tag=reg_base_no_mshr_src_nn
 # regress_tag=reg_l1d_byp_fine_tune

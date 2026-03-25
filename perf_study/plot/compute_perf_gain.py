@@ -532,10 +532,15 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+# single case
 python3 compute_perf_gain.py \
   --variants \
+    reg_l1d_base_lrr_srad_v2 \
+    reg_l1d_dyn_byp_total_evict_aware_lrr_srad_v2 \
+    reg_l1d_dyn_byp_total_evict_unaware_lrr_srad_v2 \
     reg_l1d_base_gto_srad_v2 \
-    reg_l1d_dyn_byp_evict_bd_10_satcnt_bd_3_gto_srad_v2 \
+    reg_l1d_dyn_byp_total_evict_aware_gto_srad_v2 \
+    reg_l1d_dyn_byp_total_evict_unaware_gto_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -547,9 +552,97 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_base_no_mshr_gto \
-    reg_l1d_mixed_byp_gto \
-    reg_l1d_max_evict_then_satcnt_gto \
+    reg_l1d_base_lrr_streamcluster \
+    reg_l1d_dyn_byp_total_evict_aware_lrr_streamcluster \
+    reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_gto_streamcluster \
+    reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster \
+    reg_l1d_dyn_byp_total_evict_unaware_gto_streamcluster \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_gto_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_gto_hotspot \
+    reg_l1d_dyn_byp_total_evict_unaware_gto_hotspot \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr \
+    reg_l1d_dyn_byp_total_evict_aware_lrr \
+    reg_l1d_dyn_byp_total_evict_unaware_lrr \
+    reg_l1d_base_gto \
+    reg_l1d_dyn_byp_total_evict_aware_gto \
+    reg_l1d_dyn_byp_total_evict_unaware_gto \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr \
+    reg_l1d_dyn_byp_total_evict_aware_lrr \
+    reg_l1d_dyn_byp_total_evict_unaware_lrr \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_gto \
+    reg_l1d_dyn_byp_total_evict_aware_gto \
+    reg_l1d_dyn_byp_total_evict_unaware_gto \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
