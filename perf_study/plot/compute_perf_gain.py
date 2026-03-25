@@ -509,20 +509,33 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr_gto_srad_v2 \
-    reg_base_no_mshr_gto_srad_v2_II \
     reg_l1d_max_evict_bound_20_gto_srad_v2 \
     reg_l1d_max_evict_bound_10_gto_srad_v2 \
-    reg_l1d_max_evict_bound_10_gto_srad_v2_II \
     reg_l1d_max_evict_bound_5_gto_srad_v2 \
     reg_l1d_max_evict_bound_7_gto_srad_v2 \
     reg_l1d_sat_cnt_based_gto_srad_v2 \
     reg_l1d_sat_cnt_up_bound_2_gto_srad_v2 \
     reg_l1d_satcnt_both_inc_dec_upb_3_gto_srad_v2 \
-    reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2 \
     reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2_II \
-    reg_l1d_satcnt_only_inc_upb_3_gto_srad_v2_III \
     reg_l1d_max_evict_then_satcnt_gto_srad_v2 \
+    reg_l1d_max_evict_then_satcnt_gto_srad_v2_again \
+    reg_l1d_enough_history_or_smaller_gap_gto_srad_v2 \
     reg_l1d_satcnt_only_inc_upb_3_old_srad_v2 \
+    reg_l1d_l2_max_evict_then_satcnt_gto_srad_v2 \
+    reg_l1d_l2_max_evict_then_satcnt_l2_qsize_30_gto_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_gto_srad_v2 \
+    reg_l1d_dyn_byp_evict_bd_10_satcnt_bd_3_gto_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -535,8 +548,8 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_base_no_mshr_gto \
-    reg_l1d_sat_cnt_up_bound_3_gto \
     reg_l1d_mixed_byp_gto \
+    reg_l1d_max_evict_then_satcnt_gto \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
