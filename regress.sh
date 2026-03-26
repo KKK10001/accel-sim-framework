@@ -694,23 +694,23 @@ fi
 
 # 3. streamcluster-rodinia-2.0-ft
 # 1) LRR
-# done
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_base_lrr_streamcluster --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_lrr_streamcluster
-# done
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_lrr_streamcluster
-# done
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_streamcluster
+# running
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_streamcluster
+
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster
 # 2) GTO
-# done
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_base_gto_streamcluster --config-file ./perf_study/configs/base_no_mshr_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_gto_streamcluster
-# done
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster
-# done
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_gto_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_gto_streamcluster
 
@@ -734,23 +734,27 @@ fi
 
 # 6. hotspot-rodinia-2.0-ft
 # 1) LRR
-# done
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_base_lrr_hotspot --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_lrr_hotspot
-# done
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_lrr_hotspot
-# done
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot
 # 2) GTO
-# done
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_base_gto_hotspot --config-file ./perf_study/configs/base_no_mshr_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_gto_hotspot
-# done
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_gto_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_gto_hotspot
-# done
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_5_gto_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_gto_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_5_gto_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_gto_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_gto_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_gto_hotspot
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_gto_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_gto_hotspot
 

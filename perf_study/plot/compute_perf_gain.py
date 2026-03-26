@@ -554,6 +554,8 @@ python3 compute_perf_gain.py \
   --variants \
     reg_l1d_base_lrr_streamcluster \
     reg_l1d_dyn_byp_total_evict_aware_lrr_streamcluster \
+    reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_streamcluster \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_streamcluster \
     reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster \
   --clean-old-o \
   --fail-total-metrics NONE \
@@ -582,6 +584,9 @@ python3 compute_perf_gain.py \
   --variants \
     reg_l1d_base_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot \
   --clean-old-o \
   --fail-total-metrics NONE \
@@ -596,6 +601,8 @@ python3 compute_perf_gain.py \
   --variants \
     reg_l1d_base_gto_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_gto_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_5_gto_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_gto_hotspot \
     reg_l1d_dyn_byp_total_evict_unaware_gto_hotspot \
   --clean-old-o \
   --fail-total-metrics NONE \
