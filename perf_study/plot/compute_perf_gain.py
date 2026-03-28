@@ -537,6 +537,8 @@ python3 compute_perf_gain.py \
   --variants \
     reg_l1d_base_lrr_srad_v2 \
     reg_l1d_dyn_byp_total_evict_aware_lrr_srad_v2 \
+    reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_srad_v2 \
+    reg_l1d_dyn_byp_total_evict_aware_upb_4_lrr_srad_v2 \
     reg_l1d_dyn_byp_total_evict_unaware_lrr_srad_v2 \
     reg_l1d_base_gto_srad_v2 \
     reg_l1d_dyn_byp_total_evict_aware_gto_srad_v2 \
@@ -586,8 +588,35 @@ python3 compute_perf_gain.py \
     reg_l1d_dyn_byp_total_evict_aware_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_100_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_50_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_40_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_35_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_30_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_20_lrr_hotspot \
+    reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_10_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+# Eval max_bypasses
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr_hotspot \
+    reg_l1d_dyn_byp_infinite_bypasses_hotspot \
+    reg_l1d_dyn_byp_max_bypasses_45_hotspot \
+    reg_l1d_dyn_byp_max_bypasses_40_hotspot \
+    reg_l1d_dyn_byp_max_bypasses_35_hotspot \
+    reg_l1d_dyn_byp_max_bypasses_30_hotspot \
+    reg_l1d_dyn_byp_max_bypasses_25_hotspot \
+    reg_l1d_dyn_byp_max_bypasses_20_hotspot \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \

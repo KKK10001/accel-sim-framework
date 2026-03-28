@@ -664,6 +664,13 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_lrr_srad_v2
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_4_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_4_lrr_srad_v2
+# dead-lock
+# ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_srad_v2
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_lrr_srad_v2
 # 2) GTO
@@ -703,7 +710,6 @@ fi
 # running
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_streamcluster
-
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster
 # 2) GTO
@@ -711,6 +717,11 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_gto_streamcluster
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster
+
+# ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware__upb_3_gto_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_gto_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware__upb_3_gto_streamcluster
+
+
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_gto_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_unaware_gto_streamcluster
 
@@ -742,6 +753,45 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_hotspot
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_hotspot
+
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_100_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_100_lrr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_50_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_50_lrr_hotspot
+
+## Eval of max_bypasses
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_infinite_bypasses_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_infinite_bypasses_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_infinite_bypasses_II_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_infinite_bypasses_II_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_max_bypasses_45_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_max_bypasses_45_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_max_bypasses_40_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_max_bypasses_40_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_max_bypasses_35_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_max_bypasses_35_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_max_bypasses_30_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_max_bypasses_30_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_max_bypasses_25_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_max_bypasses_25_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_max_bypasses_20_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_max_bypasses_20_hotspot
+
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_40_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_40_lrr_hotspot
+# 213.664 (-0.302%)
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_35_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_35_lrr_hotspot
+# 213.684 (-0.293%) using std::unordered_set
+# 213.684 (-0.293%) using std::set
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_30_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_30_lrr_hotspot
+# 217.757 (+1.608%)
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_20_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_20_lrr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_10_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_10_lrr_hotspot
+
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_aware_lrr_tune_max_evict.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_total_evict_unaware_lrr.config
