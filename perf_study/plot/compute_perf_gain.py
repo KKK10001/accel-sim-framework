@@ -554,6 +554,24 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
+    l1d_base_lrr_srad_v2 \
+    decouple_byp_vic_keys_T_F_T_20_10_3_lrr_srad_v2 \
+    decouple_byp_vic_keys_T_F_T_20_5_3_lrr_srad_v2 \
+    both_vic_byp_key_use_blkaddr_T_F_T_20_10_3_lrr_srad_v2 \
+    both_vic_byp_key_use_blkaddr_T_F_T_40_5_3_lrr_srad_v2 \
+    both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_srad_v2 \
+    both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
     reg_l1d_base_lrr_streamcluster \
     reg_l1d_dyn_byp_total_evict_aware_lrr_streamcluster \
     reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_streamcluster \
@@ -597,6 +615,24 @@ python3 compute_perf_gain.py \
     reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_10_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr_hotspot \
+    both_vic_byp_key_use_blkaddr_T_F_T_80_3_3_lrr_hotspot \
+    both_vic_byp_key_use_blkaddr_T_F_T_40_3_3_lrr_hotspot \
+    both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_hotspot \
+    both_vic_byp_key_use_blkaddr_T_F_T_20_2_2_lrr_hotspot \
+    both_vic_byp_key_use_blkaddr_T_F_T_20_1_1_lrr_hotspot \
+    both_vic_byp_key_use_blkaddr_T_T_F_20_1_1_lrr_hotspot \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
