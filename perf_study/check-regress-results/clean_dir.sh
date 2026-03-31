@@ -69,8 +69,9 @@ shopt -s nullglob
 # regress_tag=reg_l1d_dyn_byp_max_bypasses_40_hotspot
 # regress_tag=reg_l1d_dyn_byp_max_bypasses_20_hotspot
 # regress_tag=l1d_byp_T_F_T_20_10_3_lrr_srad_v2
-regress_tag=both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_srad_v2
+# regress_tag=both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_srad_v2
 # regress_tag=both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_hotspot
+regress_tag=both_vic_byp_key_use_blkaddr_T_F_T_20_2_2_lrr_hotspot
 
 rm -f -- $log_files_dir/*$regress_tag*
 

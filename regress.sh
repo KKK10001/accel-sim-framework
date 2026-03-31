@@ -575,8 +575,11 @@ fi
 
 ################################ Bypass Highly Trashed L1D Reqs ################################
 
-# ./regress.sh reg_base_rm_set_addr_with_extra_mf_fields_addr --config-file ./perf_study/configs/base_no_mshr.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_base_rm_set_addr_with_extra_mf_fields_addr
+# ./regress.sh l1d_no_byp --config-file ./perf_study/configs/base_no_mshr_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_no_byp
+
+# ./regress.sh l1d_byp_T_F_T_20_5_3_incoming_000_lrr --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_000_lrr
 
 # ./regress.sh reg_base_no_mshr --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr
@@ -658,11 +661,50 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_srad_v2
 
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_incoming_fuck_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_incoming_fuck_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_incoming_fuck_II_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_incoming_fuck_II_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_incoming_fuck_III_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_incoming_fuck_III_lrr_srad_v2
+
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_srad_v2
 # dead-lock
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_lrr_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_030_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_030_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_050_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_050_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_070_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_070_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_100_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_100_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_000_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_000_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_050_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_050_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_F_20_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_F_20_5_3_incoming_000_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_F_20_5_3_incoming_050_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_F_20_5_3_incoming_050_lrr_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_030_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_030_lrr_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_T_T_40_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_T_T_40_3_3_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_T_T_40_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_T_T_40_5_3_incoming_000_lrr_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_200_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_200_5_3_incoming_000_lrr_srad_v2
+
 # 2) GTO
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_base_gto_srad_v2 --config-file ./perf_study/configs/base_no_mshr_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_gto_srad_v2
@@ -675,8 +717,10 @@ fi
 # 1) LRR
 # ./regress.sh single backprop-rodinia-2.0-ft reg_l1d_base_lrr_backprop --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_lrr_backprop
-# ./regress.sh single backprop-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_backprop --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_backprop
+
+# ./regress.sh single backprop-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_000_lrr_backprop --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_000_lrr_backprop
+
 # 2) GTO
 # ./regress.sh single backprop-rodinia-2.0-ft reg_l1d_base_gto_backprop --config-file ./perf_study/configs/base_no_mshr_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_gto_backprop
@@ -687,6 +731,13 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_lrr_streamcluster
 # ./regress.sh single streamcluster-rodinia-2.0-ft tune_l1d_byp_T_F_T_20_5_3_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N tune_l1d_byp_T_F_T_20_5_3_lrr_streamcluster
+
+
+# ./regress.sh single streamcluster-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_000_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_000_lrr_streamcluster
+# ./regress.sh single streamcluster-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_050_lrr_streamcluster --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_050_lrr_streamcluster
+
 # 2) GTO
 # ./regress.sh single streamcluster-rodinia-2.0-ft reg_l1d_base_gto_streamcluster --config-file ./perf_study/configs/base_no_mshr_gto.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_gto_streamcluster
@@ -742,10 +793,19 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_40_3_3_lrr_hotspot
 # ./regress.sh single hotspot-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_hotspot
+
+# ./regress.sh single hotspot-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_070_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_070_lrr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_100_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_100_lrr_hotspot
+
+# running
 # ./regress.sh single hotspot-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_hotspot
+
 # ./regress.sh single hotspot-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_2_2_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_2_2_lrr_hotspot
+
 # ./regress.sh single hotspot-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_1_1_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_1_1_lrr_hotspot
 # ./regress.sh single hotspot-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_T_F_20_1_1_lrr_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config

@@ -532,7 +532,33 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_no_byp \
+    l1d_byp_T_F_T_20_5_3_incoming_000_lrr \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
 # single case
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr_backprop \
+    l1d_byp_T_F_T_20_5_3_incoming_000_lrr_backprop \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
 python3 compute_perf_gain.py \
   --variants \
     reg_l1d_base_lrr_srad_v2 \
@@ -557,6 +583,24 @@ python3 compute_perf_gain.py \
     l1d_base_lrr_srad_v2 \
     decouple_byp_vic_keys_T_F_T_20_10_3_lrr_srad_v2 \
     decouple_byp_vic_keys_T_F_T_20_5_3_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_srad_v2 \
+    l1d_byp_T_T_T_40_3_3_lrr_srad_v2 \
+    l1d_byp_T_F_T_40_3_3_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_3_3_incoming_fuck_III_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_3_3_incoming_fuck_II_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_3_3_incoming_fuck_lrr_srad_v2 \
+    l1d_byp_T_F_T_200_5_3_incoming_000_lrr_srad_v2 \
+    l1d_byp_T_T_T_40_5_3_incoming_000_lrr_srad_v2 \
+    l1d_byp_T_F_T_40_3_3_incoming_030_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_incoming_030_lrr_srad_v2 \
+    l1d_byp_T_F_T_40_3_3_incoming_050_lrr_srad_v2 \
+    l1d_byp_T_F_T_40_3_3_incoming_070_lrr_srad_v2 \
+    l1d_byp_T_F_T_40_3_3_incoming_100_lrr_srad_v2 \
+    l1d_byp_T_F_T_40_3_3_incoming_000_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_incoming_000_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_incoming_050_lrr_srad_v2 \
+    l1d_byp_T_F_F_20_5_3_incoming_000_lrr_srad_v2 \
+    l1d_byp_T_F_F_20_5_3_incoming_050_lrr_srad_v2 \
     both_vic_byp_key_use_blkaddr_T_F_T_20_10_3_lrr_srad_v2 \
     both_vic_byp_key_use_blkaddr_T_F_T_40_5_3_lrr_srad_v2 \
     both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_srad_v2 \
@@ -573,10 +617,8 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_l1d_base_lrr_streamcluster \
-    reg_l1d_dyn_byp_total_evict_aware_lrr_streamcluster \
-    reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_streamcluster \
-    reg_l1d_dyn_byp_total_evict_aware_upb_3_lrr_streamcluster \
-    reg_l1d_dyn_byp_total_evict_unaware_lrr_streamcluster \
+    l1d_byp_T_F_T_20_5_3_incoming_000_lrr_streamcluster \
+    l1d_byp_T_F_T_20_5_3_incoming_050_lrr_streamcluster \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -633,6 +675,8 @@ python3 compute_perf_gain.py \
     both_vic_byp_key_use_blkaddr_T_F_T_20_2_2_lrr_hotspot \
     both_vic_byp_key_use_blkaddr_T_F_T_20_1_1_lrr_hotspot \
     both_vic_byp_key_use_blkaddr_T_T_F_20_1_1_lrr_hotspot \
+    l1d_byp_T_F_T_40_3_3_incoming_070_lrr_hotspot \
+    l1d_byp_T_F_T_40_3_3_incoming_100_lrr_hotspot \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
