@@ -561,50 +561,15 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_l1d_base_lrr_srad_v2 \
-    reg_l1d_dyn_byp_total_evict_aware_lrr_srad_v2 \
-    reg_l1d_dyn_byp_total_evict_aware_upb_5_lrr_srad_v2 \
-    reg_l1d_dyn_byp_total_evict_aware_upb_4_lrr_srad_v2 \
-    reg_l1d_dyn_byp_total_evict_unaware_lrr_srad_v2 \
-    reg_l1d_base_gto_srad_v2 \
-    reg_l1d_dyn_byp_total_evict_aware_gto_srad_v2 \
-    reg_l1d_dyn_byp_total_evict_unaware_gto_srad_v2 \
-  --clean-old-o \
-  --fail-total-metrics NONE \
-  --txt-file perf_gain.txt \
-  --csv-file perf_gain.csv \
-  --md-file perf_gain.md \
-  --html-file perf_gain.html \
-  --xlsx-file perf_gain.xlsx \
-  --fail-cause-xlsx fail_cause_breakdown.xlsx
-
-python3 compute_perf_gain.py \
-  --variants \
     l1d_base_lrr_srad_v2 \
-    decouple_byp_vic_keys_T_F_T_20_10_3_lrr_srad_v2 \
-    decouple_byp_vic_keys_T_F_T_20_5_3_lrr_srad_v2 \
     l1d_byp_T_F_T_20_5_3_lrr_srad_v2 \
-    l1d_byp_T_T_T_40_3_3_lrr_srad_v2 \
-    l1d_byp_T_F_T_40_3_3_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_3_3_incoming_fuck_III_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_3_3_incoming_fuck_II_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_3_3_incoming_fuck_lrr_srad_v2 \
-    l1d_byp_T_F_T_200_5_3_incoming_000_lrr_srad_v2 \
-    l1d_byp_T_T_T_40_5_3_incoming_000_lrr_srad_v2 \
-    l1d_byp_T_F_T_40_3_3_incoming_030_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_incoming_030_lrr_srad_v2 \
-    l1d_byp_T_F_T_40_3_3_incoming_050_lrr_srad_v2 \
-    l1d_byp_T_F_T_40_3_3_incoming_070_lrr_srad_v2 \
-    l1d_byp_T_F_T_40_3_3_incoming_100_lrr_srad_v2 \
-    l1d_byp_T_F_T_40_3_3_incoming_000_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_incoming_000_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_incoming_050_lrr_srad_v2 \
-    l1d_byp_T_F_F_20_5_3_incoming_000_lrr_srad_v2 \
-    l1d_byp_T_F_F_20_5_3_incoming_050_lrr_srad_v2 \
-    both_vic_byp_key_use_blkaddr_T_F_T_20_10_3_lrr_srad_v2 \
-    both_vic_byp_key_use_blkaddr_T_F_T_40_5_3_lrr_srad_v2 \
-    both_vic_byp_key_use_blkaddr_T_F_T_20_5_3_lrr_srad_v2 \
-    both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_addr_only_for_match_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_kernel_and_addr_for_match_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_bypass_key_for_match_lrr_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_256_swap_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
