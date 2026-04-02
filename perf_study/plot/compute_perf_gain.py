@@ -545,6 +545,19 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_base_cfg \
+    l1d_with_victim_cache_ent_64 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
 # single case
 python3 compute_perf_gain.py \
   --variants \
@@ -570,6 +583,8 @@ python3 compute_perf_gain.py \
     l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_256_swap_srad_v2 \
     l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 \
     l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2 \
+    l1d_with_victim_cache_ent_64_swap_srad_v2 \
+    l1d_with_victim_cache_ent_64_refine_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \

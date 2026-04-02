@@ -75,8 +75,11 @@ shopt -s nullglob
 # regress_tag=l1d_byp_T_F_T_20_5_3_addr_only_for_match_lrr_srad_v2
 # regress_tag=l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_srad_v2
 # regress_tag=l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_srad_v2
+# regress_tag=l1d_base_lrr_srad_v2
+# regress_tag=l1d_with_victim_cache_ent_64_swap_srad_v2
+regress_tag=l1d_with_victim_cache_ent_64_refine_srad_v2
 # regress_tag=l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2
-regress_tag=l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2
+# regress_tag=l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2
 
 rm -f -- $log_files_dir/*$regress_tag*
 

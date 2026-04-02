@@ -573,6 +573,18 @@ fi
 # ./regress.sh reg_l1d_l2_mshr_awared_repl --config-file ./perf_study/configs/l1d_l2_mshr_awared_repl.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_l2_mshr_awared_repl
 
+################################ L1D with victim cache ################################
+
+# ./regress.sh l1d_base_cfg --config-file ./perf_study/configs/base_no_mshr_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_base_cfg
+
+# done
+# 32.356 (+4.807%)  (for srad_v2: 185.563 (+54.041%))
+# ./regress.sh l1d_with_victim_cache_ent_64 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64
+# ./regress.sh l1d_with_victim_cache_ent_128 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_128
+
 ################################ Bypass Highly Trashed L1D Reqs ################################
 
 # ./regress.sh l1d_no_byp --config-file ./perf_study/configs/base_no_mshr_lrr.config
@@ -700,6 +712,13 @@ fi
 # with swap (remove addr in VC) and immediate fill L1D
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2
+# 185.563 (+54.041%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_swap_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_swap_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_refine_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_refine_srad_v2
+
 # 122.854 (+1.984%) 
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2
