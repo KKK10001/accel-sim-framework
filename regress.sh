@@ -577,7 +577,12 @@ fi
 
 # ./regress.sh l1d_base_cfg --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_base_cfg
-
+# 32.272 (+4.534%)
+# ./regress.sh l1d_with_victim_cache_ent_4 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_4
+# 32.320 (+4.691%)
+# ./regress.sh l1d_with_victim_cache_ent_8 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_8
 # done
 # 32.356 (+4.807%)  (for srad_v2: 185.563 (+54.041%))
 # ./regress.sh l1d_with_victim_cache_ent_64 --config-file ./perf_study/configs/l1d_with_victim_cache.config
@@ -676,24 +681,8 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N both_vic_byp_key_use_blkaddr_T_F_T_20_3_3_lrr_srad_v2
 
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_incoming_fuck_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_incoming_fuck_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_incoming_fuck_II_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_incoming_fuck_II_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_incoming_fuck_III_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_incoming_fuck_III_lrr_srad_v2
-
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_srad_v2
-
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_addr_only_for_match_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_addr_only_for_match_lrr_srad_v2
-
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_kernel_and_addr_for_match_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_kernel_and_addr_for_match_lrr_srad_v2
-
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_bypass_key_for_match_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_bypass_key_for_match_lrr_srad_v2
 
 # perfect victim cache
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
@@ -712,6 +701,13 @@ fi
 # with swap (remove addr in VC) and immediate fill L1D
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_vc_ent_8_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_vc_ent_8_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_srad_v2
+
 # 185.563 (+54.041%)
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_swap_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_swap_srad_v2
@@ -723,23 +719,45 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_2_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_2_srad_v2
 # 187.614 (+55.744%)
+# 121.272 (+0.671%) (Fix)
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_4_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_4_srad_v2
 # 187.614 (+55.744%)
+# 122.612 (+1.784%) (Fix)
+# Try recover allowing modified lines being inserted into VC again.
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_8_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_8_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_vc_ent_8_only_insert_clean_ln_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_vc_ent_8_only_insert_clean_ln_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_vc_ent_16_only_insert_clean_ln_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_vc_ent_16_only_insert_clean_ln_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_vc_ent_32_only_insert_clean_ln_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_vc_ent_32_only_insert_clean_ln_srad_v2
+
+# 118.937 (-1.267%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_12_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_12_srad_v2
+
 # 187.614 (+55.744%)
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_16_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_16_srad_v2
 # 185.563 (+54.041%)
+# 120.761 (+0.248%) (Fix)
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_32_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_32_srad_v2
 # 185.563 (+54.041%)
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_refine_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_refine_srad_v2
+# 120.761 (+0.248%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_srad_v2
+
 # 186.897 (+55.149%)
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_128_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_128_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vc.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_srad_v2
+
 
 # 122.854 (+1.984%) 
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
@@ -755,37 +773,10 @@ fi
 # dead-lock
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_3_3_lrr_srad_v2
-
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_030_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_030_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_050_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_050_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_070_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_070_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_100_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_100_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_40_3_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_40_3_3_incoming_000_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_000_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_050_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_050_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_F_20_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_F_20_5_3_incoming_000_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_F_20_5_3_incoming_050_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_F_20_5_3_incoming_050_lrr_srad_v2
-
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_incoming_030_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_incoming_030_lrr_srad_v2
-
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_T_T_40_3_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_T_T_40_3_3_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_T_T_40_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_T_T_40_5_3_incoming_000_lrr_srad_v2
-# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_200_5_3_incoming_000_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
-# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_200_5_3_incoming_000_lrr_srad_v2
 
 # 2) GTO
 # ./regress.sh single srad_v2-rodinia-2.0-ft reg_l1d_base_gto_srad_v2 --config-file ./perf_study/configs/base_no_mshr_gto.config
@@ -827,13 +818,18 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster
 
 # 4. Needleman-Wunsch (nw) nw-rodinia-2.0-ft - Very little reuse observed in L1D
-# ./regress.sh single nw-rodinia-2.0-ft reg_base_no_mshr_nw --config-file ./perf_study/configs/base_no_mshr.config
+# ./regress.sh single nw-rodinia-2.0-ft reg_base_no_mshr_nw --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_nw
-# ./regress.sh single nw-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
-# ./util/job_launching/monitor_func_test.py -v -N reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw
-# Equal 3.421 (+0.000%)
-# reg_base_no_mshr_nw
-# reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nw
+# 4.235 (+0.000%)
+# ./regress.sh single nw-rodinia-2.0-ft l1d_with_vc_ent_64_nw --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_nw
+
+# pathfinder 
+# ./regress.sh single pathfinder-rodinia-2.0-ft l1d_baseline_pathfinder --config-file ./perf_study/configs/base_no_mshr_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_baseline_pathfinder
+# 31.451 (+0.000%)
+# ./regress.sh single pathfinder-rodinia-2.0-ft l1d_with_vc_ent_64_pathfinder --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_pathfinder
 
 # 5. nn-rodinia-2.0-ft
 # ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_nn --config-file ./perf_study/configs/base_no_mshr.config
@@ -844,10 +840,13 @@ fi
 # IPC: 14.844 (+0.015%); L1D_rd_miss_rate: 0.165 (+0.334%)
 # reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nn
 
-# 6. hotspot-rodinia-2.0-ft
+# 7. hotspot-rodinia-2.0-ft
 # 1) LRR
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_base_lrr_hotspot --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_l1d_base_lrr_hotspot
+# ./regress.sh single hotspot-rodinia-2.0-ft l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_hotspot --config-file ./perf_study/configs/l1d_byp_with_vc.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_hotspot
+
 
 ## Eval of max_bypasses
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_infinite_bypasses_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config

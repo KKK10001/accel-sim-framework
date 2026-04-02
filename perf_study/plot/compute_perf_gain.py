@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+attention !!!!!!!    LAST_VALUE_METRICS={'ipc'} ---> only IPC stands for score of the whole benchmark
+Other fields are all per-kernel 
+
 compute_perf_gain.py
 
 Generates performance gain outputs comparing base vs tuned variant:
@@ -548,6 +551,8 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     l1d_base_cfg \
+    l1d_with_victim_cache_ent_4 \
+    l1d_with_victim_cache_ent_8 \
     l1d_with_victim_cache_ent_64 \
   --clean-old-o \
   --fail-total-metrics NONE \
@@ -579,10 +584,6 @@ python3 compute_perf_gain.py \
     l1d_byp_T_F_T_20_5_3_addr_only_for_match_lrr_srad_v2 \
     l1d_byp_T_F_T_20_5_3_kernel_and_addr_for_match_lrr_srad_v2 \
     l1d_byp_T_F_T_20_5_3_bypass_key_for_match_lrr_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_256_swap_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2 \
     l1d_with_victim_cache_ent_1_srad_v2 \
     l1d_with_victim_cache_ent_2_srad_v2 \
     l1d_with_victim_cache_ent_4_srad_v2 \
@@ -591,6 +592,29 @@ python3 compute_perf_gain.py \
     l1d_with_victim_cache_ent_32_srad_v2 \
     l1d_with_victim_cache_ent_64_refine_srad_v2 \
     l1d_with_victim_cache_ent_128_srad_v2 \
+    l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_base_lrr_srad_v2 \
+    l1d_with_victim_cache_ent_4_srad_v2 \
+    l1d_with_victim_cache_ent_8_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_vc_ent_8_srad_v2 \
+    l1d_byp_T_F_T_20_5_3_lrr_srad_v2 \
+    l1d_vc_ent_8_only_insert_clean_ln_srad_v2 \
+    l1d_vc_ent_16_only_insert_clean_ln_srad_v2 \
+    l1d_vc_ent_32_only_insert_clean_ln_srad_v2 \
+    l1d_with_victim_cache_ent_12_srad_v2 \
+    l1d_with_victim_cache_ent_16_srad_v2 \
+    l1d_with_victim_cache_ent_32_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -643,6 +667,33 @@ python3 compute_perf_gain.py \
     reg_l1d_dyn_byp_total_evict_aware_upb_3_bypset_10_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_aware_upb_2_lrr_hotspot \
     reg_l1d_dyn_byp_total_evict_unaware_lrr_hotspot \
+    l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_hotspot \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+  python3 compute_perf_gain.py \
+  --variants \
+    reg_base_no_mshr_nw \
+    l1d_with_vc_ent_64_nw \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_baseline_pathfinder \
+    l1d_with_vc_ent_64_pathfinder \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -786,6 +837,8 @@ L1D_AVG_RD_BYP_DEACT_RE    = re.compile(rf"l1d_avg_rd_byp_deact\s*=\s*{FLOAT_CAP
 L1D_AVG_RD_BYP_ACT_RATE_RE = re.compile(rf"l1d_avg_rd_byp_act_rate\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_RD_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_rd_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 
+L1D_VC_HIT_RATE_RE = re.compile(rf"L1D_VC_HIT_RATE\s*=\s*{FLOAT_CAPTURE}")
+
 L1D_MPKI = re.compile(rf"L1D_MPKI\s*=\s*{FLOAT_CAPTURE}")
 NON_VALID_PERCENT = re.compile(rf"non_valid_percent\s*=\s*{FLOAT_CAPTURE}")
 DEP_CHK_FAIL_PERCENT = re.compile(rf"dep_chk_fail_percent\s*=\s*{FLOAT_CAPTURE}")
@@ -892,6 +945,7 @@ def parse_o_file(path: str):
     l1d_rd_misses=None
     l1d_reads=None    
     l1d_rd_miss_rate=None
+    l1d_vc_hit_rate=None
     l1d_n_fill_to_evict_lines=None
     l1d_avg_rd_byp_rate=None
     l1d_avg_rd_byp_act=None
@@ -920,6 +974,7 @@ def parse_o_file(path: str):
         nonlocal l1d_reads,l1d_rd_misses,l1d_rd_miss_rate
         nonlocal l1d_n_fill_to_evict_lines,l1d_avg_rd_byp_act,l1d_avg_rd_byp_deact,l1d_avg_rd_byp_act_rate
         nonlocal l1d_mpki
+        nonlocal l1d_vc_hit_rate
         nonlocal non_valid_percent, dep_chk_fail_percent, pipe_stalled_percent
         nonlocal intra_warp_interferences, inter_warp_interferences, inter_warp_interfere_percent
         nonlocal partition_level_parallelism
@@ -942,6 +997,7 @@ def parse_o_file(path: str):
         l1d_rd_misses=None
         l1d_reads=None        
         l1d_rd_miss_rate=None
+        l1d_vc_hit_rate=None
         l1d_n_fill_to_evict_lines=None     
         l1d_avg_rd_byp_act=None
         l1d_avg_rd_byp_deact=None        
@@ -981,6 +1037,7 @@ def parse_o_file(path: str):
         current['l1d_rd_misses']=l1d_rd_misses
         current['l1d_reads']=l1d_reads        
         current['l1d_rd_miss_rate']=l1d_rd_miss_rate
+        current['l1d_vc_hit_rate']=l1d_vc_hit_rate
         current['l1d_n_fill_to_evict_lines']=l1d_n_fill_to_evict_lines
         current['l1d_avg_rd_byp_act']=l1d_avg_rd_byp_act
         current['l1d_avg_rd_byp_deact']=l1d_avg_rd_byp_deact
@@ -1039,6 +1096,14 @@ def parse_o_file(path: str):
                 current['kernel_uid']=pending_kernel_uid
                 pending_kernel_uid=None
             reset_state()
+            continue
+
+        l1d_vc_hit_rate_match=L1D_VC_HIT_RATE_RE.search(line)
+        if l1d_vc_hit_rate_match:
+            try:
+                l1d_vc_hit_rate=parse_float_value(l1d_vc_hit_rate_match.group(1))
+            except (TypeError, ValueError):
+                pass
             continue
 
         l1d_rd_miss_rate_match=L1D_RD_MISS_RATE_RE.search(line)
@@ -1329,6 +1394,7 @@ def parse_o_file(path: str):
             'l1d_rd_misses': l1d_rd_misses,
             'l1d_reads': l1d_reads,            
             'l1d_rd_miss_rate': l1d_rd_miss_rate,
+            'l1d_vc_hit_rate': l1d_vc_hit_rate,
             'l1d_n_fill_to_evict_lines': l1d_n_fill_to_evict_lines,      
             'l1d_avg_rd_byp_act': l1d_avg_rd_byp_act,
             'l1d_avg_rd_byp_deact': l1d_avg_rd_byp_deact,
@@ -1539,6 +1605,11 @@ METRIC_DEFINITIONS={
         'value_key': 'l1d_rd_miss_rate',
         'higher_is_better': False,
     },
+    'l1d_vc_hit_rate': {
+        'label': 'L1D_VC_HIT_RATE',
+        'value_key': 'l1d_vc_hit_rate',
+        'higher_is_better': True,
+    },    
     'l1d_n_fill_to_evict_lines': {
         # 'label': 'L1D_RD_N_F2E_LN',
         'label': 'L1D_N_FILL_TO_EVICT_LINES',
@@ -1660,6 +1731,7 @@ METRIC_NAME_ALIASES={
     'l1d_rd_misses': 'l1d_rd_misses',
     'l1d_reads': 'l1d_reads',    
     'l1d_rd_miss_rate': 'l1d_rd_miss_rate',
+    'l1d_vc_hit_rate': 'l1d_vc_hit_rate',
     'l1d_n_fill_to_evict_lines': 'l1d_n_fill_to_evict_lines',
     'l1d_avg_rd_byp_act': 'l1d_avg_rd_byp_act',
     'l1d_avg_rd_byp_deact': 'l1d_avg_rd_byp_deact',
@@ -1842,6 +1914,7 @@ def main():
             'L1D_RD_MISSES',
             'L1D_READS',
             'L1D_RD_MISS_RATE',
+            'L1D_VC_HIT_RATE',
             'L1D_N_FILL_TO_EVICT_LINES',
             'l1d_avg_rd_byp_act',
             'l1d_avg_rd_byp_deact',
