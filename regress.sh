@@ -716,8 +716,30 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_swap_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_swap_srad_v2
 
+# 120.463 (+0.000%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_1_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_1_srad_v2
+# 187.614 (+55.744%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_2_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_2_srad_v2
+# 187.614 (+55.744%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_4_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_4_srad_v2
+# 187.614 (+55.744%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_8_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_8_srad_v2
+# 187.614 (+55.744%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_16_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_16_srad_v2
+# 185.563 (+54.041%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_32_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_32_srad_v2
+# 185.563 (+54.041%)
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_64_refine_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_64_refine_srad_v2
+# 186.897 (+55.149%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_victim_cache_ent_128_srad_v2 --config-file ./perf_study/configs/l1d_with_victim_cache.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_128_srad_v2
 
 # 122.854 (+1.984%) 
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config

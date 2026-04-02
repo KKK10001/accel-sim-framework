@@ -583,8 +583,14 @@ python3 compute_perf_gain.py \
     l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_256_swap_srad_v2 \
     l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 \
     l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_64_swap_srad_v2 \
-    l1d_with_victim_cache_ent_64_swap_srad_v2 \
+    l1d_with_victim_cache_ent_1_srad_v2 \
+    l1d_with_victim_cache_ent_2_srad_v2 \
+    l1d_with_victim_cache_ent_4_srad_v2 \
+    l1d_with_victim_cache_ent_8_srad_v2 \
+    l1d_with_victim_cache_ent_16_srad_v2 \
+    l1d_with_victim_cache_ent_32_srad_v2 \
     l1d_with_victim_cache_ent_64_refine_srad_v2 \
+    l1d_with_victim_cache_ent_128_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
