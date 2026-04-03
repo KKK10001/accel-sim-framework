@@ -605,16 +605,25 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     l1d_base_lrr_srad_v2 \
-    l1d_with_victim_cache_ent_4_srad_v2 \
-    l1d_with_victim_cache_ent_8_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_lrr_vc_ent_8_srad_v2 \
-    l1d_byp_T_F_T_20_5_3_lrr_srad_v2 \
-    l1d_vc_ent_8_only_insert_clean_ln_srad_v2 \
-    l1d_vc_ent_16_only_insert_clean_ln_srad_v2 \
-    l1d_vc_ent_32_only_insert_clean_ln_srad_v2 \
-    l1d_with_victim_cache_ent_12_srad_v2 \
-    l1d_with_victim_cache_ent_16_srad_v2 \
-    l1d_with_victim_cache_ent_32_srad_v2 \
+    l1d_with_vc_ent_8_no_byp_srad_v2 \
+    l1d_with_vc_ent_16_no_byp_srad_v2 \
+    l1d_with_vc_ent_64_no_byp_srad_v2 \
+    l1d_with_vc_ent_128_no_byp_srad_v2 \
+    l1d_with_vc_ent_256_no_byp_srad_v2 \
+    l1d_with_vc_ent_512_no_byp_srad_v2 \
+    l1d_insert_byp_item_into_vb_ent_64_srad_v2 \
+    l1d_byp_verify_again_srad_v2 \
+    l1d_byp_with_vb_srad_v2 \
+    l1d_byp_with_vb_ent_8192_srad_v2 \
+    l1d_byp_with_vb_ent_4096_srad_v2 \
+    l1d_byp_with_vb_ent_2048_srad_v2 \
+    l1d_byp_with_vb_ent_1024_srad_v2 \
+    l1d_byp_with_vb_ent_512_srad_v2 \
+    l1d_byp_with_vb_ent_256_srad_v2 \
+    l1d_byp_with_vb_ent_128_srad_v2 \
+    l1d_byp_with_vb_ent_32_srad_v2 \
+    l1d_byp_with_vb_ent_16_srad_v2 \
+    l1d_byp_with_vb_ent_8_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -643,6 +652,19 @@ python3 compute_perf_gain.py \
     reg_l1d_base_gto_streamcluster \
     reg_l1d_dyn_byp_total_evict_aware_gto_streamcluster \
     reg_l1d_dyn_byp_total_evict_unaware_gto_streamcluster \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr_hotspot \
+    l1d_insert_byp_item_into_vb_ent_64_hotspot \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -759,6 +781,18 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+python3 compute_perf_gain.py \
+  --variants \
+    reg_l1d_base_lrr \
+    l1d_byp_with_vb_ent_4096 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
 
 python3 compute_perf_gain.py \
   --variants \

@@ -594,6 +594,9 @@ fi
 
 # ./regress.sh l1d_no_byp --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_no_byp
+# 4/3 31.361 (+1.399%)
+# ./regress.sh l1d_byp_with_vb_ent_4096 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_4096
 
 # ./regress.sh verify_missed_line_not_reserved --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N verify_missed_line_not_reserved
@@ -684,6 +687,54 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_srad_v2
 
+# 4/3
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_insert_byp_item_into_vb_ent_64_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_insert_byp_item_into_vb_ent_64_srad_v2
+
+# 124.142 (+3.054%) with <bypass_mode>
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_without_vb_with_bypassmode_cfg_srad_v2 --config-file ./perf_study/configs/l1d_byp_without_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_without_vb_with_bypassmode_cfg_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_srad_v2
+
+# 130.253 (+8.127%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_8192_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_8192_srad_v2
+# 130.253 (+8.127%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_4096_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_4096_srad_v2
+# 124.327 (+3.207%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_2048_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_2048_srad_v2
+# 123.250 (+2.313%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_1024_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_1024_srad_v2
+# 117.819 (-2.195%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_512_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_512_srad_v2
+# 119.332 (-0.939%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_256_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_256_srad_v2
+# 118.164 (-1.909%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_128_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_128_srad_v2
+# 120.761 (+0.248%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_32_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_32_srad_v2
+
+# 121.568 (+0.917%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_16_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_16_srad_v2
+# 122.612 (+1.784%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_with_vb_ent_8_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_with_vb_ent_8_srad_v2
+
+# Use previous cfg. file no <bypass_mode>
+# 124.142 (+3.054%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_without_vb_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_without_vb_srad_v2
+
 # perfect victim cache
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_F_T_20_5_3_lrr_victim_cache_srad_v2
@@ -758,6 +809,20 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_byp_with_vc.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_srad_v2
 
+# 4/3 afternoon
+# 120.364 (-0.082%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_8_no_byp_srad_v2 --config-file ./perf_study/configs/l1d_with_vc_no_byp.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_8_no_byp_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_16_no_byp_srad_v2 --config-file ./perf_study/configs/l1d_with_vc_no_byp.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_16_no_byp_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_64_no_byp_srad_v2 --config-file ./perf_study/configs/l1d_with_vc_no_byp.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_no_byp_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_128_no_byp_srad_v2 --config-file ./perf_study/configs/l1d_with_vc_no_byp.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_128_no_byp_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_256_no_byp_srad_v2 --config-file ./perf_study/configs/l1d_with_vc_no_byp.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_256_no_byp_srad_v2
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_with_vc_ent_512_no_byp_srad_v2 --config-file ./perf_study/configs/l1d_with_vc_no_byp.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_512_no_byp_srad_v2
 
 # 122.854 (+1.984%) 
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr_victim_cache.config
@@ -847,6 +912,8 @@ fi
 # ./regress.sh single hotspot-rodinia-2.0-ft l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_hotspot --config-file ./perf_study/configs/l1d_byp_with_vc.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_byp_T_F_T_20_5_3_lrr_hotspot
 
+# ./regress.sh single hotspot-rodinia-2.0-ft l1d_insert_byp_item_into_vb_ent_64_hotspot --config-file ./perf_study/configs/l1d_byp_with_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_insert_byp_item_into_vb_ent_64_hotspot
 
 ## Eval of max_bypasses
 # ./regress.sh single hotspot-rodinia-2.0-ft reg_l1d_dyn_byp_infinite_bypasses_hotspot --config-file ./perf_study/configs/l1d_dyn_byp_tune_max_bypasses.config
