@@ -84,8 +84,14 @@ shopt -s nullglob
 # regress_tag=l1d_byp_without_vb_srad_v2
 # regress_tag=l1d_with_vc_ent_8_no_byp_srad_v2
 # regress_tag=l1d_with_vc_ent_16_no_byp_srad_v2
-regress_tag=l1d_with_vc_ent_64_no_byp_srad_v2
+# regress_tag=l1d_with_vc_ent_64_no_byp_srad_v2
 # regress_tag=l1d_with_vc_ent_128_no_byp_srad_v2
+# regress_tag=l1d_include_byp_fill_mf_T_1_F_T_20_5_3_lrr_srad_v2
+regress_tag=l1d_byp_incoming_req_T_1_F_T_20_10_3_lrr_srad_v2
+# regress_tag=l1d_byp_incoming_req_T_1_F_T_20_5_3_lrr_srad_v2
+# regress_tag=l1d_vb_ent_1024_T_0_F_T_20_2_3_lrr_srad_v2
+# regress_tag=l1d_vb_ent_1024_T_0_F_T_20_3_3_lrr_srad_v2
+# regress_tag=l1d_include_byp_fill_extra_mf_fields_T_1_F_T_20_5_3_lrr_srad_v2
 # regress_tag=l1d_byp_verify_again_srad_v2
 # regress_tag=l1d_with_victim_cache_ent_16_srad_v2
 # regress_tag=l1d_with_victim_cache_ent_32_srad_v2

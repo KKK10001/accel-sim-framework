@@ -206,7 +206,6 @@ gpgpu_sim *accel_sim_framework::gpgpu_trace_sim_init_perf_model(
   print_splash();
 
   option_parser_t opp = option_parser_create();
-
   m_gpgpu_context->ptx_reg_options(opp);
   m_gpgpu_context->func_sim->ptx_opcocde_latency_options(opp);
 

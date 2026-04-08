@@ -538,7 +538,7 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     l1d_no_byp \
-    l1d_byp_T_F_T_20_5_3_incoming_000_lrr \
+    l1d_include_byp_fill_extra_mf_fields_T_1_F_T_20_5_3_lrr \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -602,28 +602,51 @@ python3 compute_perf_gain.py \
   --xlsx-file perf_gain.xlsx \
   --fail-cause-xlsx fail_cause_breakdown.xlsx
 
+# {no VC, byp, no VB}
 python3 compute_perf_gain.py \
   --variants \
     l1d_base_lrr_srad_v2 \
-    l1d_with_vc_ent_8_no_byp_srad_v2 \
-    l1d_with_vc_ent_16_no_byp_srad_v2 \
+    l1d_byp_incoming_req_T_1_F_T_20_10_3_lrr_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_base_lrr_srad_v2 \
+    l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2 \
+    l1d_include_byp_fill_extra_mf_fields_T_1_F_T_20_5_3_lrr_srad_v2 \
+    l1d_byp_incoming_req_T_1_F_T_20_5_3_lrr_srad_v2 \
+    l1d_byp_incoming_req_T_1_F_T_20_10_3_lrr_srad_v2 \
+    l1d_byp_incoming_req_T_1_F_T_20_15_3_lrr_srad_v2 \
+    l1d_byp_incoming_req_T_1_F_T_20_20_3_lrr_srad_v2 \
+    l1d_byp_incoming_req_T_1_F_T_40_10_3_lrr_srad_v2 \
+    l1d_vb_T_0_F_T_20_10_3_lrr_srad_v2 \
+    l1d_vb_ent_128_T_0_F_T_20_3_3_lrr_srad_v2 \
+    l1d_vb_ent_1024_T_0_F_T_20_3_3_lrr_srad_v2 \
+    l1d_vb_ent_1024_T_0_F_T_20_2_3_lrr_srad_v2 \
+    l1d_vb_ent_1024_T_0_F_T_20_1_3_lrr_srad_v2 \
+    l1d_vb_ent_4096_T_0_F_T_20_3_3_lrr_srad_v2 \
+    l1d_vb_ent_4096_T_0_F_T_20_2_3_lrr_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_base_lrr_srad_v2 \
     l1d_with_vc_ent_64_no_byp_srad_v2 \
     l1d_with_vc_ent_128_no_byp_srad_v2 \
-    l1d_with_vc_ent_256_no_byp_srad_v2 \
-    l1d_with_vc_ent_512_no_byp_srad_v2 \
-    l1d_insert_byp_item_into_vb_ent_64_srad_v2 \
-    l1d_byp_verify_again_srad_v2 \
-    l1d_byp_with_vb_srad_v2 \
-    l1d_byp_with_vb_ent_8192_srad_v2 \
-    l1d_byp_with_vb_ent_4096_srad_v2 \
-    l1d_byp_with_vb_ent_2048_srad_v2 \
-    l1d_byp_with_vb_ent_1024_srad_v2 \
-    l1d_byp_with_vb_ent_512_srad_v2 \
-    l1d_byp_with_vb_ent_256_srad_v2 \
-    l1d_byp_with_vb_ent_128_srad_v2 \
-    l1d_byp_with_vb_ent_32_srad_v2 \
-    l1d_byp_with_vb_ent_16_srad_v2 \
-    l1d_byp_with_vb_ent_8_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \
@@ -871,6 +894,8 @@ L1D_AVG_RD_BYP_DEACT_RE    = re.compile(rf"l1d_avg_rd_byp_deact\s*=\s*{FLOAT_CAP
 L1D_AVG_RD_BYP_ACT_RATE_RE = re.compile(rf"l1d_avg_rd_byp_act_rate\s*=\s*{FLOAT_CAPTURE}")
 L1D_AVG_RD_MISS_SERVED_TIME_RE = re.compile(rf"avg_l1d_rd_miss_served_cycles\s*=\s*{FLOAT_CAPTURE}")
 
+L1D_VC_HITS_RE     = re.compile(rf"L1D_VC_HITS\s*=\s*{FLOAT_CAPTURE}")
+L1D_VC_ACCESSES_RE = re.compile(rf"L1D_VC_ACCESSES\s*=\s*{FLOAT_CAPTURE}")
 L1D_VC_HIT_RATE_RE = re.compile(rf"L1D_VC_HIT_RATE\s*=\s*{FLOAT_CAPTURE}")
 
 L1D_MPKI = re.compile(rf"L1D_MPKI\s*=\s*{FLOAT_CAPTURE}")
@@ -979,6 +1004,8 @@ def parse_o_file(path: str):
     l1d_rd_misses=None
     l1d_reads=None    
     l1d_rd_miss_rate=None
+    l1d_vc_hits=None
+    l1d_vc_accesses=None
     l1d_vc_hit_rate=None
     l1d_n_fill_to_evict_lines=None
     l1d_avg_rd_byp_rate=None
@@ -1008,7 +1035,7 @@ def parse_o_file(path: str):
         nonlocal l1d_reads,l1d_rd_misses,l1d_rd_miss_rate
         nonlocal l1d_n_fill_to_evict_lines,l1d_avg_rd_byp_act,l1d_avg_rd_byp_deact,l1d_avg_rd_byp_act_rate
         nonlocal l1d_mpki
-        nonlocal l1d_vc_hit_rate
+        nonlocal l1d_vc_hits,l1d_vc_accesses,l1d_vc_hit_rate
         nonlocal non_valid_percent, dep_chk_fail_percent, pipe_stalled_percent
         nonlocal intra_warp_interferences, inter_warp_interferences, inter_warp_interfere_percent
         nonlocal partition_level_parallelism
@@ -1031,6 +1058,8 @@ def parse_o_file(path: str):
         l1d_rd_misses=None
         l1d_reads=None        
         l1d_rd_miss_rate=None
+        l1d_vc_hits=None
+        l1d_vc_accesses=None
         l1d_vc_hit_rate=None
         l1d_n_fill_to_evict_lines=None     
         l1d_avg_rd_byp_act=None
@@ -1071,6 +1100,8 @@ def parse_o_file(path: str):
         current['l1d_rd_misses']=l1d_rd_misses
         current['l1d_reads']=l1d_reads        
         current['l1d_rd_miss_rate']=l1d_rd_miss_rate
+        current['l1d_vc_hits']=l1d_vc_hits
+        current['l1d_vc_accesses']=l1d_vc_accesses
         current['l1d_vc_hit_rate']=l1d_vc_hit_rate
         current['l1d_n_fill_to_evict_lines']=l1d_n_fill_to_evict_lines
         current['l1d_avg_rd_byp_act']=l1d_avg_rd_byp_act
@@ -1353,7 +1384,21 @@ def parse_o_file(path: str):
                 l1d_rd_misses=parse_float_value(l1d_rd_misses_match.group(1))
             except (TypeError, ValueError):
                 pass
-            continue          
+            continue
+        l1d_vc_hits_match=L1D_VC_HITS_RE.search(line)
+        if l1d_vc_hits_match:
+            try:
+                l1d_vc_hits=parse_float_value(l1d_vc_hits_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue       
+        l1d_vc_accesses_match=L1D_VC_ACCESSES_RE.search(line)
+        if l1d_vc_accesses_match:
+            try:
+                l1d_vc_accesses=parse_float_value(l1d_vc_accesses_match.group(1))
+            except (TypeError, ValueError):
+                pass
+            continue                 
         l1d_avg_rd_byp_act_match=L1D_AVG_RD_BYP_ACT_RE.search(line)
         if l1d_avg_rd_byp_act_match:
             try:
@@ -1428,6 +1473,8 @@ def parse_o_file(path: str):
             'l1d_rd_misses': l1d_rd_misses,
             'l1d_reads': l1d_reads,            
             'l1d_rd_miss_rate': l1d_rd_miss_rate,
+            'l1d_vc_hits': l1d_vc_hits,
+            'l1d_vc_accesses': l1d_vc_accesses,
             'l1d_vc_hit_rate': l1d_vc_hit_rate,
             'l1d_n_fill_to_evict_lines': l1d_n_fill_to_evict_lines,      
             'l1d_avg_rd_byp_act': l1d_avg_rd_byp_act,
@@ -1639,6 +1686,16 @@ METRIC_DEFINITIONS={
         'value_key': 'l1d_rd_miss_rate',
         'higher_is_better': False,
     },
+    'l1d_vc_hits': {
+        'label': 'L1D_VC_HITS',
+        'value_key': 'l1d_vc_hits',
+        'higher_is_better': False,
+    },   
+    'l1d_vc_accesses': {
+        'label': 'L1D_VC_ACCESSES',
+        'value_key': 'l1d_vc_accesses',
+        'higher_is_better': False,
+    },         
     'l1d_vc_hit_rate': {
         'label': 'L1D_VC_HIT_RATE',
         'value_key': 'l1d_vc_hit_rate',
@@ -1765,6 +1822,8 @@ METRIC_NAME_ALIASES={
     'l1d_rd_misses': 'l1d_rd_misses',
     'l1d_reads': 'l1d_reads',    
     'l1d_rd_miss_rate': 'l1d_rd_miss_rate',
+    'l1d_vc_hits': 'l1d_vc_hits',
+    'l1d_vc_accesses': 'l1d_vc_accesses',
     'l1d_vc_hit_rate': 'l1d_vc_hit_rate',
     'l1d_n_fill_to_evict_lines': 'l1d_n_fill_to_evict_lines',
     'l1d_avg_rd_byp_act': 'l1d_avg_rd_byp_act',
@@ -1948,6 +2007,8 @@ def main():
             'L1D_RD_MISSES',
             'L1D_READS',
             'L1D_RD_MISS_RATE',
+            'L1D_VC_HITS',
+            'L1D_VC_ACCESSES',
             'L1D_VC_HIT_RATE',
             'L1D_N_FILL_TO_EVICT_LINES',
             'l1d_avg_rd_byp_act',
