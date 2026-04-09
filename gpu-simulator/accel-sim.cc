@@ -45,6 +45,9 @@ void accel_sim_framework::simulation_loop() {
   // prints stats
 
   while (commandlist_index < commandlist.size() || !kernels_info.empty()) {
+    u32 prev_cmdlist_idx  = commandlist_index;
+    u32 prev_cmdlist_size = commandlist.size();
+    bool kernel_was_not_empty = !kernels_info.empty();
     parse_commandlist();
 
     // Launch all kernels within window that are on a stream that isn't already
@@ -73,6 +76,17 @@ void accel_sim_framework::simulation_loop() {
     }
 
     unsigned finished_kernel_uid = simulate();
+    // if (DTRACE(SIM_LOOP)) {
+    //   fprintf(Trace::out, "commandlist_index:%u < commandlist.size:%lu "
+    //     "!kernels_info.empty:%u. finished_kernel_uid:%u = simulate()\n",
+    //     commandlist_index, commandlist.size(), !kernels_info.empty(),
+    //     finished_kernel_uid);
+    // }
+    fprintf(Trace::out, "(prev_cmdlist_idx:%u < prev_cmdlist_size:%u) "
+      "|| kernel_was_not_empty:%u -> finished_kernel_uid:%u = simulate()\n",
+      prev_cmdlist_idx, prev_cmdlist_size, kernel_was_not_empty,
+      finished_kernel_uid);
+
     // cleanup finished kernel
     if (finished_kernel_uid || m_gpgpu_sim->cycle_insn_cta_max_hit() ||
         !m_gpgpu_sim->active()) {
@@ -96,7 +110,7 @@ void accel_sim_framework::simulation_loop() {
       fflush(stdout);
       break;
     }
-  }
+  } // while (commandlist_index < commandlist.size() || !kernels_info.empty()) {
 }
 
 void accel_sim_framework::parse_commandlist() {
