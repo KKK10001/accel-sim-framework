@@ -18,6 +18,8 @@
 #include "option_parser.h"
 #include "trace_driven.h"
 
+typedef unsigned long long u64;
+typedef unsigned u32;
 class accel_sim_framework {
  public:
   accel_sim_framework(int argc, const char **argv);
@@ -39,12 +41,14 @@ class accel_sim_framework {
                       : 1;
     assert(window_size > 0);
     commandlist = tracer.parse_commandlist_file();
+    dump_commandlist();
 
     kernels_info.reserve(window_size);
   }
   void simulation_loop();
   void parse_commandlist();
-  void cleanup(unsigned finished_kernel);
+  void dump_commandlist();
+  void cleanup(u32 finished_kernel, u64& finished_kernel_cuda_stream_id);
   unsigned simulate();
   trace_kernel_info_t *create_kernel_info(kernel_trace_t *kernel_trace_info,
                                           gpgpu_context *m_gpgpu_context,
@@ -53,7 +57,6 @@ class accel_sim_framework {
   gpgpu_sim *gpgpu_trace_sim_init_perf_model(int argc, const char *argv[],
                                   gpgpu_context *m_gpgpu_context,
                                   trace_config *m_config);
-
 
  private:
   gpgpu_context *m_gpgpu_context;

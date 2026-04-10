@@ -76,6 +76,7 @@ void accel_sim_framework::simulation_loop() {
     }
 
     unsigned finished_kernel_uid = simulate();
+    u64 finished_kernel_cuda_stream_id = (u64) - 1;
     // if (DTRACE(SIM_LOOP)) {
     //   fprintf(Trace::out, "commandlist_index:%u < commandlist.size:%lu "
     //     "!kernels_info.empty:%u. finished_kernel_uid:%u = simulate()\n",
@@ -88,18 +89,19 @@ void accel_sim_framework::simulation_loop() {
       finished_kernel_uid);
 
     // cleanup finished kernel
+    std::string active_type = "";
     if (finished_kernel_uid || m_gpgpu_sim->cycle_insn_cta_max_hit() ||
-        !m_gpgpu_sim->active()) {
+        !m_gpgpu_sim->active(active_type)) {
       if (DTRACE(KERNEL_STATS)) { // 12-22
         fprintf(Trace::out, "%llu cleanup(finished_kernel_uid:%u)\n", 
           m_gpgpu_sim->gpu_tot_sim_cycle + m_gpgpu_sim->gpu_sim_cycle,
           finished_kernel_uid);
-      }
-      cleanup(finished_kernel_uid);
+      }      
+      cleanup(finished_kernel_uid, finished_kernel_cuda_stream_id);
     }
 
     if (sim_cycles) {
-      m_gpgpu_sim->update_stats();
+      m_gpgpu_sim->update_stats(finished_kernel_uid, finished_kernel_cuda_stream_id);
       m_gpgpu_context->print_simulation_time();
     }
 
@@ -111,6 +113,14 @@ void accel_sim_framework::simulation_loop() {
       break;
     }
   } // while (commandlist_index < commandlist.size() || !kernels_info.empty()) {
+}
+
+void accel_sim_framework::dump_commandlist() {
+  for (unsigned i = 0; i < commandlist.size(); i++) {
+    std::cout << "commandlist[" << i << "] = {cmd: " << 
+    commandlist[i].command_string << ", type: " << 
+    commandlist[i].m_type << "}" << std::endl;
+  }
 }
 
 void accel_sim_framework::parse_commandlist() {
@@ -143,13 +153,13 @@ void accel_sim_framework::parse_commandlist() {
   }
 }
 
-void accel_sim_framework::cleanup(unsigned finished_kernel) {
+void accel_sim_framework::cleanup(u32 finished_kernel, u64& finished_kernel_cuda_stream_id) {
   trace_kernel_info_t *k = NULL;
-  unsigned long long finished_kernel_cuda_stream_id = -1;
   for (unsigned j = 0; j < kernels_info.size(); j++) {
+    std::string active_type = "";
     k = kernels_info.at(j);
     if (k->get_uid() == finished_kernel ||
-        m_gpgpu_sim->cycle_insn_cta_max_hit() || !m_gpgpu_sim->active()) {
+        m_gpgpu_sim->cycle_insn_cta_max_hit() || !m_gpgpu_sim->active(active_type)) {
       for (unsigned int l = 0; l < busy_streams.size(); l++) {
         if (busy_streams.at(l) == k->get_cuda_stream_id()) {
           finished_kernel_cuda_stream_id = k->get_cuda_stream_id();
@@ -161,21 +171,25 @@ void accel_sim_framework::cleanup(unsigned finished_kernel) {
       delete k->entry();
       delete k;
       kernels_info.erase(kernels_info.begin() + j);
-      if (!m_gpgpu_sim->cycle_insn_cta_max_hit() && m_gpgpu_sim->active())
+      if (!m_gpgpu_sim->cycle_insn_cta_max_hit() && m_gpgpu_sim->active(active_type)) {
         break;
+      }        
     }
   }
   assert(k);
-  m_gpgpu_sim->print_stats(finished_kernel_cuda_stream_id, finished_kernel);
+  // m_gpgpu_sim->print_stats(finished_kernel_cuda_stream_id, finished_kernel);
 }
 
 unsigned accel_sim_framework::simulate() {
   unsigned finished_kernel_uid = 0;
   do {
-    if (!m_gpgpu_sim->active()) break;
+    std::string active_type = "";
+    if (!m_gpgpu_sim->active(active_type)) {
+      break;
+    }
 
     // performance simulation
-    if (m_gpgpu_sim->active()) {
+    if (m_gpgpu_sim->active(active_type)) {
       m_gpgpu_sim->cycle();
       sim_cycles = true;
       m_gpgpu_sim->deadlock_check();
@@ -187,8 +201,15 @@ unsigned accel_sim_framework::simulate() {
       }
     }
 
-    active = m_gpgpu_sim->active();
+    active = m_gpgpu_sim->active(active_type);
     finished_kernel_uid = m_gpgpu_sim->finished_kernel();
+    // if (DTRACE(CHECK_SIM_ACTIVE)) {
+    if (1) {
+      fprintf(Trace::out, "%llu accel_sim_framework::simulate() "
+        "active:%u finished_kernel_uid:%u\n",
+        m_gpgpu_sim->gpu_tot_sim_cycle + m_gpgpu_sim->gpu_sim_cycle,
+        active, finished_kernel_uid);
+    }
   } while (active && !finished_kernel_uid);
   return finished_kernel_uid;
 }

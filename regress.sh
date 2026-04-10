@@ -627,6 +627,10 @@ fi
 # 1) LRR
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_base_lrr_srad_v2 --config-file ./perf_study/configs/l1d_no_vc_byp_no_vb.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_base_lrr_srad_v2
+
+# ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_byp_without_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2
+
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_T_T_40_10_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_dyn_byp_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_T_T_40_10_3_lrr_srad_v2
 # 124.142 (+3.054%)	

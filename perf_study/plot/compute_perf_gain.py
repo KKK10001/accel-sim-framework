@@ -620,6 +620,19 @@ python3 compute_perf_gain.py \
   --variants \
     l1d_base_lrr_srad_v2 \
     l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2 \
+  --clean-old-o \
+  --fail-total-metrics NONE \
+  --txt-file perf_gain.txt \
+  --csv-file perf_gain.csv \
+  --md-file perf_gain.md \
+  --html-file perf_gain.html \
+  --xlsx-file perf_gain.xlsx \
+  --fail-cause-xlsx fail_cause_breakdown.xlsx
+
+python3 compute_perf_gain.py \
+  --variants \
+    l1d_base_lrr_srad_v2 \
+    l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2 \
     l1d_include_byp_fill_extra_mf_fields_T_1_F_T_20_5_3_lrr_srad_v2 \
     l1d_byp_incoming_req_T_1_F_T_20_5_3_lrr_srad_v2 \
     l1d_byp_incoming_req_T_1_F_T_20_10_3_lrr_srad_v2 \
