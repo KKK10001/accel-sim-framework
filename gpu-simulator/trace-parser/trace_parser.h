@@ -14,10 +14,21 @@
 #define MAX_SRC 4
 
 enum command_type {
-  kernel_launch = 1,
+  kernel_launch = 0,
   cpu_gpu_mem_copy,
   gpu_cpu_mem_copy,
+  NUM_COMMAND_TYPES
 };
+inline const char* command_type_str(enum command_type type) {
+  static const char *static_command_type_str[] = {
+    "kernel_launch",
+    "cpu_gpu_mem_copy",
+    "gpu_cpu_mem_copy"
+  };
+  assert(sizeof(static_command_type_str) / sizeof(const char*) == NUM_COMMAND_TYPES);
+  assert(type < NUM_COMMAND_TYPES);
+  return static_command_type_str[type];
+}
 
 enum address_space { GLOBAL_MEM = 1, SHARED_MEM, LOCAL_MEM, TEX_MEM };
 

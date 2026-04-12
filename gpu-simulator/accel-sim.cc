@@ -119,7 +119,7 @@ void accel_sim_framework::dump_commandlist() {
   for (unsigned i = 0; i < commandlist.size(); i++) {
     std::cout << "commandlist[" << i << "] = {cmd: " << 
     commandlist[i].command_string << ", type: " << 
-    commandlist[i].m_type << "}" << std::endl;
+    command_type_str(commandlist[i].m_type) << "}" << std::endl;
   }
 }
 
@@ -176,8 +176,7 @@ void accel_sim_framework::cleanup(u32 finished_kernel, u64& finished_kernel_cuda
       }        
     }
   }
-  assert(k);
-  // m_gpgpu_sim->print_stats(finished_kernel_cuda_stream_id, finished_kernel);
+  assert(k);  
 }
 
 unsigned accel_sim_framework::simulate() {
@@ -200,16 +199,8 @@ unsigned accel_sim_framework::simulate() {
         break;
       }
     }
-
     active = m_gpgpu_sim->active(active_type);
     finished_kernel_uid = m_gpgpu_sim->finished_kernel();
-    // if (DTRACE(CHECK_SIM_ACTIVE)) {
-    if (1) {
-      fprintf(Trace::out, "%llu accel_sim_framework::simulate() "
-        "active:%u finished_kernel_uid:%u\n",
-        m_gpgpu_sim->gpu_tot_sim_cycle + m_gpgpu_sim->gpu_sim_cycle,
-        active, finished_kernel_uid);
-    }
   } while (active && !finished_kernel_uid);
   return finished_kernel_uid;
 }
