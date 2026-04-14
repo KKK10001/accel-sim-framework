@@ -239,7 +239,7 @@ gpgpu_sim *accel_sim_framework::gpgpu_trace_sim_init_perf_model(
 
   m_gpgpu_context->the_gpgpusim->g_the_gpu_config = new gpgpu_sim_config(m_gpgpu_context);
   m_gpgpu_context->the_gpgpusim->g_the_gpu_config->reg_options(opp);  // register GPU microrachitecture options
-  m_config->reg_options(opp);
+  m_config->reg_options(opp); // trace_config::reg_options
 
   option_parser_cmdline(opp, argc, argv);  // parse configuration options
   fprintf(stdout, "GPGPU-Sim: Configuration options:\n\n");
