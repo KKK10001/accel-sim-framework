@@ -138,10 +138,10 @@ void accel_sim_framework::parse_commandlist() {
       commandlist_index++;
     } else if (commandlist[commandlist_index].m_type == command_type::kernel_launch) {
       // Read trace header info for window_size number of kernels
-      kernel_trace_t *kernel_trace_info =
-          tracer.parse_kernel_info(commandlist[commandlist_index].command_string);
-      kernel_info = create_kernel_info(kernel_trace_info, m_gpgpu_context,
-                                       &tconfig, &tracer);
+      kernel_trace_t *kernel_trace_info = 
+        tracer.parse_kernel_info(commandlist[commandlist_index].command_string);
+      
+      kernel_info = create_kernel_info(kernel_trace_info, m_gpgpu_context, &tconfig, &tracer);
       kernels_info.push_back(kernel_info);
       std::cout << "Header info loaded for kernel command : "
                 << commandlist[commandlist_index].command_string << std::endl;
