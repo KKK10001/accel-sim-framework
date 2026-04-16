@@ -628,6 +628,11 @@ fi
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_base_lrr_srad_v2 --config-file ./perf_study/configs/l1d_no_vc_byp_no_vb.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_base_lrr_srad_v2
 
+# IPC: 111.445 (-7.486%)	
+# L1D_RD_MISS_RATE: 0.921 (+21.852%)
+# ./regress.sh single srad_v2-rodinia-2.0-ft subwarp_2_lrr_srad_v2 --config-file ./perf_study/configs/subwarp.config
+# ./util/job_launching/monitor_func_test.py -v -N subwarp_2_lrr_srad_v2
+
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2 --config-file ./perf_study/configs/l1d_byp_without_vb.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2
 

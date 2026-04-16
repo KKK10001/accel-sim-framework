@@ -344,10 +344,11 @@ bool trace_warp_inst_t::parse_from_trace_struct(
     case OP_ST:
     case OP_LD:
       assert(data_size > 0);
-      if (m_opcode == OP_LD)
+      if (m_opcode == OP_LD) {
         memory_op = memory_load;
-      else
+      } else {
         memory_op = memory_store;
+      }        
       // resolve generic loads
       if (kernel_trace_info->shmem_base_addr == 0 ||
           kernel_trace_info->local_base_addr == 0) {
@@ -356,18 +357,13 @@ bool trace_warp_inst_t::parse_from_trace_struct(
         space.set_type(shared_space);
       } else {
         // check the first active address
-        for (unsigned i = 0; i < warp_size(); ++i)
+        for (unsigned i = 0; i < warp_size(); ++i) {
           if (active_mask.test(i)) {
-            if (trace.memadd_info->addrs[i] >=
-                    kernel_trace_info->shmem_base_addr &&
-                trace.memadd_info->addrs[i] <
-                    kernel_trace_info->local_base_addr)
+            if (trace.memadd_info->addrs[i] >= kernel_trace_info->shmem_base_addr &&
+                trace.memadd_info->addrs[i] < kernel_trace_info->local_base_addr) {
               space.set_type(shared_space);
-            else if (trace.memadd_info->addrs[i] >=
-                         kernel_trace_info->local_base_addr &&
-                     trace.memadd_info->addrs[i] <
-                         kernel_trace_info->local_base_addr +
-                             LOCAL_MEM_SIZE_MAX) {
+            } else if (trace.memadd_info->addrs[i] >= kernel_trace_info->local_base_addr &&
+              trace.memadd_info->addrs[i] < kernel_trace_info->local_base_addr + LOCAL_MEM_SIZE_MAX) {
               space.set_type(local_space);
               cache_op = CACHE_ALL;
             } else {
@@ -376,8 +372,8 @@ bool trace_warp_inst_t::parse_from_trace_struct(
             }
             break;
           }
+        }
       }
-
       break;
     case OP_BAR:
       // TO DO: fill this correctly

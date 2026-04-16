@@ -619,6 +619,7 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     l1d_base_lrr_srad_v2 \
+    subwarp_2_lrr_srad_v2 \
     l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2 \
   --clean-old-o \
   --fail-total-metrics NONE \
