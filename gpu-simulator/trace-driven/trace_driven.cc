@@ -123,17 +123,22 @@ trace_kernel_info_t::trace_kernel_info_t(dim3 gridDim, dim3 blockDim,
 
   // resolve the binary version
   if (kernel_trace_info->binary_verion == AMPERE_RTX_BINART_VERSION ||
-      kernel_trace_info->binary_verion == AMPERE_A100_BINART_VERSION)
+      kernel_trace_info->binary_verion == AMPERE_A100_BINART_VERSION) {
     OpcodeMap = &Ampere_OpcodeMap;
-  else if (kernel_trace_info->binary_verion == VOLTA_BINART_VERSION)
+  }    
+  else if (kernel_trace_info->binary_verion == VOLTA_BINART_VERSION) {
     OpcodeMap = &Volta_OpcodeMap;
+  }
   else if (kernel_trace_info->binary_verion == PASCAL_TITANX_BINART_VERSION ||
-           kernel_trace_info->binary_verion == PASCAL_P100_BINART_VERSION)
+           kernel_trace_info->binary_verion == PASCAL_P100_BINART_VERSION) {
     OpcodeMap = &Pascal_OpcodeMap;
-  else if (kernel_trace_info->binary_verion == KEPLER_BINART_VERSION)
+  }    
+  else if (kernel_trace_info->binary_verion == KEPLER_BINART_VERSION) {
     OpcodeMap = &Kepler_OpcodeMap;
-  else if (kernel_trace_info->binary_verion == TURING_BINART_VERSION)
+  }
+  else if (kernel_trace_info->binary_verion == TURING_BINART_VERSION) {
     OpcodeMap = &Turing_OpcodeMap;
+  }    
   else {
     printf("unsupported binary version: %d\n",
            kernel_trace_info->binary_verion);
@@ -172,6 +177,23 @@ types_of_operands get_oprnd_type(op_type op, special_ops sp_op) {
   }
 }
 
+void trace_warp_inst_t::dump_load_detail(
+  unsigned opcode,
+  _memory_op_t memory_op,
+  memory_space_t space,
+  cache_operator_type cache_op) {
+
+  fprintf(Trace::out, 
+  "%s " /* m_opcode */
+  "%s " /* memory_op */
+  "%s " /* m_type */
+  "%s\n", /* cache_op */
+  sass_op_type_str(sass_op_type(opcode)),
+  memory_op_str(memory_op),
+  memory_space_str(space.get_type()),
+  cache_op_str(cache_op));
+}
+
 bool trace_warp_inst_t::parse_from_trace_struct(
     const inst_trace_t &trace,
     const std::unordered_map<std::string, OpcodeChar> *OpcodeMap,
@@ -187,8 +209,8 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   m_decoded = true;
   pc = (address_type)trace.m_pc;
 
-  isize =
-      16;  // starting from MAXWELL isize=16 bytes (including the control bytes)
+  // starting from MAXWELL isize = 16 bytes (including the control bytes)
+  isize = 16;
   for (unsigned i = 0; i < MAX_OUTPUT_VALUES; i++) {
     out[i] = 0;
   }
@@ -213,15 +235,24 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   std::vector<std::string> opcode_tokens = trace.get_opcode_tokens();
   std::string opcode1 = opcode_tokens[0];
 
-  std::unordered_map<std::string, OpcodeChar>::const_iterator it =
-      OpcodeMap->find(opcode1);
+  std::unordered_map<std::string, OpcodeChar>::const_iterator it = OpcodeMap->find(opcode1);
   if (it != OpcodeMap->end()) {
     m_opcode = it->second.opcode;
     op = (op_type)(it->second.opcode_category);
+
+    // for debug OpcodeMap
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "OpcodeMap[opcode1:%s] = <opcode:%s, op_type:%s>\n",
+        opcode1.c_str(), trace.opcode.c_str(), uarch_op_str(op));
+    }
+
     const std::unordered_map<unsigned, unsigned> *OpcPowerMap = &OpcodePowerMap;
-    std::unordered_map<unsigned, unsigned>::const_iterator it2 =
-        OpcPowerMap->find(m_opcode);
-    if (it2 != OpcPowerMap->end()) sp_op = (special_ops)(it2->second);
+    std::unordered_map<unsigned, unsigned>::const_iterator it2 = 
+      OpcPowerMap->find(m_opcode);
+    if (it2 != OpcPowerMap->end()) {
+      sp_op = (special_ops)(it2->second);
+    }
+
     oprnd_type = get_oprnd_type(op, sp_op);
   } else {
     std::cout << "ERROR:  undefined instruction : " << trace.opcode
@@ -229,6 +260,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
     assert(0 && "undefined instruction");
   }
   std::string opcode = trace.opcode;
+
   if (opcode1 == "MUFU") {  // Differentiate between different MUFU operations
                             // for power model
     if ((opcode == "MUFU.SIN") || (opcode == "MUFU.COS")) sp_op = FP_SIN_OP;
@@ -247,21 +279,132 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   num_operands = num_regs;
   outcount = trace.reg_dsts_num;
   for (unsigned m = 0; m < trace.reg_dsts_num; ++m) {
-    out[m] =
-        trace.reg_dest[m] + 1;  // Increment by one because GPGPU-sim starts
-                                // from R1, while SASS starts from R0
+    // Increment by one because GPGPU-sim starts
+    // from R1, while SASS starts from R0
+    out[m] = trace.reg_dest[m] + 1;                                
     arch_reg.dst[m] = trace.reg_dest[m] + 1;
   }
 
   incount = trace.reg_srcs_num;
   for (unsigned m = 0; m < trace.reg_srcs_num; ++m) {
-    in[m] = trace.reg_src[m] + 1;  // Increment by one because GPGPU-sim starts
-                                   // from R1, while SASS starts from R0
+    // Increment by one because GPGPU-sim starts
+    // from R1, while SASS starts from R0    
+    in[m] = trace.reg_src[m] + 1;                                   
     arch_reg.src[m] = trace.reg_src[m] + 1;
   }
 
   // fill latency and initl
   tconfig->set_latency(op, latency, initiation_interval);
+
+  // if (opcode1 == "FCHK") {
+  //   fprintf(Trace::out, "Hit target inst FCHK\n");
+  // }
+  // UARCH_TUP(NO_OP)
+  // UARCH_TUP(ALU_OP) // 
+  // UARCH_TUP(SFU_OP) // 
+  // UARCH_TUP(DP_OP) // 
+  // UARCH_TUP(SP_OP) //
+  // UARCH_TUP(INTP_OP) // 
+  // UARCH_TUP(LOAD_OP) //
+  // UARCH_TUP(STORE_OP) //
+  // UARCH_TUP(BARRIER_OP) // 
+  // UARCH_TUP(MEMORY_BARRIER_OP) // 
+  // UARCH_TUP(EXIT_OPS) // 
+  // UARCH_TUP(SPECIALIZED_UNIT_1_OP)
+  // UARCH_TUP(SPECIALIZED_UNIT_2_OP)  
+  if (!strcmp(uarch_op_str(op), "ALU_OP"))
+  {
+    // Hit ALU_OP F2F.F64.F32 lat:2 issue_gap:2
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit ALU_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }   
+  else if (!strcmp(uarch_op_str(op), "SFU_OP"))
+  {
+    // Hit SFU_OP MUFU.RCP lat:20 issue_gap:8 (dst = 1.0f / src)
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit SFU_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }  
+  else if (!strcmp(uarch_op_str(op), "DP_OP"))
+  {
+    // Hit DP_OP DFMA lat:8 issue_gap:4
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit DP_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }    
+  else if (!strcmp(uarch_op_str(op), "SP_OP"))
+  {
+    // Hit SP_OP FMUL lat:2 issue_gap:2
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit SP_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }   
+  else if (!strcmp(uarch_op_str(op), "INTP_OP"))
+  {
+    // Hit INTP_OP IMAD.MOV.U32 lat:2 issue_gap:2
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit INTP_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);      
+    }
+  }    
+  else if (!strcmp(uarch_op_str(op), "LOAD_OP"))
+  {
+    // Hit LOAD_OP (m_opcode:71) LDG.E.SYS lat:1 issue_gap:1
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit LOAD_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  } 
+  else if (!strcmp(uarch_op_str(op), "STORE_OP"))
+  {
+    // Hit STORE_OP STS lat:1 issue_gap:1
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit STORE_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }
+  else if (!strcmp(uarch_op_str(op), "BARRIER_OP"))
+  {
+    // Hit BARRIER_OP BAR.SYNC lat:1 issue_gap:1
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit BARRIER_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }  
+  else if (!strcmp(uarch_op_str(op), "MEMORY_BARRIER_OP"))
+  {
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit MEMORY_BARRIER_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }
+  else if (!strcmp(uarch_op_str(op), "EXIT_OP"))
+  { 
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit EXIT_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }
+  else if (!strcmp(uarch_op_str(op), "SPECIALIZED_UNIT_1_OP"))
+  {
+    // Hit SPECIALIZED_UNIT_1_OP BRA lat:4 issue_gap:4
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit SPECIALIZED_UNIT_1_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);
+    }
+  }
+  else if (!strcmp(uarch_op_str(op), "SPECIALIZED_UNIT_2_OP"))
+  {
+    if (DTRACE(UOP_DETAIL)) {
+      fprintf(Trace::out, "Hit SPECIALIZED_UNIT_2_OP (m_opcode:%u) %s lat:%u issue_gap:%u\n", 
+        m_opcode, trace.opcode.c_str(), latency, initiation_interval);      
+    }
+  }  
 
   // fill addresses
   if (trace.memadd_info != NULL) {
@@ -288,17 +431,23 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       assert(data_size > 0);
       memory_op = memory_load;
       cache_op = CACHE_ALL;
-      if (m_opcode == OP_LDL)
+      if (m_opcode == OP_LDL) {
         space.set_type(local_space);
-      else
+      } else {
         space.set_type(global_space);
+      }
       // Add for LDGSTS instruction
-      if (m_opcode == OP_LDGSTS) m_is_ldgsts = true;
+      if (m_opcode == OP_LDGSTS) { // AMPERE specific instruction
+        m_is_ldgsts = true;
+      }
       // check the cache scope, if its strong GPU, then bypass L1
       if ((trace.check_opcode_contain(opcode_tokens, "STRONG") &&
            trace.check_opcode_contain(opcode_tokens, "GPU")) ||
           trace.check_opcode_contain(opcode_tokens, "BYPASS")) {
         cache_op = CACHE_GLOBAL;
+      }
+      if (DTRACE(LOAD_DETAIL)) {
+        dump_load_detail(m_opcode, memory_op, space, cache_op);
       }
       break;
     case OP_STG:
@@ -306,10 +455,11 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       assert(data_size > 0);
       memory_op = memory_store;
       cache_op = CACHE_ALL;
-      if (m_opcode == OP_STL)
+      if (m_opcode == OP_STL) {
         space.set_type(local_space);
-      else
+      } else {
         space.set_type(global_space);
+      }
       break;
     case OP_ATOMG:
     case OP_RED:
@@ -325,6 +475,9 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       assert(data_size > 0);
       memory_op = memory_load;
       space.set_type(shared_space);
+      if (DTRACE(LOAD_DETAIL)) {
+        dump_load_detail(m_opcode, memory_op, space, cache_op);
+      }
       break;
     case OP_STS:
       assert(data_size > 0);
@@ -337,9 +490,12 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       memory_op = memory_load;
       space.set_type(shared_space);
       break;
-    case OP_LDSM:
+    case OP_LDSM: // Load Matrix from Shared Memory
       assert(data_size > 0);
       space.set_type(shared_space);
+      if (DTRACE(LOAD_DETAIL)) {
+        dump_load_detail(m_opcode, memory_op, space, cache_op);
+      }      
       break;
     case OP_ST:
     case OP_LD:
@@ -355,6 +511,9 @@ bool trace_warp_inst_t::parse_from_trace_struct(
         // shmem and local addresses are not set
         // assume all the mem reqs are shared by default
         space.set_type(shared_space);
+        if (DTRACE(LOAD_DETAIL)) {
+          dump_load_detail(m_opcode, memory_op, space, cache_op);
+        }
       } else {
         // check the first active address
         for (unsigned i = 0; i < warp_size(); ++i) {
@@ -370,6 +529,11 @@ bool trace_warp_inst_t::parse_from_trace_struct(
               space.set_type(global_space);
               cache_op = CACHE_ALL;
             }
+            if (m_opcode == OP_LD) {
+              if (DTRACE(LOAD_DETAIL)) {
+                dump_load_detail(m_opcode, memory_op, space, cache_op);
+              }
+            }
             break;
           }
         }
@@ -378,7 +542,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
     case OP_BAR:
       // TO DO: fill this correctly
       bar_id = 0;
-      bar_count = (unsigned)-1;
+      bar_count = (u32) - 1;      
       bar_type = SYNC;
       // TO DO
       // if bar_type = RED;
@@ -409,11 +573,12 @@ bool trace_warp_inst_t::parse_from_trace_struct(
     case OP_HMUL2_32I:
     case OP_HSET2:
     case OP_HSETP2:
-      initiation_interval =
-          initiation_interval / 2;  // FP16 has 2X throughput than FP32
-      if (initiation_interval <
-          1)  // Make sure initiaion interval never goes below 1
+      // FP16 has 2X throughput than FP32
+      initiation_interval = initiation_interval / 2;
+      // Make sure initiaion interval never goes below 1
+      if (initiation_interval < 1) {
         initiation_interval = 1;
+      }        
       break;
     default:
       break;

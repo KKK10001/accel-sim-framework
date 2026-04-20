@@ -43,6 +43,9 @@
 #include "gpgpu-sim/shader.h"
 #include <bitset>
 
+typedef unsigned u32;
+typedef unsigned int u32;
+
 class trace_function_info : public function_info {
  public:
   trace_function_info(const struct gpgpu_ptx_sim_info &info,
@@ -65,12 +68,12 @@ class trace_function_info : public function_info {
 class trace_warp_inst_t : public warp_inst_t {
  public:
   trace_warp_inst_t() {
-    m_opcode = 0;
+    m_opcode = (unsigned) - 1;
     should_do_atomic = false;
   }
 
   trace_warp_inst_t(const class core_config *config) : warp_inst_t(config) {
-    m_opcode = 0;
+    m_opcode = (unsigned) - 1;
     should_do_atomic = false;
   }
 
@@ -79,6 +82,12 @@ class trace_warp_inst_t : public warp_inst_t {
       const std::unordered_map<std::string, OpcodeChar> *OpcodeMap,
       const class trace_config *tconfig,
       const class kernel_trace_t *kernel_trace_info);
+
+  void dump_load_detail(
+    unsigned opcode,
+    _memory_op_t memory_op,
+    memory_space_t space,
+    cache_operator_type cache_op);
 
  private:
   unsigned m_opcode;

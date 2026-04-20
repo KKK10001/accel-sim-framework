@@ -25,6 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 DEBUG?=0
+TRACE?=1
 
 
 BUILD_DIR=../build/$(ACCELSIM_CONFIG)
@@ -37,6 +38,10 @@ endif
 
 ifeq ($(GNUC_CPP0X), 1)
     CXXFLAGS += -std=c++0x
+endif
+
+ifeq ($(TRACE),1)
+	CXXFLAGS += -DTRACING_ON=1
 endif
 
 ifneq ($(DEBUG),1)

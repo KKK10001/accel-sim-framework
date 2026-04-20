@@ -61,7 +61,9 @@ std::vector<std::string> inst_trace_t::get_opcode_tokens() const {
   std::vector<std::string> opcode_tokens;
   std::string token;
   while (std::getline(iss, token, '.')) {
-    if (!token.empty()) opcode_tokens.push_back(token);
+    if (!token.empty()) {
+      opcode_tokens.push_back(token);
+    }
   }
   return opcode_tokens;
 }
