@@ -45,6 +45,7 @@
 
 typedef unsigned u32;
 typedef unsigned int u32;
+typedef unsigned long long u64;
 
 class trace_function_info : public function_info {
  public:
@@ -67,14 +68,18 @@ class trace_function_info : public function_info {
 
 class trace_warp_inst_t : public warp_inst_t {
  public:
+  friend class trace_shd_warp_t;
+
   trace_warp_inst_t() {
-    m_opcode = (unsigned) - 1;
+    m_opcode = (u32) - 1;
     should_do_atomic = false;
+    m_warp_id = (u32) - 1;
   }
 
   trace_warp_inst_t(const class core_config *config) : warp_inst_t(config) {
-    m_opcode = (unsigned) - 1;
+    m_opcode = (u32) - 1;
     should_do_atomic = false;
+    m_warp_id = (u32) - 1;
   }
 
   bool parse_from_trace_struct(
@@ -84,13 +89,21 @@ class trace_warp_inst_t : public warp_inst_t {
       const class kernel_trace_t *kernel_trace_info);
 
   void dump_load_detail(
-    unsigned opcode,
+    u64 pc,
+    u32 warp,
+    std::string opcode, /* inst name */
     _memory_op_t memory_op,
     memory_space_t space,
-    cache_operator_type cache_op);
+    cache_operator_type cache_op,
+    u32 latency, u32 issue_gap
+  );
 
- private:
-  unsigned m_opcode;
+  private:
+    u32 m_opcode;
+    u32 m_warp_id;
+  private:
+    void set_warp_id(u32 warp_id) { m_warp_id = warp_id; }
+    u32 get_warp_id() const { return m_warp_id; }
 };
 
 class trace_kernel_info_t : public kernel_info_t {
@@ -231,16 +244,16 @@ class trace_shader_core_ctx : public shader_core_ctx {
                                    unsigned hw_cta_id, unsigned hw_warp_id,
                                    gpgpu_t *gpu);
   virtual void create_shd_warp();
-  virtual const warp_inst_t *get_next_inst(unsigned warp_id, address_type pc);
+  virtual const warp_inst_t *get_next_inst(unsigned warp_id, address_type pc, bool is_pI2 = false);
   virtual void updateSIMTStack(unsigned warpId, warp_inst_t *inst);
   virtual void get_pdom_stack_top_info(unsigned warp_id, const warp_inst_t *pI,
                                        unsigned *pc, unsigned *rpc);
   virtual const active_mask_t &get_active_mask(unsigned warp_id,
                                                const warp_inst_t *pI);
   virtual void issue_warp(register_set &warp, const warp_inst_t *pI,
-                          const active_mask_t &active_mask, unsigned warp_id,
-                          unsigned sch_id);
-
+                          const active_mask_t &active_mask, u32 warp_id,
+                          u32 sch_id);
+    
  private:
   void init_traces(unsigned start_warp, unsigned end_warp,
                    kernel_info_t &kernel);
