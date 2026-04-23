@@ -74,12 +74,16 @@ class trace_warp_inst_t : public warp_inst_t {
     m_opcode = (u32) - 1;
     should_do_atomic = false;
     m_warp_id = (u32) - 1;
+    m_sid = (u32) - 1;
+    m_time = (u64) - 1;
   }
 
   trace_warp_inst_t(const class core_config *config) : warp_inst_t(config) {
     m_opcode = (u32) - 1;
     should_do_atomic = false;
     m_warp_id = (u32) - 1;
+    m_sid = (u32) - 1;
+    m_time = (u64) - 1;
   }
 
   bool parse_from_trace_struct(
@@ -89,8 +93,9 @@ class trace_warp_inst_t : public warp_inst_t {
       const class kernel_trace_t *kernel_trace_info);
 
   void dump_load_detail(
-    u64 pc,
+    u32 core,
     u32 warp,
+    u64 pc,    
     std::string opcode, /* inst name */
     _memory_op_t memory_op,
     memory_space_t space,
@@ -101,9 +106,15 @@ class trace_warp_inst_t : public warp_inst_t {
   private:
     u32 m_opcode;
     u32 m_warp_id;
+    u32 m_sid; // shader core id
+    u64 m_time;
   private:
     void set_warp_id(u32 warp_id) { m_warp_id = warp_id; }
     u32 get_warp_id() const { return m_warp_id; }
+    void set_sid(u32 sid) { m_sid = sid; }
+    u32 get_sid() const { return m_sid; }
+    void set_time(u64 time) { m_time = time; }
+    u64 get_time() const { return m_time; }
 };
 
 class trace_kernel_info_t : public kernel_info_t {

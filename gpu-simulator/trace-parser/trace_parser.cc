@@ -50,8 +50,11 @@ inst_trace_t::inst_trace_t(const inst_trace_t &b) {
 
 bool inst_trace_t::check_opcode_contain(const std::vector<std::string> &opcode,
                                         std::string param) const {
-  for (unsigned i = 0; i < opcode.size(); ++i)
-    if (opcode[i] == param) return true;
+  for (unsigned i = 0; i < opcode.size(); ++i) {
+    if (opcode[i] == param) {
+      return true;
+    }
+  }
 
   return false;
 }

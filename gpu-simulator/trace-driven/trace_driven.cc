@@ -61,7 +61,9 @@ const trace_warp_inst_t *trace_shd_warp_t::get_next_trace_inst() {
   if (trace_pc < warp_traces.size()) {
     trace_warp_inst_t *new_inst = new trace_warp_inst_t(get_shader()->get_config());
     new_inst->set_warp_id(get_warp_id());
-
+    new_inst->set_sid(get_shader()->get_sid());
+    new_inst->set_time(get_time());
+    // new_inst->set_time(get_shader()->get_time());
     new_inst->parse_from_trace_struct(
         warp_traces[trace_pc], m_kernel_info->OpcodeMap,
         m_kernel_info->m_tconfig, m_kernel_info->m_kernel_trace_info);
@@ -179,8 +181,9 @@ types_of_operands get_oprnd_type(op_type op, special_ops sp_op) {
 }
 
 void trace_warp_inst_t::dump_load_detail(
-  u64 pc,
+  u32 core,
   u32 warp,
+  u64 pc,
   std::string opcode, /* inst name */
   _memory_op_t memory_op,
   memory_space_t space,
@@ -189,15 +192,18 @@ void trace_warp_inst_t::dump_load_detail(
 ) {
 
   fprintf(Trace::out, 
-  "pc:%#llx " /* pc */
+  "%llu "
+  "core:%u " /* core */
   "warp:%u " /* warp */
+  "inst "
+  "pc:%#llx " /* pc */  
   "%s " /* opcode */
   "%s " /* memory_op */
   "%s " /* m_type */
   "%s " /* cache_op */
   "lat:%u " /* latency */
   "issue_gap:%u\n", /* issue_gap */
-  pc, warp, 
+  get_time(), core, warp, pc, 
   opcode.c_str(),
   memory_op_str(memory_op),
   memory_space_str(space.get_type()),
@@ -219,8 +225,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   // fill and initialize common params
   m_decoded = true;
   pc = (address_type)trace.m_pc;
-
-  u32 warp_id           = get_warp_id();
+  trace_opcode = trace.opcode;  
   std::string inst_name = trace.opcode.c_str();
   const u32 issue_gap   = initiation_interval;
 
@@ -462,7 +467,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
         cache_op = CACHE_GLOBAL;
       }
       if (DTRACE(LOAD_DETAIL)) {
-        dump_load_detail(pc, warp_id, inst_name, memory_op, space, cache_op, latency, issue_gap);
+        dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
       }
       break;
     case OP_STG:
@@ -491,7 +496,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       memory_op = memory_load;
       space.set_type(shared_space);
       if (DTRACE(LOAD_DETAIL)) {
-        dump_load_detail(pc, warp_id, inst_name, memory_op, space, cache_op, latency, issue_gap);
+        dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
       }
       break;
     case OP_STS:
@@ -509,7 +514,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       assert(data_size > 0);
       space.set_type(shared_space);
       if (DTRACE(LOAD_DETAIL)) {
-        dump_load_detail(pc, warp_id, inst_name, memory_op, space, cache_op, latency, issue_gap);
+        dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
       }      
       break;
     case OP_ST:
@@ -527,7 +532,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
         // assume all the mem reqs are shared by default
         space.set_type(shared_space);
         if (DTRACE(LOAD_DETAIL)) {
-          dump_load_detail(pc, warp_id, inst_name, memory_op, space, cache_op, latency, issue_gap);
+          dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
         }
       } else {
         // check the first active address
@@ -546,7 +551,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
             }
             if (m_opcode == OP_LD) {
               if (DTRACE(LOAD_DETAIL)) {
-                dump_load_detail(pc, warp_id, inst_name, memory_op, space, cache_op, latency, issue_gap);
+                dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
               }
             }
             break;
@@ -824,6 +829,7 @@ const warp_inst_t *trace_shader_core_ctx::get_next_inst(
   unsigned warp_id, address_type pc, bool is_pI2) {
   // read the inst from the traces
   trace_shd_warp_t *m_trace_warp = static_cast<trace_shd_warp_t *>(m_warp[warp_id]);
+  m_trace_warp->set_time(m_gpu->get_cycle());
   const trace_warp_inst_t *ret = m_trace_warp->get_next_trace_inst();
 
   if (DTRACE(INST_TRACE)) {    
@@ -889,11 +895,11 @@ void trace_shader_core_ctx::checkExecutionStatusAndUpdate(warp_inst_t &inst,
                                                           unsigned t,
                                                           unsigned tid) {
   if (inst.isatomic()) {
-    m_warp[inst.warp_id()]->inc_n_atomic();
+    m_warp[inst.get_warp_id()]->inc_n_atomic();
   }
 
   if (inst.space.is_local() && (inst.is_load() || inst.is_store())) {
-    new_addr_type localaddrs[MAX_ACCESSES_PER_INSN_PER_THREAD];
+    new_addr_type localaddrs[max_accesses_per_insn_per_tid];
     unsigned num_addrs;
     num_addrs = translate_local_memaddr(
         inst.get_addr(t), tid,
@@ -906,7 +912,7 @@ void trace_shader_core_ctx::checkExecutionStatusAndUpdate(warp_inst_t &inst,
 void trace_shader_core_ctx::func_exec_inst(warp_inst_t &inst) {
   for (u32 t = 0; t < m_warp_size; t++) {
     if (inst.active(t)) {
-      u32 tid = m_warp_size * inst.warp_id() + t;
+      u32 tid = m_warp_size * inst.get_warp_id() + t;
       // virtual function
       checkExecutionStatusAndUpdate(inst, t, tid);
     }
