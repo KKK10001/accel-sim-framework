@@ -181,6 +181,7 @@ types_of_operands get_oprnd_type(op_type op, special_ops sp_op) {
 }
 
 void trace_warp_inst_t::dump_load_detail(
+  std::string caller, 
   u32 core,
   u32 warp,
   u64 pc,
@@ -192,18 +193,18 @@ void trace_warp_inst_t::dump_load_detail(
 ) {
 
   fprintf(Trace::out, 
-  "%llu "
-  "core:%u " /* core */
-  "warp:%u " /* warp */
-  "inst "
-  "pc:%#llx " /* pc */  
+  "%llu %s "
+  "core:%u " 
+  "warp:%u " 
+  "pc:%#llx " 
   "%s " /* opcode */
   "%s " /* memory_op */
   "%s " /* m_type */
   "%s " /* cache_op */
   "lat:%u " /* latency */
   "issue_gap:%u\n", /* issue_gap */
-  get_time(), core, warp, pc, 
+  get_time(), caller.c_str(),
+  core, warp, pc,
   opcode.c_str(),
   memory_op_str(memory_op),
   memory_space_str(space.get_type()),
@@ -316,22 +317,6 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   // fill latency and initl
   tconfig->set_latency(op, latency, initiation_interval);
 
-  // if (opcode1 == "FCHK") {
-  //   fprintf(Trace::out, "Hit target inst FCHK\n");
-  // }
-  // UARCH_TUP(NO_OP)
-  // UARCH_TUP(ALU_OP) // 
-  // UARCH_TUP(SFU_OP) // 
-  // UARCH_TUP(DP_OP) // 
-  // UARCH_TUP(SP_OP) //
-  // UARCH_TUP(INTP_OP) // 
-  // UARCH_TUP(LOAD_OP) //
-  // UARCH_TUP(STORE_OP) //
-  // UARCH_TUP(BARRIER_OP) // 
-  // UARCH_TUP(MEMORY_BARRIER_OP) // 
-  // UARCH_TUP(EXIT_OPS) // 
-  // UARCH_TUP(SPECIALIZED_UNIT_1_OP)
-  // UARCH_TUP(SPECIALIZED_UNIT_2_OP)  
   if (!strcmp(uarch_op_str(op), "ALU_OP"))
   {
     // Hit ALU_OP F2F.F64.F32 lat:2 issue_gap:2
@@ -466,8 +451,9 @@ bool trace_warp_inst_t::parse_from_trace_struct(
           trace.check_opcode_contain(opcode_tokens, "BYPASS")) {
         cache_op = CACHE_GLOBAL;
       }
-      if (DTRACE(LOAD_DETAIL)) {
-        dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
+      if (DTRACE(LOAD_DETAIL)) {        
+        dump_load_detail(__func__, m_sid, m_warp_id, pc, 
+          inst_name, memory_op, space, cache_op, latency, issue_gap);
       }
       break;
     case OP_STG:
@@ -496,7 +482,8 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       memory_op = memory_load;
       space.set_type(shared_space);
       if (DTRACE(LOAD_DETAIL)) {
-        dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
+        dump_load_detail(__func__, m_sid, m_warp_id, pc, 
+          inst_name, memory_op, space, cache_op, latency, issue_gap);
       }
       break;
     case OP_STS:
@@ -514,7 +501,8 @@ bool trace_warp_inst_t::parse_from_trace_struct(
       assert(data_size > 0);
       space.set_type(shared_space);
       if (DTRACE(LOAD_DETAIL)) {
-        dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
+        dump_load_detail(__func__, m_sid, m_warp_id, pc, 
+          inst_name, memory_op, space, cache_op, latency, issue_gap);
       }      
       break;
     case OP_ST:
@@ -532,7 +520,8 @@ bool trace_warp_inst_t::parse_from_trace_struct(
         // assume all the mem reqs are shared by default
         space.set_type(shared_space);
         if (DTRACE(LOAD_DETAIL)) {
-          dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
+          dump_load_detail(__func__, m_sid, m_warp_id, pc, 
+            inst_name, memory_op, space, cache_op, latency, issue_gap);
         }
       } else {
         // check the first active address
@@ -551,7 +540,8 @@ bool trace_warp_inst_t::parse_from_trace_struct(
             }
             if (m_opcode == OP_LD) {
               if (DTRACE(LOAD_DETAIL)) {
-                dump_load_detail(get_sid(), get_warp_id(), pc, inst_name, memory_op, space, cache_op, latency, issue_gap);
+                dump_load_detail(__func__, m_sid, m_warp_id, pc, 
+                  inst_name, memory_op, space, cache_op, latency, issue_gap);
               }
             }
             break;
@@ -832,12 +822,22 @@ const warp_inst_t *trace_shader_core_ctx::get_next_inst(
   m_trace_warp->set_time(m_gpu->get_cycle());
   const trace_warp_inst_t *ret = m_trace_warp->get_next_trace_inst();
 
+  if (ret && ret->is_load()) {
+    if (DTRACE(LOAD_PIPE)) {
+      fprintf(Trace::out, "%llu %s::%s %s\n", 
+        m_gpu->get_cycle(), get_class_name().c_str(), __func__,
+        ret->get_inst_info(m_sid).c_str());
+    }
+  }
+
   if (DTRACE(INST_TRACE)) {    
-    fprintf(Trace::out, "%llu fetch_slot:%u get_next_inst for %s "
-      "warp_id:%u, pc:%#llx, ret_pc:%#llx, active_mask:%s\n",
+    fprintf(Trace::out, "%llu fetch_slot:%u get_next_inst for %s %s %s "
+      "ret_pc:%#llx active_mask:%s\n",
       m_gpu->get_cycle(), m_fetch_slot, 
       is_pI2 ? "pI2" : "pI1", 
-      warp_id, pc, ret ? ret->pc : 0,
+      ret ? ret->get_inst_info(m_sid).c_str() : "", 
+      ret ? ret->trace_opcode.c_str() : "",
+      ret ? ret->pc : 0,
       ret ? ret->get_active_mask().to_string().c_str() : "N/A");
   }
 
@@ -889,6 +889,10 @@ void trace_shader_core_ctx::init_traces(unsigned start_warp, unsigned end_warp,
       : 0;
     m_trace_warp->init_active_threads(active_count);
   }
+}
+
+std::string trace_shader_core_ctx::get_class_name() {
+  return m_class_name;
 }
 
 void trace_shader_core_ctx::checkExecutionStatusAndUpdate(warp_inst_t &inst,

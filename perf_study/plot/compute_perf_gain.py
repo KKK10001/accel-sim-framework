@@ -850,9 +850,7 @@ python3 compute_perf_gain.py \
 
 python3 compute_perf_gain.py \
   --variants \
-    reg_l1d_base_lrr \
-    reg_l1d_dyn_byp_total_evict_aware_lrr \
-    reg_l1d_dyn_byp_total_evict_unaware_lrr \
+    reg_eval_ldg_flow \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \

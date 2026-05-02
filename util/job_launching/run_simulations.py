@@ -394,6 +394,27 @@ class ConfigurationSpec:
     def append_gpgpusim_config(
         self, bench_name, this_run_dir, appargs_run_subdir, config_text_file
     ):
+        def looks_like_full_gpgpusim_config(config_contents):
+            option_lines = [
+                line.strip()
+                for line in config_contents.splitlines()
+                if line.lstrip().startswith("-")
+            ]
+            if len(option_lines) < 50:
+                return False
+
+            full_config_markers = (
+                "-gpgpu_clock_domains",
+                "-gpgpu_shader_core_pipeline",
+                "-gpgpu_n_clusters",
+                "-gpgpu_cache:dl1",
+            )
+            markers_found = sum(
+                any(line.startswith(marker) for line in option_lines)
+                for marker in full_config_markers
+            )
+            return markers_found >= 3
+
         benchmark_spec_opts_file = os.path.expandvars(
             os.path.join(
                 "$GPUAPPS_ROOT",
@@ -410,6 +431,24 @@ class ConfigurationSpec:
             f.close()
 
         config_text = open(config_text_file).read()
+        custom_cfg_env = os.getenv("CUSTOM_GPGPUSIM_CONFIG")
+        custom_cfg_text = None
+        use_custom_cfg_as_base = False
+        if custom_cfg_env and os.path.isfile(custom_cfg_env):
+            try:
+                custom_cfg_text = open(custom_cfg_env).read()
+                if looks_like_full_gpgpusim_config(custom_cfg_text):
+                    print(
+                        "[INFO] Custom gpgpusim.config is a full config; using it as the base config instead of appending overrides: "
+                        + custom_cfg_env
+                    )
+                    config_text = custom_cfg_text
+                    use_custom_cfg_as_base = True
+            except Exception as e:
+                print(
+                    f"[WARN] Failed to inspect custom config file '{custom_cfg_env}': {e}"
+                )
+
         config_text += "\n" + benchmark_spec_opts + "\n" + self.params + "\n"
 
         # Append user-specified extra parameters if provided
@@ -430,12 +469,14 @@ class ConfigurationSpec:
             )
             config_text += open(accelsim_cfg).read()
 
-        # If user provides an environment variable CUSTOM_GPGPUSIM_CONFIG, append its contents LAST as override.
-        custom_cfg_env = os.getenv("CUSTOM_GPGPUSIM_CONFIG")
-        if custom_cfg_env and os.path.isfile(custom_cfg_env):
+        # If the custom file is only an override snippet, append it last.
+        if custom_cfg_text and not use_custom_cfg_as_base:
             try:
-                custom_text = open(custom_cfg_env).read()
-                config_text += "\n# ---- Custom gpgpusim.config overrides (appended last) ----\n" + custom_text + "\n"
+                config_text += (
+                    "\n# ---- Custom gpgpusim.config overrides (appended last) ----\n"
+                    + custom_cfg_text
+                    + "\n"
+                )
             except Exception as e:
                 print(f"[WARN] Failed to append custom config file '{custom_cfg_env}': {e}")
 

@@ -93,9 +93,10 @@ class trace_warp_inst_t : public warp_inst_t {
       const class kernel_trace_t *kernel_trace_info);
 
   void dump_load_detail(
+    std::string caller,
     u32 core,
     u32 warp,
-    u64 pc,    
+    u64 pc,
     std::string opcode, /* inst name */
     _memory_op_t memory_op,
     memory_space_t space,
@@ -240,7 +241,9 @@ class trace_shader_core_ctx : public shader_core_ctx {
     create_shd_warp();
     create_schedulers(shader_id);
     create_exec_pipeline();
+    m_class_name = "trace_shader_core_ctx";
   }
+  std::string get_class_name();
 
   virtual void checkExecutionStatusAndUpdate(warp_inst_t &inst, unsigned t,
                                              unsigned tid);
@@ -268,6 +271,7 @@ class trace_shader_core_ctx : public shader_core_ctx {
  private:
   void init_traces(unsigned start_warp, unsigned end_warp,
                    kernel_info_t &kernel);
+  std::string m_class_name;
 };
 
 types_of_operands get_oprnd_type(op_type op, special_ops sp_op);

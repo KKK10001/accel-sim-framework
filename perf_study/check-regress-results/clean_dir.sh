@@ -23,7 +23,9 @@ shopt -s nullglob
 # regress_tag=regress-mshr-max-merge-32-11-25-eve-specify-relative-cfg-file-path #Passed:0/10, No error:1/10, Failed/Error:9/10, Running:0/10, Waiting:0/10
 
 # regress_tag=perf-study-mshr-max-merge-32 # removed
-regress_tag=l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2
+# regress_tag=l1d_byp_T_1_F_T_20_5_3_lrr_srad_v2
+# regress_tag=eval_ldg_flow_nn
+regress_tag=reg_eval_ldg_flow
 # regress_tag=l1d_byp_T_F_T_20_5_3_lrr_victim_cache_ent_128_swap_srad_v2
 
 rm -f -- $log_files_dir/*$regress_tag*

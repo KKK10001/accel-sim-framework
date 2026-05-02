@@ -5,6 +5,21 @@
 cd $ACCELSIM_ROOT/..
 echo "$PWD=$PWD"
 
+# Optional per-invocation simulator build override.
+# Example: ACCELSIM_BUILD=debug ./regress.sh single nn-rodinia-2.0-ft
+if [ -n "${ACCELSIM_BUILD:-}" ]; then
+  case "$ACCELSIM_BUILD" in
+    debug|release)
+      ;;
+    *)
+      echo "[ERROR] ACCELSIM_BUILD must be 'debug' or 'release', got: $ACCELSIM_BUILD"; exit 1
+      ;;
+  esac
+
+  source "$ACCELSIM_ROOT/setup_environment.sh" "$ACCELSIM_BUILD" || exit 1
+  echo "[INFO] Using Accel-Sim build: $ACCELSIM_CONFIG ($ACCELSIM_ROOT/bin/$ACCELSIM_CONFIG/accel-sim.out)"
+fi
+
 # 单条用例模式帮助：
 #   ./regress.sh single help            # 显示帮助
 #   ./regress.sh single list            # 列出常见 rodinia 基准名称
@@ -31,6 +46,8 @@ Environment form:
   SINGLE_BENCH=backprop-rodinia-2.0-ft VARIANT_TAG=my-single ./regress.sh
   # or with custom config file
   SINGLE_BENCH=backprop-rodinia-2.0-ft VARIANT_TAG=my-single CUSTOM_GPGPUSIM_CONFIG=/abs/path/custom_gpgpusim.config ./regress.sh
+  # or force the simulator build for this invocation
+  ACCELSIM_BUILD=debug ./regress.sh single backprop-rodinia-2.0-ft my-debug
 List benchmarks:
   ./regress.sh single list
 Rodinia benchmarks:
@@ -591,6 +608,11 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_victim_cache_ent_128
 
 ################################ Bypass Highly Trashed L1D Reqs ################################
+# 5/2 Eval pipe stages under trace-driven mode
+# ./regress.sh reg_eval_ldg_flow --config-file ./perf_study/configs/l1d_byp_without_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_eval_ldg_flow
+# ./regress.sh reg_eval_ldg_flow_II --config-file ./perf_study/configs/l1d_byp_without_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N reg_eval_ldg_flow_II
 
 # ./regress.sh l1d_no_byp --config-file ./perf_study/configs/base_no_mshr_lrr.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_no_byp
@@ -624,6 +646,9 @@ fi
 
 # Compare single case
 # 1. srad_v2-rodinia-2.0-ft
+# ./regress.sh single srad_v2-rodinia-2.0-ft eval_ldg_flow_srad_v2 --config-file ./perf_study/configs/l1d_byp_without_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N eval_ldg_flow_srad_v2
+
 # 1) LRR
 # ./regress.sh single srad_v2-rodinia-2.0-ft l1d_base_lrr_srad_v2 --config-file ./perf_study/configs/l1d_no_vc_byp_no_vb.config
 # ./util/job_launching/monitor_func_test.py -v -N l1d_base_lrr_srad_v2
@@ -853,6 +878,9 @@ fi
 # ./util/job_launching/monitor_func_test.py -v -N l1d_with_vc_ent_64_pathfinder
 
 # 5. nn-rodinia-2.0-ft
+# ./regress.sh single nn-rodinia-2.0-ft eval_ldg_flow_nn --config-file ./perf_study/configs/l1d_byp_without_vb.config
+# ./util/job_launching/monitor_func_test.py -v -N eval_ldg_flow_nn
+
 # ./regress.sh single nn-rodinia-2.0-ft reg_base_no_mshr_nn --config-file ./perf_study/configs/base_no_mshr.config
 # ./util/job_launching/monitor_func_test.py -v -N reg_base_no_mshr_nn
 # ./regress.sh single nn-rodinia-2.0-ft reg_l1d_byp_detect_f2e_gap_tuned_conf_cnt_nn --config-file ./perf_study/configs/l1d_bypass_low_loc_lines.config
