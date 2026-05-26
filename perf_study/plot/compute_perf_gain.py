@@ -851,6 +851,7 @@ python3 compute_perf_gain.py \
 python3 compute_perf_gain.py \
   --variants \
     reg_eval_ldg_flow \
+    reg_eval_ldg_flow_II \
   --clean-old-o \
   --fail-total-metrics NONE \
   --txt-file perf_gain.txt \

@@ -1,0 +1,62 @@
+-kernel name = _Z11srad_cuda_1PfS_S_S_S_S_iif
+-kernel id = 1
+-grid dim = (1,1,1)
+-block dim = (16,16,1)
+-shmem = 6144
+-nregs = 22
+-binary version = 70
+-cuda stream id = 0
+-shmem base_addr = 0x00007fc75b000000
+-local mem base_addr = 0x00007fc75d000000
+-nvbit version = 1.4
+-accelsim tracer version = 3
+
+#traces format = threadblock_x threadblock_y threadblock_z warpid_tb PC mask dest_num [reg_dests] opcode src_num [reg_srcs] mem_width [adrrescompress?] [mem_addresses]
+
+
+
+#BEGIN_TB
+
+thread block = 0,0,0
+
+warp = 0
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 1
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 2
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 3
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 4
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 5
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 6
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
+0e40 ffffffff 0 EXIT 0 0 
+
+warp = 7
+insts = 2
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
+0e40 ffffffff 0 EXIT 0 0 
+
+#END_TB

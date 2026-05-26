@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "trace_parser.h"
+#include "../../gpgpu-sim/src/trace.h"
 
 bool is_number(const std::string &s) {
   std::string::const_iterator it = s.begin();
@@ -394,8 +395,14 @@ void trace_parser::get_next_threadblock_traces(
       continue;
     } else {
       ss.str(line);
+
+      printf("%s\n", line.c_str());
+      if (DTRACE(VERIFY_TRACE)) {
+        fprintf(Trace::out, "%s\n", line.c_str());
+      }   
+
       ss >> string1 >> string2;
-      if (string1 == "#BEGIN_TB") {
+      if (string1 == "#BEGIN_TB") {       
         if (!start_of_tb_stream_found) {
           start_of_tb_stream_found = true;
         } else
@@ -413,7 +420,7 @@ void trace_parser::get_next_threadblock_traces(
       } else if (string1 == "warp") {
         // the start of new warp stream
         assert(start_of_tb_stream_found);
-        sscanf(line.c_str(), "warp = %d", &warp_id);
+        sscanf(line.c_str(), "warp = %d", &warp_id); 
       } else if (string1 == "insts") {
         assert(start_of_tb_stream_found);
         sscanf(line.c_str(), "insts = %d", &insts_num);

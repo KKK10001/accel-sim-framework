@@ -67,7 +67,16 @@ const trace_warp_inst_t *trace_shd_warp_t::get_next_trace_inst() {
     new_inst->parse_from_trace_struct(
         warp_traces[trace_pc], m_kernel_info->OpcodeMap,
         m_kernel_info->m_tconfig, m_kernel_info->m_kernel_trace_info);
+
+    if (DTRACE(PARSE_TRACE)) {
+      fprintf(Trace::out, "%llu Parsed \"%s\" trace_pc:%u warp_traces.size:%lu\n",
+        get_time(),
+        new_inst->get_inst_info(get_shader()->get_sid()).c_str(),
+        trace_pc, warp_traces.size());
+    }
+            
     trace_pc++;
+
     return new_inst;
   } else
     return NULL;
@@ -83,6 +92,11 @@ void trace_shd_warp_t::clear() {
 bool trace_shd_warp_t::trace_done() { return trace_pc == (warp_traces.size()); }
 
 address_type trace_shd_warp_t::get_start_trace_pc() {
+  if (DTRACE(PARSE_TRACE)) {
+    fprintf(Trace::out, "get_start_trace_pc warp_traces[0].pc = %#x\n",
+      warp_traces[0].m_pc);
+  }
+
   assert(warp_traces.size() > 0);
   return warp_traces[0].m_pc;
 }
@@ -226,6 +240,14 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   // fill and initialize common params
   m_decoded = true;
   pc = (address_type)trace.m_pc;
+
+  if (DTRACE(INST_PC)) {
+    fprintf(Trace::out, "%llu trace_warp_inst_t::parse_from_trace_struct "
+      "pc = (address_type)trace.m_pc = %#llx\n",
+      get_cycle(), pc
+    );
+  }
+
   trace_opcode = trace.opcode;  
   std::string inst_name = trace.opcode.c_str();
   const u32 issue_gap   = initiation_interval;
@@ -414,8 +436,9 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   // fill addresses
   if (trace.memadd_info != NULL) {
     data_size = trace.memadd_info->width;
-    for (unsigned i = 0; i < warp_size(); ++i)
+    for (unsigned i = 0; i < warp_size(); ++i) {
       set_addr(i, trace.memadd_info->addrs[i]);
+    }      
   }
 
   // handle special cases and fill memory space
@@ -812,6 +835,12 @@ void trace_shader_core_ctx::init_warps(unsigned cta_id, unsigned start_thread,
   unsigned end_warp = end_thread / m_config->warp_size +
                       ((end_thread % m_config->warp_size) ? 1 : 0);
 
+  if (DTRACE(PARSE_TRACE)) {
+    fprintf(Trace::out, "init_traces "
+      "{cta_id:%u start_thread:%u end_thread:%u ctaid:%u cta_size:%u}\n",
+      cta_id, start_thread, end_thread, ctaid, cta_size);
+  }
+
   init_traces(start_warp, end_warp, kernel);
 }
 
@@ -831,12 +860,11 @@ const warp_inst_t *trace_shader_core_ctx::get_next_inst(
   }
 
   if (DTRACE(INST_TRACE)) {    
-    fprintf(Trace::out, "%llu fetch_slot:%u get_next_inst for %s %s %s "
+    fprintf(Trace::out, "%llu fetch_slot:%u get_next_inst for %s %s "
       "ret_pc:%#llx active_mask:%s\n",
       m_gpu->get_cycle(), m_fetch_slot, 
       is_pI2 ? "pI2" : "pI1", 
       ret ? ret->get_inst_info(m_sid).c_str() : "", 
-      ret ? ret->trace_opcode.c_str() : "",
       ret ? ret->pc : 0,
       ret ? ret->get_active_mask().to_string().c_str() : "N/A");
   }
@@ -866,12 +894,20 @@ void trace_shader_core_ctx::init_traces(unsigned start_warp, unsigned end_warp,
   std::vector<std::vector<inst_trace_t> *> threadblock_traces;
   for (unsigned i = start_warp; i < end_warp; ++i) {
     trace_shd_warp_t *m_trace_warp = static_cast<trace_shd_warp_t *>(m_warp[i]);
+
     m_trace_warp->clear();
+    const size_t prev_traces_size = threadblock_traces.size();
     threadblock_traces.push_back(&(m_trace_warp->warp_traces));
   }
+
   trace_kernel_info_t &trace_kernel =
       static_cast<trace_kernel_info_t &>(kernel);
   trace_kernel.get_next_threadblock_traces(threadblock_traces);
+
+  if (DTRACE(PARSE_TRACE)) {
+    fprintf(Trace::out, "get_next_threadblock_traces(threadblock_traces.size:%lu)\n",
+      threadblock_traces.size());
+  }
 
   // set the pc from the traces and ignore the functional model
   for (unsigned i = start_warp; i < end_warp; ++i) {
@@ -879,15 +915,26 @@ void trace_shader_core_ctx::init_traces(unsigned start_warp, unsigned end_warp,
     m_trace_warp->set_next_pc(m_trace_warp->get_start_trace_pc());
     m_trace_warp->set_kernel(&trace_kernel);
     unsigned warp_local_idx = i - start_warp;
+
+    // for debug
+    const u32& core_id = m_trace_warp->get_shader()->get_sid();
+    const u64& cur_pc = m_trace_warp->get_pc();
+
+    if (DTRACE(PARSE_TRACE)) {
+      fprintf(Trace::out, "During init_traces, parsed inst "
+        "{pc:0x%#llx core:%u unique_warp:%u warp_offset:%u}\n",
+        cur_pc, core_id, i, warp_local_idx);
+    }
+
     int cta_threads = kernel.threads_per_cta();
     int threads_remaining =
         cta_threads - static_cast<int>(warp_local_idx * m_config->warp_size);
-  unsigned active_count =
-    threads_remaining > 0
-      ? std::min<unsigned>(static_cast<unsigned>(threads_remaining),
-                 m_config->warp_size)
-      : 0;
-    m_trace_warp->init_active_threads(active_count);
+    unsigned active_count =
+      threads_remaining > 0
+        ? std::min<unsigned>(static_cast<unsigned>(threads_remaining),
+                  m_config->warp_size)
+        : 0;
+      m_trace_warp->init_active_threads(active_count);
   }
 }
 

@@ -1,6 +1,0 @@
-# Overall Performance Study
-
-|study|IPC|L1D_RD_MISSES|L1D_READS|L1D_RD_MISS_RATE|L1D_VC_HITS|L1D_VC_ACCESSES|L1D_VC_HIT_RATE|L1D_N_FILL_TO_EVICT_LINES|l1d_avg_rd_byp_act|l1d_avg_rd_byp_deact|avg_l1d_rd_miss_served_cycles|intra_warp_interferences|inter_warp_interferences|inter_wi_percent|non_valid_percent|dep_chk_fail_percent|pipe_stalled_percent|total_issue_ratio|total_issue_fails|g_acc_r_mq_full|issue_bw_utilization|
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-|base-config|30.965|5749.694|6599.188|0.871|NA|NA|NA|13.394|NA|NA|3479539.204|330.746|2432.170|0.669|0.036|0.130|0.133|3.493|281899.072|15544.364|0.218|
-|reg_eval_ldg_flow|30.965 (+0.000%)|5749.694 (+0.000%)|6599.188 (+0.000%)|0.871 (+0.000%)|NA|NA|NA|13.394 (+0.000%)|NA|NA|3479539.204 (+0.000%)|330.746 (+0.000%)|2432.170 (+0.000%)|0.669 (+0.000%)|0.036 (+0.000%)|0.130 (+0.000%)|0.133 (+0.000%)|3.493 (+0.000%)|281899.072 (+0.000%)|15544.364 (+0.000%)|0.218 (+0.000%)|
