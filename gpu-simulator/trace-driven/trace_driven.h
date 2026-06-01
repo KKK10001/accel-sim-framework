@@ -251,6 +251,16 @@ class trace_shader_core_ctx : public shader_core_ctx {
                           unsigned end_thread, unsigned ctaid, int cta_size,
                           kernel_info_t &kernel);
   virtual void func_exec_inst(warp_inst_t &inst);
+  virtual void gen_scatter_value(warp_inst_t &inst, ptx_thread_info *thread);
+  virtual bool scatter_intra_warp(
+    warp_inst_t& inst, const u32& src_slot, const u32& slot,
+    const ptx_reg_t& src_reg_0, ptx_thread_info* thread);
+
+  virtual unsigned trace_destination_reg(const warp_inst_t &inst);
+  virtual bool trace_opcode_has_prefix(const warp_inst_t &inst, const char *prefix);
+
+  virtual bool per_thread_execution(warp_inst_t &inst, unsigned slot, ptx_thread_info *thread);
+
   virtual unsigned sim_init_thread(kernel_info_t &kernel,
                                    ptx_thread_info **thread_info, int sid,
                                    unsigned tid, unsigned threads_left,

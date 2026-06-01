@@ -20,43 +20,57 @@
 thread block = 0,0,0
 
 warp = 0
-insts = 2
-0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0
-0e40 ffffffff 0 EXIT 0 0 
+insts = 16
+0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 0xFFFFFFFF
+0010 ffffffff 1 R2 IMAD.MOV.U32 2 R255 R255 0 1
+0020 ffffffff 1 R3 IADD.U32 2 R1 R2 0 0
+0030 ffffffff 1 R3 IADD.S32 2 R1 R2 0 0
+0040 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 1
+0050 ffffffff 1 R2 IMAD.MOV.U32 2 R255 R255 0 2
+0060 ffffffff 1 R3 IADD3 3 R1 R2 R255 0 0
+0070 ffffffff 1 R4 IMAD.MOV.U32 2 R255 R255 0 0x1FFFFFF
+0080 ffffffff 1 R5 IMUL24.U32 2 R3 R4 0 0
+0090 ffffffff 1 R6 IMUL24.S32 2 R3 R4 0 0
+00a0 ffffffff 1 R7 MOVIMM.U32 0 0 0x1FFFFFFFF
+00b0 ffffffff 1 R7 MOVIMM.U64 0 0 0x1FFFFFFFF
+00c0 ffffffff 1 R8 MOV.U64 1 R7 0 0
+00d0 ffffffff 1 R7 MOV.U64 1 R2 0 0
+00e0 ffffffff 1 R8 MOV.SR8.U64 1 R2 0 0
+00f0 ffffffff 0 EXIT 0 0 
 
 warp = 1
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 warp = 2
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 warp = 3
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 warp = 4
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 warp = 5
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 warp = 6
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 warp = 7
 insts = 2
 0000 ffffffff 1 R1 IMAD.MOV.U32 2 R255 R255 0 
-0e40 ffffffff 0 EXIT 0 0 
+0010 ffffffff 0 EXIT 0 0 
 
 #END_TB

@@ -226,7 +226,20 @@ bool inst_trace_t::parse_from_string(std::string trace, unsigned trace_version,
     }
   }
 
-  ss >> imm;
+  if (ss >> temp) {
+    const int base =
+        temp.size() > 2 && temp[0] == '0' &&
+                (temp[1] == 'x' || temp[1] == 'X')
+            ? 16
+            : 10;
+    char *endptr = NULL;
+    errno = 0;
+    unsigned long long parsed = strtoull(temp.c_str(), &endptr, base);
+    if (endptr == temp.c_str() || *endptr != '\0' || errno == ERANGE) {
+      return false;
+    }
+    imm = parsed;
+  }
 
   // Finish Parsing
 

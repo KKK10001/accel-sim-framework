@@ -249,6 +249,7 @@ bool trace_warp_inst_t::parse_from_trace_struct(
   }
 
   trace_opcode = trace.opcode;  
+  imm = trace.imm;
   std::string inst_name = trace.opcode.c_str();
   const u32 issue_gap   = initiation_interval;
 
@@ -811,17 +812,8 @@ unsigned trace_shader_core_ctx::sim_init_thread(
     kernel_info_t &kernel, ptx_thread_info **thread_info, int sid, unsigned tid,
     unsigned threads_left, unsigned num_threads, core_t *core,
     unsigned hw_cta_id, unsigned hw_warp_id, gpgpu_t *gpu) {
-  if (kernel.no_more_ctas_to_run()) {
-    return 0;  // finished!
-  }
-
-  if (kernel.more_threads_in_cta()) {
-    kernel.increment_thread_id();
-  }
-
-  if (!kernel.more_threads_in_cta()) kernel.increment_cta_id();
-
-  return 1;
+  return ptx_sim_init_thread(kernel, thread_info, sid, tid, threads_left,
+                             num_threads, core, hw_cta_id, hw_warp_id, gpu);
 }
 
 void trace_shader_core_ctx::init_warps(unsigned cta_id, unsigned start_thread,
@@ -958,13 +950,375 @@ void trace_shader_core_ctx::checkExecutionStatusAndUpdate(warp_inst_t &inst,
         inst.data_size, (new_addr_type *)localaddrs);
     inst.set_addr(t, (new_addr_type *)localaddrs, num_addrs);
   }
+
+  if (m_thread[tid] != NULL && m_thread[tid]->is_done() &&
+      m_threadState[tid].m_active) {
+    trace_shd_warp_t *trace_warp =
+        static_cast<trace_shd_warp_t *>(m_warp[inst.get_warp_id()]);
+    m_threadState[tid].m_active = false;
+    u32 cta_id = trace_warp->get_cta_id();
+    register_cta_thread_exit(cta_id, &(m_thread[tid]->get_kernel()));
+    m_not_completed -= 1;
+    m_active_threads.reset(tid);
+    trace_warp->mark_lane_completed(t);
+  }
+}
+
+unsigned 
+trace_shader_core_ctx::trace_destination_reg(
+  const warp_inst_t &inst) {
+  return inst.outcount > 0 ? inst.out[0] : 0;
+}
+bool 
+trace_shader_core_ctx::trace_opcode_has_prefix(
+  const warp_inst_t &inst, const char *prefix) {
+  return inst.trace_opcode.find(prefix) != std::string::npos;
+}
+
+void trace_shader_core_ctx::gen_scatter_value(
+  warp_inst_t &inst, ptx_thread_info *thread) {
+  const u32 src_slot = inst.imm & 0x3;
+  for (u32 slot = 0; slot < m_warp_size; slot++)
+  {
+    if (slot == src_slot) {
+      u32 tid = m_warp_size * inst.get_warp_id() + slot;
+      ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    }
+  }
+  
+}
+bool trace_shader_core_ctx::scatter_intra_warp(
+  warp_inst_t& inst, const u32& src_slot, const u32& slot, 
+  const ptx_reg_t& src_reg_0, ptx_thread_info* thread) {
+  if (trace_opcode_has_prefix(inst, "REPL")) {
+    // (P6)REPL.dec1.rp2  R0, R0, #lane (imm16 & 0x3)
+    // REPL Rx, R0, #lane
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+    dst_reg.u32 = src_reg_0.u32;
+    if (DTRACE(VERIFY_ISA)) {
+      fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u REPL "
+        "{R%u.u32(%#x) = R%u.u32.lane%u(%#llx)}\n",
+        thread->get_gpu()->get_cycle(),
+        inst.pc, inst.get_warp_id(), slot,
+        inst.arch_reg.dst[0] - 1, dst_reg.u32,
+        inst.arch_reg.src[0] - 1, src_slot, src_reg_0.u32);
+    }      
+    return true;
+  }
+  return false;
+}
+
+bool trace_shader_core_ctx::per_thread_execution(
+  warp_inst_t &inst, unsigned slot, ptx_thread_info *thread) {
+  const unsigned dst_reg = trace_destination_reg(inst);
+
+  if (trace_opcode_has_prefix(inst, "EXIT")) {
+    inst.set_not_active(slot);
+    thread->set_done();
+    thread->exitCore();
+    thread->registerExit();
+    return true;
+  }
+
+  if (trace_opcode_has_prefix(inst, "IMUL24")) {
+    assert(inst.incount == 2);
+    ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+    src_reg_0.mask_and(0, 0x00FFFFFF); 
+    src_reg_1.mask_and(0, 0x00FFFFFF);
+    if (trace_opcode_has_prefix(inst, ".S32")) {
+      if (src_reg_0.get_bit(23)) {
+        src_reg_0.mask_or(0xFFFFFFFF, 0xFF000000);
+      }
+      if (src_reg_1.get_bit(23)) {
+        src_reg_1.mask_or(0xFFFFFFFF, 0xFF000000);
+      }
+      dst_reg.s64 = src_reg_0.s64 * src_reg_1.s64;
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IMUL24.S32 "
+          "{R%u.s64(%#llx) = R%u.s64(%#llx) * R%u.s64(%#llx)}\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.s64,
+          inst.arch_reg.src[0] - 1, src_reg_0.s64,
+          inst.arch_reg.src[1] - 1, src_reg_1.s64);
+      }      
+    } else if (trace_opcode_has_prefix(inst, ".U32")) {
+      dst_reg.u64 = src_reg_0.u64 * src_reg_1.u64;
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IMUL24.U32 "
+          "{R%u.u64(%#llx) = R%u.u64(%#llx) * R%u.u64(%#llx)}\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.u64,
+          inst.arch_reg.src[0] - 1, src_reg_0.u64,
+          inst.arch_reg.src[1] - 1, src_reg_1.u64);
+      }
+    }
+    return true;
+  }
+
+  if (trace_opcode_has_prefix(inst, "IADD") && 
+      !trace_opcode_has_prefix(inst, "IADD3")) {
+    assert(inst.incount == 2);
+    ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+    int overflow = 0;
+    int carry = 0;
+    if (trace_opcode_has_prefix(inst, ".S32")) {
+      dst_reg.s64 = (src_reg_0.s64 & 0x0FFFFFFFF) + (src_reg_1.s64 & 0x0FFFFFFFF);
+      if (((src_reg_0.s64 & 0x80000000) - (src_reg_1.s64 & 0x80000000)) == 0) {
+        overflow = !((src_reg_0.s64 & 0x80000000) - (src_reg_1.s64 & 0x80000000)) ? 0 : 1;
+      }      
+      carry = (dst_reg.u64 & 0x100000000) >> 32;
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IADD.S32 "
+          "{R%u.s64(%#llx) = R%u.s32(%#x) + R%u.s32(%#x)}\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.s64,
+          inst.arch_reg.src[0] - 1, src_reg_0.s32,
+          inst.arch_reg.src[1] - 1, src_reg_1.s32);
+      }      
+    } else if (trace_opcode_has_prefix(inst, ".U32")) {
+      assert((src_reg_0.u64 & 0xFFFFFFFF) == src_reg_0.u32);
+      assert((src_reg_1.u64 & 0xFFFFFFFF) == src_reg_1.u32);      
+      dst_reg.u64 = (src_reg_0.u64 & 0xFFFFFFFF) + (src_reg_1.u64 & 0xFFFFFFFF);
+      carry = (dst_reg.u64 & 0x100000000) >> 32;
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IADD.U32 "
+          "{R%u.u64(%#llx) = R%u.u32(%#x) + R%u.u32(%#x)} carry(%d)\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.u64,
+          inst.arch_reg.src[0] - 1, src_reg_0.u32,
+          inst.arch_reg.src[1] - 1, src_reg_1.u32,
+          carry);
+      }        
+    }
+    
+    return true;
+  }
+
+  if (trace_opcode_has_prefix(inst, "IADD3")) {
+    assert(inst.incount == 3);
+    ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
+    ptx_reg_t src_reg_2 = thread->get_reg(inst.arch_reg.src[2]);
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+    dst_reg.s64 = src_reg_0.s32 + src_reg_1.s32 + src_reg_2.s32;
+    thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+    if (DTRACE(VERIFY_ISA)) {
+      fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IADD3 "
+        "{R%u(%lld) = R%u(%d) + R%u(%d) + R%u(%d)}\n",
+        thread->get_gpu()->get_cycle(),
+        inst.pc, inst.get_warp_id(), slot,
+        inst.arch_reg.dst[0] - 1, dst_reg.s64,
+        inst.arch_reg.src[0] - 1, src_reg_0.s32,
+        inst.arch_reg.src[1] - 1, src_reg_1.s32,
+        inst.arch_reg.src[2] - 1, src_reg_2.s32);
+    }
+    return true;
+  }
+  if (trace_opcode_has_prefix(inst, "MOVIMM")) {
+    // 00a0 ffffffff 1 R7 MOVIMM.U32 0 0 11
+    assert(inst.incount == 0);
+    assert(inst.outcount == 1);    
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+    if (trace_opcode_has_prefix(inst, ".U64")) {
+      dst_reg.u64 = inst.imm;
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOVIMM.U64 "
+          "{R%u.u64(%#llx) = imm(%#llx)}\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.u64,
+          inst.imm);
+      }
+    } else if (trace_opcode_has_prefix(inst, ".U32")) {
+      dst_reg.u32 = inst.imm;
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOVIMM.U32 "
+          "{R%u.u32(%#x) = imm(%#llx)}\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.u32,
+          inst.imm);
+      }
+    }
+    return true;
+  }
+  if (trace_opcode_has_prefix(inst, "MOV.") &&
+      !trace_opcode_has_prefix(inst, ".MOV.")) {
+    assert(inst.incount == 1);
+    assert(inst.outcount == 1);
+    ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+
+    if (trace_opcode_has_prefix(inst, ".SR")) {
+      if (!slot) {
+        if (trace_opcode_has_prefix(inst, ".U16")) {
+          dst_reg.u16 = src_reg_0.u16;        
+        } else if (trace_opcode_has_prefix(inst, ".U32")) {
+          dst_reg.u32 = src_reg_0.u32;        
+        } else if (trace_opcode_has_prefix(inst, ".U64")) {
+          dst_reg.u64 = src_reg_0.u64;        
+        } 
+      } // if (!slot) {
+      if (trace_opcode_has_prefix(inst, ".U16")) {
+        std::string assign_str = !slot ? 
+          " = R" + std::to_string(inst.arch_reg.src[0] - 1) + 
+          ".u16(" + std::to_string(src_reg_0.u16) + ")}" : "}";
+        if (DTRACE(VERIFY_ISA)) {
+          fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOV.SR "
+            "{R%u.u16(%#x)%s\n",
+            thread->get_gpu()->get_cycle(),
+            inst.pc, inst.get_warp_id(), slot,
+            inst.arch_reg.dst[0] - 1, dst_reg.u16,
+            assign_str.c_str());
+        }        
+      } else if (trace_opcode_has_prefix(inst, ".U32")) {
+        std::string assign_str = !slot ? 
+          " = R" + std::to_string(inst.arch_reg.src[0] - 1) + 
+          ".u32(" + std::to_string(src_reg_0.u32) + ")}" : "}";
+        if (DTRACE(VERIFY_ISA)) {
+          fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOV.SR "
+            "{R%u.u32(%#x)%s\n",
+            thread->get_gpu()->get_cycle(),
+            inst.pc, inst.get_warp_id(), slot,
+            inst.arch_reg.dst[0] - 1, dst_reg.u32,
+            assign_str.c_str());
+        }        
+      } else if (trace_opcode_has_prefix(inst, ".U64")) {
+        std::string assign_str = !slot ? 
+          " = R" + std::to_string(inst.arch_reg.src[0] - 1) + 
+          ".u64(" + std::to_string(src_reg_0.u64) + ")}" : "}";
+        if (DTRACE(VERIFY_ISA)) {
+          fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOV.SR "
+            "{R%u.u64(%#llx)%s\n",
+            thread->get_gpu()->get_cycle(),
+            inst.pc, inst.get_warp_id(), slot,
+            inst.arch_reg.dst[0] - 1, dst_reg.u64,
+            assign_str.c_str());
+        }
+      }
+    } // if (trace_opcode_has_prefix(inst, ".SR")) { 
+    else {
+      if (trace_opcode_has_prefix(inst, ".U16")) {
+        dst_reg.u16 = src_reg_0.u16;
+        if (DTRACE(VERIFY_ISA)) {
+          fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOV "
+            "{R%u.u16(%#x) = R%u.u16(%x)\n",
+            thread->get_gpu()->get_cycle(),
+            inst.pc, inst.get_warp_id(), slot,
+            inst.arch_reg.dst[0] - 1, dst_reg.u16,
+            inst.arch_reg.src[0] - 1, src_reg_0.u16);
+        }         
+      } else if (trace_opcode_has_prefix(inst, ".U32")) {
+        dst_reg.u32 = src_reg_0.u32;
+        if (DTRACE(VERIFY_ISA)) {
+          fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOV "
+            "{R%u.u32(%x) = R%u.u32(%x)\n",
+            thread->get_gpu()->get_cycle(),
+            inst.pc, inst.get_warp_id(), slot,
+            inst.arch_reg.dst[0] - 1, dst_reg.u32,
+            inst.arch_reg.src[0] - 1, src_reg_0.u32);
+        }        
+      } else if (trace_opcode_has_prefix(inst, ".U64")) {
+        dst_reg.u64 = src_reg_0.u64;
+        if (DTRACE(VERIFY_ISA)) {
+          fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u MOV "
+            "{R%u.u64(%#llx) = R%u.u64(%#llx)\n",
+            thread->get_gpu()->get_cycle(),
+            inst.pc, inst.get_warp_id(), slot,
+            inst.arch_reg.dst[0] - 1, dst_reg.u64,
+            inst.arch_reg.src[0] - 1, src_reg_0.u64);
+        }        
+      } 
+    }
+    thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+
+    return true;
+  }
+  if (trace_opcode_has_prefix(inst, "IMAD.MOV")) {
+    assert(inst.incount == 2); // imm is excluded from incount
+    assert(inst.outcount == 1);
+
+    ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
+    ptx_reg_t dst_reg, mul;
+    if (trace_opcode_has_prefix(inst, ".U32")) {
+      mul.u64 = src_reg_0.u32 * src_reg_1.u32;
+      dst_reg.u64 = mul.u64 + inst.imm;      
+      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+      if (DTRACE(VERIFY_ISA)) {
+        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u "
+          "{R%u(%#llx) = R%u(%x) * R%u(%x) + imm(%#llx)}\n",
+          thread->get_gpu()->get_cycle(),
+          inst.pc, inst.get_warp_id(), slot,
+          inst.arch_reg.dst[0] - 1, dst_reg.u64,
+          inst.arch_reg.src[0] - 1, src_reg_0.u32,
+          inst.arch_reg.src[1] - 1, src_reg_1.u32,
+          inst.imm);
+      }
+    }
+    return true;
+  }
+
+  return false;
 }
 
 void trace_shader_core_ctx::func_exec_inst(warp_inst_t &inst) {
-  for (u32 t = 0; t < m_warp_size; t++) {
+  trace_shd_warp_t *trace_warp =
+      static_cast<trace_shd_warp_t *>(m_warp[inst.get_warp_id()]);
+
+  bool warp_done = false;
+  bool need_scatter = trace_opcode_has_prefix(inst, "REPL");
+  u32 n_scattered = 0;
+  bool scattered = false;
+  if (need_scatter) {
+    ptx_reg_t src_reg_0;
+    u32 src_slot = (u32) - 1;
+    for (u32 slot = 0; slot < m_warp_size; slot++) {
+      if (inst.active(slot)) {
+        u32 tid = m_warp_size * inst.get_warp_id() + slot;
+        src_slot = inst.imm & 0x3;
+        if (src_slot == slot) {
+          src_reg_0 = m_thread[tid]->get_reg(inst.arch_reg.src[0]);
+          break;
+        }
+      }
+    }
+    for (u32 slot = 0; slot < m_warp_size; slot++) {
+      if (inst.active(slot)) {
+        bool slot_scattered = false;
+        u32 tid = m_warp_size * inst.get_warp_id() + slot;
+        slot_scattered = scatter_intra_warp(inst, src_slot, slot, src_reg_0, m_thread[tid]);
+        n_scattered++;
+      }
+    }
+  } // if (need_scatter) {
+  if (n_scattered == m_warp_size) {
+    scattered = true;
+  }
+
+  for (u32 t = 0; (t < m_warp_size) && !scattered; t++) {
     if (inst.active(t)) {
       u32 tid = m_warp_size * inst.get_warp_id() + t;
-      // virtual function
+      if (m_thread[tid] == NULL || !m_threadState[tid].m_active) {
+        inst.set_not_active(t);
+        trace_warp->mark_lane_completed(t);
+        continue;
+      }
+      bool thread_done = per_thread_execution(inst, t, m_thread[tid]);
       checkExecutionStatusAndUpdate(inst, t, tid);
     }
   }

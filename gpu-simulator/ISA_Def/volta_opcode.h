@@ -171,7 +171,14 @@ static const std::unordered_map<std::string, OpcodeChar> Volta_OpcodeMap = {
     {"SETLMEMBASE", OpcodeChar(OP_SETLMEMBASE, ALU_OP)},
     {"VOTE", OpcodeChar(OP_VOTE, ALU_OP)},
     {"VOTE_VTG", OpcodeChar(OP_VOTE_VTG, ALU_OP)},
-
+    
+    ///////////////////////// Extension for Arise3 /////////////////////////
+    // Integer Instructions
+    {"IMUL24", OpcodeChar(OP_IMUL24, INTP_OP)},
+    // Movement Instructions  
+    {"MOVIMM", OpcodeChar(OP_MOVIMM, ALU_OP)},
+    // Replication Instructions
+    {"REPL", OpcodeChar(OP_REPL, ALU_OP)},
 };
 
 #endif

@@ -227,7 +227,11 @@ enum TraceInstrOpcode {
   OP_SUQUERY,
   // Shared between ampere and turing
   OP_F2FP,
-  SASS_NUM_OPCODES /* The total number of opcodes. */
+  // Extension for Arise3
+  OP_IMUL24,
+  OP_MOVIMM,
+  OP_REPL,
+  SASS_NUM_OPCODES /* The total number of opcodes. */  
 };
 typedef enum TraceInstrOpcode sass_op_type;
 
