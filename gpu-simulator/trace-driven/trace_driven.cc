@@ -991,17 +991,32 @@ bool trace_shader_core_ctx::scatter_intra_warp(
   warp_inst_t& inst, const u32& src_slot, const u32& slot, 
   const ptx_reg_t& src_reg_0, ptx_thread_info* thread) {
   if (trace_opcode_has_prefix(inst, "REPL")) {
+    u16 simd_lane_mask = 0xFFFF;
+    // hard-coded at present
+    const u32 index = 0;
+    const u32 set = 0;
+    const u32 bank = 0;
+    // Update simd_lane_mask according to Pn in PRF
+    if (trace_opcode_has_prefix(inst, "P6")) {
+      // hard-coded for test non all valid mask
+      thread->get_prf()->set_simd_lane_mask(
+        set, bank, slot, 6 /* P6 indicates */, 0x00FF);
+      simd_lane_mask = 
+        thread->get_prf()->get_simd_lane_mask(set, bank, slot, 6 /* P6 indicates */);
+      assert(simd_lane_mask == 0x00FF);
+    }
     // (P6)REPL.dec1.rp2  R0, R0, #lane (imm16 & 0x3)
     // REPL Rx, R0, #lane
     ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
-    dst_reg.u32 = src_reg_0.u32;
+    dst_reg.u32 = src_reg_0.u32 & simd_lane_mask;
     if (DTRACE(VERIFY_ISA)) {
       fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u REPL "
-        "{R%u.u32(%#x) = R%u.u32.lane%u(%#llx)}\n",
+        "{R%u.u32(%#x) = R%u.u32.lane%u(%#llx) & simd_lane_mask:%x}\n",
         thread->get_gpu()->get_cycle(),
         inst.pc, inst.get_warp_id(), slot,
         inst.arch_reg.dst[0] - 1, dst_reg.u32,
-        inst.arch_reg.src[0] - 1, src_slot, src_reg_0.u32);
+        inst.arch_reg.src[0] - 1, src_slot, src_reg_0.u32,
+        simd_lane_mask);
     }      
     return true;
   }
@@ -1283,9 +1298,9 @@ void trace_shader_core_ctx::func_exec_inst(warp_inst_t &inst) {
   bool warp_done = false;
   bool need_scatter = trace_opcode_has_prefix(inst, "REPL");
   u32 n_scattered = 0;
+  ptx_reg_t src_reg_0;
   bool scattered = false;
   if (need_scatter) {
-    ptx_reg_t src_reg_0;
     u32 src_slot = (u32) - 1;
     for (u32 slot = 0; slot < m_warp_size; slot++) {
       if (inst.active(slot)) {
@@ -1296,9 +1311,13 @@ void trace_shader_core_ctx::func_exec_inst(warp_inst_t &inst) {
           break;
         }
       }
-    }
-    for (u32 slot = 0; slot < m_warp_size; slot++) {
+    }    
+
+    const u32 simd16_lanes = 16;
+    // for (u32 slot = 0; slot < m_warp_size; slot++) {
+    for (u32 slot = 0; slot < simd16_lanes; slot++) {
       if (inst.active(slot)) {
+        // ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
         bool slot_scattered = false;
         u32 tid = m_warp_size * inst.get_warp_id() + slot;
         slot_scattered = scatter_intra_warp(inst, src_slot, slot, src_reg_0, m_thread[tid]);
