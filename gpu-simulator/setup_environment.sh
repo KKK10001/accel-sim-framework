@@ -130,6 +130,7 @@ export PYTHONPATH=$ACCELSIM_ROOT/build/$ACCELSIM_CONFIG:$PYTHONPATH
 
 echo "Using GPGPU-Sim in $GPGPUSIM_ROOT"
 #echo "If that is not the intended behavior, then run: \"unset GPGPUSIM_ROOT; unset GPGPUSIM_SETUP_ENVIRONMENT_WAS_RUN\"."
+echo "CORR_ARISE3 = "$CORR_ARISE3
 
 echo "Accel-Sim setup succeeded."
 export ACCELSIM_SETUP_ENVIRONMENT_WAS_RUN=1

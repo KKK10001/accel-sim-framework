@@ -52,20 +52,41 @@ endif
 
 OPTFLAGS += -g3 -fPIC -std=c++11
 
-SRCS = $(shell ls *.cc)
-EXCLUDES =
-CSRCS = $(filter-out $(EXCLUDES), $(SRCS))
-OBJS = $(CSRCS:%.cc=$(BUILD_DIR)/%.o)
+$(info CORR_ARISE3=$(CORR_ARISE3))
+ifeq ($(CORR_ARISE3),1)
+  $(info CORR_ARISE3 is enabled ---> use ./arise3/*.cc)
+  SRCS = $(wildcard arise3/*.cc)
+else
+  $(info CORR_ARISE3 is disabled ---> use ./*.cc)
+  SRCS = $(wildcard *.cc)
+endif
 
-trace-driven:$(OBJS)
+OBJS = $(SRCS:%.cc=$(BUILD_DIR)/%.o)
+MODE_STAMP = $(BUILD_DIR)/.trace_driven_mode
+ALL_SRCS = $(wildcard *.cc) $(wildcard arise3/*.cc)
+ALL_OBJS = $(ALL_SRCS:%.cc=$(BUILD_DIR)/%.o)
 
-$(BUILD_DIR)/%.o: %.cc
-	$(CXX) $(OPTFLAGS) $(CXXFLAGS) -I$(CUDA_INSTALL_PATH)/include -I. -I$(GPGPUSIM_ROOT)/libcuda -I$(GPGPUSIM_ROOT)/src -c $*.cc -o $(BUILD_DIR)/$*.o
+trace-driven: $(OBJS)
+
+FORCE:
+
+$(MODE_STAMP): FORCE
+	@mkdir -p $(dir $@)
+	@current=""; \
+	if [ -f $@ ]; then current=$$(cat $@); fi; \
+	if [ "$$current" != "$(CORR_ARISE3)" ]; then \
+		rm -f $(ALL_OBJS); \
+		echo "$(CORR_ARISE3)" > $@; \
+	fi
+
+$(BUILD_DIR)/%.o: %.cc $(MODE_STAMP)
+	@mkdir -p $(dir $@)
+	$(CXX) $(OPTFLAGS) $(CXXFLAGS) -I$(CUDA_INSTALL_PATH)/include -I. -I$(GPGPUSIM_ROOT)/libcuda -I$(GPGPUSIM_ROOT)/src -c $< -o $@
 
 $(BUILD_DIR)/trace-driven.Makefile.makedepend: depend
 
 depend:
 	touch $(BUILD_DIR)/trace-driven.Makefile.makedepend
-	makedepend -f$(BUILD_DIR)/trace-driven.Makefile.makedepend -p$(BUILD_DIR)/ $(CSRCS) 2> /dev/null
+	makedepend -f$(BUILD_DIR)/trace-driven.Makefile.makedepend -p$(BUILD_DIR)/ $(SRCS) 2> /dev/null
 
 include $(BUILD_DIR)/trace-driven.Makefile.makedepend

@@ -54,7 +54,7 @@ CXXFLAGS += -DCONSERVATIVE_REQUEST_L2_SUB
 $(warning Makfile path = $(CURDIR))
 $(warning CXXFLAGS = $(CXXFLAGS))
 
-LIBS+=-L$(GPGPUSIM_ROOT)/lib/$(GPGPUSIM_CONFIG)/ -lcudart -lm -lz -lGL -pthread $(BUILD_DIR)/*.o 
+LIBS+=-L$(GPGPUSIM_ROOT)/lib/$(GPGPUSIM_CONFIG)/ -lcudart -lm -lz -lGL -pthread $(shell find $(BUILD_DIR) -name '*.o' -print | sort)
 
 all: $(BIN_DIR)/accel-sim.out
 

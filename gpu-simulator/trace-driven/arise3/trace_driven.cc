@@ -1011,7 +1011,7 @@ bool trace_shader_core_ctx::scatter_intra_warp(
     dst_reg.u32 = src_reg_0.u32 & simd_lane_mask;
     if (DTRACE(VERIFY_ISA)) {
       fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u REPL "
-        "{R%u.u32(%#x) = R%u.u32.lane%u(%#llx) & simd_lane_mask:%x}\n",
+        "{R%u.u32(%x) = R%u.u32.lane%u(%x) & simd_lane_mask:%x}\n",
         thread->get_gpu()->get_cycle(),
         inst.pc, inst.get_warp_id(), slot,
         inst.arch_reg.dst[0] - 1, dst_reg.u32,
@@ -1122,38 +1122,22 @@ bool trace_shader_core_ctx::per_thread_execution(
   }
 
   if (trace_opcode_has_prefix(inst, "IADD3")) {
-    if (inst.incount == 3) {
-      ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
-      ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
-      ptx_reg_t src_reg_2 = thread->get_reg(inst.arch_reg.src[2]);
-      ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
-      dst_reg.s64 = src_reg_0.s32 + src_reg_1.s32 + src_reg_2.s32;
-      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
-      if (DTRACE(VERIFY_ISA)) {
-        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IADD3 "
-          "{R%u(%lld) = R%u(%d) + R%u(%d) + R%u(%d)}\n",
-          thread->get_gpu()->get_cycle(),
-          inst.pc, inst.get_warp_id(), slot,
-          inst.arch_reg.dst[0] - 1, dst_reg.s64,
-          inst.arch_reg.src[0] - 1, src_reg_0.s32,
-          inst.arch_reg.src[1] - 1, src_reg_1.s32,
-          inst.arch_reg.src[2] - 1, src_reg_2.s32);
-      }      
-    } else if (inst.incount == 2) {
-      ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
-      ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
-      ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
-      dst_reg.s64 = src_reg_0.s32 + src_reg_1.s32;
-      thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
-      if (DTRACE(VERIFY_ISA)) {
-        fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IADD3 "
-          "{R%u(%lld) = R%u(%d) + R%u(%d)}\n",
-          thread->get_gpu()->get_cycle(),
-          inst.pc, inst.get_warp_id(), slot,
-          inst.arch_reg.dst[0] - 1, dst_reg.s64,
-          inst.arch_reg.src[0] - 1, src_reg_0.s32,
-          inst.arch_reg.src[1] - 1, src_reg_1.s32);
-      }      
+    assert(inst.incount == 3);
+    ptx_reg_t src_reg_0 = thread->get_reg(inst.arch_reg.src[0]);
+    ptx_reg_t src_reg_1 = thread->get_reg(inst.arch_reg.src[1]);
+    ptx_reg_t src_reg_2 = thread->get_reg(inst.arch_reg.src[2]);
+    ptx_reg_t dst_reg = thread->get_trace_reg(inst.arch_reg.dst[0]);
+    dst_reg.s64 = src_reg_0.s32 + src_reg_1.s32 + src_reg_2.s32;
+    thread->set_trace_reg(inst.arch_reg.dst[0], dst_reg);
+    if (DTRACE(VERIFY_ISA)) {
+      fprintf(Trace::out, "%llu pc:%#llx warp:%u lane:%u IADD3 "
+        "{R%u(%lld) = R%u(%d) + R%u(%d) + R%u(%d)}\n",
+        thread->get_gpu()->get_cycle(),
+        inst.pc, inst.get_warp_id(), slot,
+        inst.arch_reg.dst[0] - 1, dst_reg.s64,
+        inst.arch_reg.src[0] - 1, src_reg_0.s32,
+        inst.arch_reg.src[1] - 1, src_reg_1.s32,
+        inst.arch_reg.src[2] - 1, src_reg_2.s32);
     }
     return true;
   }
